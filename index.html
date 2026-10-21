@@ -469,9 +469,12 @@ function readFingers(w) {
   const palmW = dist3(w[5], w[17]) || 1;
   const up = [[5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]]
     .map(([m, p, d, t]) => angleAt(w[m], w[p], w[d]) > 110 && dist3(w[t], w[0]) > dist3(w[p], w[0]) * 1.15);
-  // Thumb: fairly straight and pointing away from the index knuckle. Sticky, so it does not flicker.
-  const away = dist3(w[4], w[5]) / palmW, straight = angleAt(w[2], w[3], w[4]) > 140;
-  const thumbUp = thumbWasUp ? away > 0.5 : (away > 0.7 && straight) || away > 0.95;
+  // Thumb: its tip must be well away from both the index knuckle and the palm centre. Calibrated on photos:
+  // a thumb folded over the other fingers measures 0.58-0.78 palm widths from the index knuckle, a spread
+  // thumb 1.3 and up. Sticky, so it does not flicker between 4 and 5.
+  const centre = [0, 5, 9, 13, 17].reduce((c, i) => ({ x: c.x + w[i].x / 5, y: c.y + w[i].y / 5, z: c.z + (w[i].z || 0) / 5 }), { x: 0, y: 0, z: 0 });
+  const away = dist3(w[4], w[5]) / palmW, fromCentre = dist3(w[4], centre) / palmW;
+  const thumbUp = thumbWasUp ? away > 0.8 : away > 0.95 || (away > 0.85 && fromCentre > 1.1);
   thumbWasUp = thumbUp;
   return [thumbUp, ...up]; // thumb, index, middle, ring, pinky
 }
