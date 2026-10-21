@@ -469,12 +469,14 @@ function readFingers(w) {
   const palmW = dist3(w[5], w[17]) || 1;
   const up = [[5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]]
     .map(([m, p, d, t]) => angleAt(w[m], w[p], w[d]) > 110 && dist3(w[t], w[0]) > dist3(w[p], w[0]) * 1.15);
-  // Thumb: its tip must be well away from both the index knuckle and the palm centre. Calibrated on photos:
-  // a thumb folded over the other fingers measures 0.58-0.78 palm widths from the index knuckle, a spread
-  // thumb 1.3 and up. Sticky, so it does not flicker between 4 and 5.
-  const centre = [0, 5, 9, 13, 17].reduce((c, i) => ({ x: c.x + w[i].x / 5, y: c.y + w[i].y / 5, z: c.z + (w[i].z || 0) / 5 }), { x: 0, y: 0, z: 0 });
-  const away = dist3(w[4], w[5]) / palmW, fromCentre = dist3(w[4], centre) / palmW;
-  const thumbUp = thumbWasUp ? away > 0.8 : away > 0.95 || (away > 0.85 && fromCentre > 1.1);
+  // Thumb: counted only when it sticks out past the index-finger side of the hand and is not touching
+  // another finger. Calibrated on real photos and phone screenshots: folded thumbs (fist, V sign, thumb
+  // holding the ring finger) score -0.4 to 0 sideways and sit 0.2-0.5 palm widths from another finger;
+  // raised thumbs score +0.7 or more and sit 1.0+ away. Sticky, so it does not flicker.
+  const across = sub3(w[5], w[17]), acrossLen = len3(across) || 1, tv = sub3(w[4], w[5]);
+  const side = (tv.x * across.x + tv.y * across.y + tv.z * across.z) / acrossLen / palmW;
+  const gap = Math.min(...[6, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19, 20].map(i => dist3(w[4], w[i]))) / palmW;
+  const thumbUp = thumbWasUp ? side > 0.2 && gap > 0.45 : side > 0.35 && gap > 0.6;
   thumbWasUp = thumbUp;
   return [thumbUp, ...up]; // thumb, index, middle, ring, pinky
 }
@@ -485,14 +487,14 @@ function track(t) {
   const res = landmarker.detectForVideo(video, t);
   const raw = res.landmarks && res.landmarks[0];
   const world = (res.worldLandmarks && res.worldLandmarks[0]) || raw;
-  if (!raw) { input.lm = null; return; }
+  if (!raw) { input.lm = null; thumbWasUp = false; return; }
   const lm = raw.map(toScreen);
   // Majority vote over the last frames so the number does not flicker
   input.up = readFingers(world);
-  recent.push(input.up.filter(Boolean).length); if (recent.length > 7) recent.shift();
+  recent.push(input.up.filter(Boolean).length); if (recent.length > 9) recent.shift();
   const votes = {}; let best = input.count, bestN = 0;
   for (const c of recent) { votes[c] = (votes[c] || 0) + 1; if (votes[c] > bestN) { bestN = votes[c]; best = c; } }
-  if (bestN >= 4 || input.count < 0) input.count = best;
+  if (bestN >= 6 || input.count < 0) input.count = best;
   // How fast the hand is moving, relative to its size. Presses only count while it is still.
   const size = dist(lm[0], lm[9]) || 1;
   if (input.lm) input.motion = input.motion * 0.6 + (dist(lm[0], input.lm[0]) / size) * 0.4;
