@@ -58,7 +58,6 @@
   .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   #status { min-height: 1.4em; font-size: 13px; color: var(--muted); }
   #status.err { color: var(--danger); }
-  #count { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -76,23 +75,21 @@
 </div>
 
 <aside id="help" hidden>
-  <header><h3>Finger numbers</h3><button class="btn" id="helpClose" type="button">Close</button></header>
+  <header><h3>How to control</h3><button class="btn" id="helpClose" type="button">Close</button></header>
   <dl>
-    <dt>Show a number</dt><dd>Every button has a number. Hold up that many fingers and keep your hand still until the ring fills</dd>
-    <dt>Then lower it</dt><dd>After each press, move your hand out of view. Read the screen, then raise your hand with the next number</dd>
-    <dt>5 fingers</dt><dd>Opens the menu from the camera screen</dd>
-    <dt>Fist</dt><dd>Goes back / closes</dd>
-    <dt>Notepad</dt><dd>1 finger writes, 2 fingers moves without writing</dd>
+    <dt>Point</dt><dd>Point with your index finger. The ring follows your fingertip and the button under it lights up</dd>
+    <dt>Double-tap</dt><dd>Tap your thumb and index finger together twice, quickly, to press that button. One tap does nothing</dd>
+    <dt>Notepad</dt><dd>Pinch and hold to write, open your fingers to lift the pen</dd>
   </dl>
   <h3 style="margin-top:12px">Apps</h3>
   <dl>
     <dt>Camera</dt><dd>Photos and videos are kept on this phone. Use Save in the gallery to copy one to your phone's photos or downloads</dd>
-    <dt>Lens</dt><dd>Point at something and show 1. The AI tells you what it is</dd>
+    <dt>Lens</dt><dd>Aim the camera at something and double-tap What is this?</dd>
     <dt>Translate</dt><dd>Point at text and pick a language</dd>
   </dl>
   <h3 style="margin-top:12px">Tips</h3>
   <dl><dt>Hand</dt><dd>Palm facing the camera, fingers spread, good light</dd>
-  <dt>No camera</dt><dd>Tap buttons directly, or press keys 0–5</dd></dl>
+  <dt>No camera</dt><dd>Tap buttons on the screen directly</dd></dl>
 </aside>
 
 <div class="pill" id="toast"></div>
@@ -100,12 +97,11 @@
 <section id="start">
   <div class="card">
     <h1>Air<span>Hand</span></h1>
-    <p>Control virtual apps by showing numbers with your fingers. Every button in the camera view has a number. Hold up that many fingers to press it.</p>
+    <p>Control virtual apps with your hand. Point at a button in the camera view and double-tap your thumb and index finger to press it.</p>
     <ul>
-      <li><b>5 fingers</b>Open the menu</li>
-      <li><b>1 – 5</b>Press the button with that number</li>
-      <li><b>Fist</b>Go back</li>
-      <li><b>Lower hand</b>After each press, so you can read before the next one</li>
+      <li><b>Point</b>Move the ring onto a button</li>
+      <li><b>Double-tap</b>Thumb and index finger, twice, quickly</li>
+      <li><b>Pinch + hold</b>Write in the notepad</li>
     </ul>
     <div class="row">
       <button class="btn primary" id="go" type="button">Start camera</button>
@@ -124,22 +120,26 @@ const $ = s => document.querySelector(s);
 const video = $("#cam"), cv = $("#fx"), ctx = cv.getContext("2d");
 const C = { accent: "#ffb547", danger: "#ff6b5e", glass: "rgba(16,22,28,0.74)", line: "rgba(255,255,255,0.16)", text: "#eef2f4", muted: "#9fb0ba", paper: "rgba(250,247,238,0.92)", rule: "rgba(70,110,150,0.18)", dark: "#1b2430", onAccent: "#241703" };
 const FONT = '"Sora", ui-sans-serif, system-ui, sans-serif';
-const HOLD = 1.0;       // seconds a number must be held to press its button
-const HOLD_FIST = 1.4;  // closing takes a little longer
-const REARM = 0.4;      // after a press, the hand must be out of view this long before the next press
+// Air double-tap: point with the index finger, then tap thumb and index together twice.
+const PINCH_ON = 0.28;   // thumb-index gap (in palm widths) that counts as touching...
+const PINCH_OFF = 0.45;  // ...and the gap that counts as apart again
+const TAP_MAX = 0.35;    // a tap is a pinch shorter than this many seconds
+const DOUBLE_GAP = 0.6;  // the second tap must come within this time of the first
+const DRAW_AFTER = 0.25; // in the notepad, a pinch held longer than this starts writing
+const AIM_LAG = 0.12;    // when a pinch starts, aim where the finger pointed this long before
 
 let W = 0, H = 0, DPR = 1;
 let landmarker = null, stream = null, facing = "environment", mirror = false, mouseOnly = false;
 
 // ---------- Input ----------
-// count: steady number of raised fingers (0 = fist, -1 = no hand)
-const input = { present: false, count: -1, lm: null, up: null, x: 0, y: 0, moving: false, motion: 0 };
-const recent = [];
-let lastHandAt = 0;
-let holdCount = -1, holdT = 0, fired = false;
-let armed = true, goneT = 0; // false after a press until the hand leaves the camera view
+// x, y: smoothed index fingertip on screen. px, py: smoothed point between thumb and index tips (the pen).
+const input = { present: false, lm: null, x: 0, y: 0, px: 0, py: 0, pinch: false };
+const trail = []; // recent fingertip positions, to aim from just before a pinch moved the finger
+let lastHandAt = 0, prevPinch = false;
+const tap = { downAt: 0, aim: null, first: null }; // first: { n, at } after one tap on a button
 const mouse = { x: -1, y: -1, down: false, active: false };
 let targets = []; // tappable buttons drawn this frame
+let hovered = null; // the button under the cursor
 
 // ---------- App state ----------
 const state = { mode: "home", menuOpen: false, menuPage: 0, info: null };
@@ -188,7 +188,7 @@ async function saveMedia(type, blob, caption = "") {
   catch { toast("Could not save. The phone may be out of space"); }
 }
 
-// ---------- What each number does on the current screen ----------
+// ---------- What each button does on the current screen (n is the button id) ----------
 function actions() {
   if (state.menuOpen) {
     const m = { 0: { label: "Close menu", run: closeMenu } };
@@ -235,13 +235,13 @@ function actions() {
   return { 5: { label: "Menu", run: openMenu } };
 }
 const MODE_HINT = {
-  home: () => input.present || mouseOnly ? "Show 5 fingers to open the menu" : "Show your hand to the camera",
-  camera: () => cam.rec ? "Recording… show 2 to stop" : "Show 1 for a photo (2 second timer), 2 for video",
-  lens: () => "Point at something, then show 1",
-  translate: () => "Point at text, then pick a language",
+  home: () => input.present || mouseOnly ? "Point at Menu, then double-tap" : "Show your hand to the camera",
+  camera: () => cam.rec ? "Recording… double-tap Stop video" : "Photos have a 2 second timer",
+  lens: () => "Aim at something, then tap What is this?",
+  translate: () => "Aim at text, then pick a language",
   gallery: () => gallery.items.length ? `${gallery.i + 1} of ${gallery.items.length}` : "No photos yet",
 };
-function openMenu() { state.menuOpen = true; state.menuPage = 0; toast("Lower your hand, then show a number"); }
+function openMenu() { state.menuOpen = true; state.menuPage = 0; }
 function closeMenu() { state.menuOpen = false; toast("Menu closed"); }
 function goHome() { state.mode = "home"; state.info = null; }
 function openApp(id) {
@@ -249,7 +249,7 @@ function openApp(id) {
   if (id === "back") { state.menuPage = 0; return; }
   state.menuOpen = false;
   ai = { busy: false, mode: "", title: "", text: "", error: "", shown: false, lang: "" };
-  if (id === "notepad") { state.mode = "notepad"; toast("Raise 1 finger to write"); }
+  if (id === "notepad") { state.mode = "notepad"; toast("Pinch and hold to write"); }
   else if (id === "camera" || id === "lens" || id === "translate") { state.mode = id; if (noCamera()) toast("This needs the camera. Reload and tap Start camera"); }
   else if (id === "gallery") openGallery("home");
   else { state.mode = "info"; state.info = APP[id]; }
@@ -413,7 +413,7 @@ function layout() {
   let cx = x + 12, cy = y + 10;
   for (const n of [3, 4, 5, 0]) {
     const label = { 3: "Undo", 4: "Clear", 5: "To text", 0: "Close" }[n];
-    const cw = ch + ctx.measureText(label).width + 14;
+    const cw = ctx.measureText(label).width + 30;
     if (cx + cw > x + w - 12) { cx = x + 12; cy += ch + cg; }
     chips.push({ n, label, x: cx, y: cy, w: cw, h: ch });
     cx += cw + cg;
@@ -454,57 +454,37 @@ function toScreen(p) {
   return { x, y };
 }
 
-const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-// Counting uses MediaPipe's 3D "world" landmarks (metres, centred on the hand), so tilting the hand
-// or seeing it at an angle does not change the result. A finger is up when it is straight.
+// The pinch is measured on MediaPipe's 3D "world" landmarks (metres), so it works at any distance or angle.
 const sub3 = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: (a.z || 0) - (b.z || 0) });
-const len3 = v => Math.hypot(v.x, v.y, v.z);
-const dist3 = (a, b) => len3(sub3(a, b));
-function angleAt(a, b, c) { // 180 = straight line through b
-  const u = sub3(a, b), v = sub3(c, b), d = len3(u) * len3(v) || 1;
-  return Math.acos(Math.max(-1, Math.min(1, (u.x * v.x + u.y * v.y + u.z * v.z) / d))) * 180 / Math.PI;
-}
-let thumbWasUp = false;
-function readFingers(w) {
-  const palmW = dist3(w[5], w[17]) || 1;
-  const up = [[5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]]
-    .map(([m, p, d, t]) => angleAt(w[m], w[p], w[d]) > 110 && dist3(w[t], w[0]) > dist3(w[p], w[0]) * 1.15);
-  // Thumb: counted only when it sticks out past the index-finger side of the hand and is not touching
-  // another finger. Calibrated on real photos and phone screenshots: folded thumbs (fist, V sign, thumb
-  // holding the ring finger) score -0.4 to 0 sideways and sit 0.2-0.5 palm widths from another finger;
-  // raised thumbs score +0.7 or more and sit 1.0+ away. Sticky, so it does not flicker.
-  const across = sub3(w[5], w[17]), acrossLen = len3(across) || 1, tv = sub3(w[4], w[5]);
-  const side = (tv.x * across.x + tv.y * across.y + tv.z * across.z) / acrossLen / palmW;
-  const gap = Math.min(...[6, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19, 20].map(i => dist3(w[4], w[i]))) / palmW;
-  const thumbUp = thumbWasUp ? side > 0.2 && gap > 0.45 : side > 0.35 && gap > 0.6;
-  thumbWasUp = thumbUp;
-  return [thumbUp, ...up]; // thumb, index, middle, ring, pinky
-}
-const FINGERTIPS = [4, 8, 12, 16, 20];
+const dist3 = (a, b) => { const v = sub3(a, b); return Math.hypot(v.x, v.y, v.z); };
 
 function track(t) {
   if (!landmarker || video.readyState < 2) return;
   const res = landmarker.detectForVideo(video, t);
   const raw = res.landmarks && res.landmarks[0];
+  if (!raw) { input.lm = null; return; }
   const world = (res.worldLandmarks && res.worldLandmarks[0]) || raw;
-  if (!raw) { input.lm = null; thumbWasUp = false; return; }
   const lm = raw.map(toScreen);
-  // Majority vote over the last frames so the number does not flicker
-  input.up = readFingers(world);
-  recent.push(input.up.filter(Boolean).length); if (recent.length > 9) recent.shift();
-  const votes = {}; let best = input.count, bestN = 0;
-  for (const c of recent) { votes[c] = (votes[c] || 0) + 1; if (votes[c] > bestN) { bestN = votes[c]; best = c; } }
-  if (bestN >= 6 || input.count < 0) input.count = best;
-  // How fast the hand is moving, relative to its size. Presses only count while it is still.
-  const size = dist(lm[0], lm[9]) || 1;
-  if (input.lm) input.motion = input.motion * 0.6 + (dist(lm[0], input.lm[0]) / size) * 0.4;
-  input.moving = input.motion > 0.05;
-  const tip = lm[8];
-  if (!input.lm) { input.x = tip.x; input.y = tip.y; }
+  const gap = dist3(world[4], world[8]) / (dist3(world[5], world[17]) || 1);
+  input.pinch = input.pinch ? gap < PINCH_OFF : gap < PINCH_ON;
+  const tip = lm[8], pen = { x: (lm[4].x + lm[8].x) / 2, y: (lm[4].y + lm[8].y) / 2 };
+  if (!input.lm) { input.x = tip.x; input.y = tip.y; input.px = pen.x; input.py = pen.y; }
   input.x += (tip.x - input.x) * 0.5; input.y += (tip.y - input.y) * 0.5;
+  input.px += (pen.x - input.px) * 0.5; input.py += (pen.y - input.py) * 0.5;
   input.lm = lm;
+  const now = performance.now() / 1000;
+  trail.push({ t: now, x: input.x, y: input.y });
+  while (trail.length && trail[0].t < now - 0.5) trail.shift();
   lastHandAt = performance.now();
 }
+// Where the user was pointing just before the pinch pulled the fingertip toward the thumb
+function aimPoint() {
+  const now = performance.now() / 1000;
+  for (let i = trail.length - 1; i >= 0; i--) if (trail[i].t <= now - AIM_LAG) return { x: trail[i].x, y: trail[i].y };
+  return { x: input.x, y: input.y };
+}
+// The point that selects buttons: the locked aim while pinching, otherwise the fingertip
+const cursor = () => input.pinch && tap.aim ? tap.aim : { x: input.x, y: input.y };
 
 // ---------- Mouse / touch fallback ----------
 cv.addEventListener("pointerdown", e => {
@@ -526,28 +506,33 @@ const inside = (r, x, y) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y +
 // ---------- Update ----------
 function update(dt) {
   const handLive = input.lm && performance.now() - lastHandAt < 250;
-  if (!handLive) { input.lm = null; recent.length = 0; input.count = -1; input.motion = 0; input.moving = false; }
+  if (!handLive) { input.lm = null; input.pinch = false; }
   input.present = !!handLive;
+  const now = performance.now() / 1000;
 
-  // After a press, nothing more happens until the hand has left the view, so people can read and think.
-  if (input.present) goneT = 0;
-  else if ((goneT += dt) >= REARM) armed = true;
-
-  // Hold a number (with a still hand) to press its button.
-  const c = input.present && armed ? input.count : -1;
-  if (c !== holdCount) { holdCount = c; holdT = 0; fired = false; }
-  else if (!fired && actions()[c]) {
-    if (input.moving) holdT = Math.max(0, holdT - dt * 2); else holdT += dt;
-    if (holdT >= holdNeeded(c)) { fired = true; holdT = 0; armed = false; actions()[c].run(); }
+  // Double-tap: two short pinches on the same button. One tap alone never presses anything.
+  if (input.pinch && !prevPinch) { tap.downAt = now; tap.aim = aimPoint(); }
+  if (!input.pinch && prevPinch) {
+    const target = now - tap.downAt <= TAP_MAX ? targets.find(r => inside(r, tap.aim.x, tap.aim.y)) : null;
+    if (target && tap.first && tap.first.n === target.n && now - tap.first.at <= DOUBLE_GAP) {
+      tap.first = null;
+      const a = actions()[target.n]; if (a) a.run();
+    } else tap.first = target ? { n: target.n, at: now } : null;
   }
+  if (tap.first && now - tap.first.at > DOUBLE_GAP) tap.first = null;
+  prevPinch = input.pinch;
+  const c = input.present ? cursor() : mouse.active ? mouse : null;
+  hovered = c ? targets.find(r => inside(r, c.x, c.y)) || null : null;
 
   if (cam.countdown > 0) { cam.countdown -= dt; if (cam.countdown <= 0) { cam.countdown = 0; takePhoto(); } }
   if (cam.flash > 0) cam.flash = Math.max(0, cam.flash - dt);
 
+  // Notepad: pinch and hold (started inside the page) to write; the pen is between thumb and index tips
   if (state.mode === "notepad" && !state.menuOpen) {
     let pen = null, down = false;
-    if (input.present) { pen = input; down = armed && input.count === 1; }
+    if (input.present) { pen = { x: input.px, y: input.py }; down = input.pinch && now - tap.downAt > DRAW_AFTER && tap.aim && inside(notepad.area, tap.aim.x, tap.aim.y); }
     else if (mouse.active) { pen = mouse; down = mouse.down; }
+    pad.penDown = down;
     const a = notepad.area;
     if (down && pen && inside(a, pen.x, pen.y)) {
       if (!pad.current) pad.current = { color: INK[pad.ink], pts: [] };
@@ -560,33 +545,25 @@ function update(dt) {
 
 // ---------- Render ----------
 function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
-const holdNeeded = n => n === 0 ? HOLD_FIST : HOLD;
-const progressFor = n => (holdCount === n && !fired && actions()[n]) ? Math.min(1, holdT / holdNeeded(n)) : 0;
-function badge(n, x, y, r, light) {
-  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = light ? C.dark : C.accent; ctx.fill();
-  ctx.fillStyle = light ? "#fff" : C.onAccent;
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  if (n === 0) { ctx.font = `700 ${Math.round(r * 1.1)}px ${FONT}`; ctx.fillText("✊", x, y + 1); }
-  else { ctx.font = `700 ${Math.round(r * 1.2)}px ${FONT}`; ctx.fillText(String(n), x, y + 1); }
-}
-function ring(x, y, w, h, rad, p) {
-  if (p <= 0) return;
-  // progress drawn as a growing outline around the target
-  ctx.save(); rr(x - 3, y - 3, w + 6, h + 6, rad + 3);
-  ctx.lineWidth = 4; ctx.strokeStyle = C.accent; ctx.setLineDash([p * (2 * (w + h) + 20), 9999]); ctx.stroke(); ctx.restore();
+// Buttons are see-through glass so the camera view stays visible. The hovered button lights up;
+// after the first tap it fills in, waiting for the second.
+function buttonStyle(n, light) {
+  const armedTap = tap.first && tap.first.n === n, hot = hovered && hovered.n === n;
+  if (armedTap) return { fill: "rgba(255,181,71,0.9)", stroke: C.accent, text: C.onAccent, width: 2 };
+  if (hot) return { fill: "rgba(255,181,71,0.3)", stroke: C.accent, text: light ? C.dark : "#fff", width: 2.5 };
+  return light ? { fill: "rgba(20,28,36,0.05)", stroke: "rgba(20,28,36,0.3)", text: C.dark, width: 1 }
+               : { fill: "rgba(16,22,28,0.32)", stroke: "rgba(255,255,255,0.45)", text: "#fff", width: 1 };
 }
 function chip(c, light) {
   targets.push(c);
-  const p = progressFor(c.n);
+  const st = buttonStyle(c.n, light);
   rr(c.x, c.y, c.w, c.h, c.h / 2);
-  ctx.fillStyle = p > 0 ? C.accent : (light ? "rgba(20,28,36,0.08)" : C.glass); ctx.fill();
-  if (!light && p === 0) { ctx.lineWidth = 1; ctx.strokeStyle = C.line; ctx.stroke(); }
-  ring(c.x, c.y, c.w, c.h, c.h / 2, p);
-  badge(c.n, c.x + c.h / 2, c.y + c.h / 2, c.h / 2 - 4, light && p === 0);
-  ctx.fillStyle = p > 0 ? C.onAccent : (light ? C.dark : C.text);
-  ctx.font = `600 13px ${FONT}`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
-  ctx.fillText(c.label, c.x + c.h + 4, c.y + c.h / 2 + 1);
+  ctx.fillStyle = st.fill; ctx.fill();
+  ctx.lineWidth = st.width; ctx.strokeStyle = st.stroke; ctx.stroke();
+  ctx.fillStyle = st.text; ctx.font = `600 14px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  if (!light) { ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 4; }
+  ctx.fillText(c.label, c.x + c.w / 2, c.y + c.h / 2 + 1);
+  ctx.shadowBlur = 0;
 }
 function wrapLines(text, maxW) {
   const out = [];
@@ -597,21 +574,22 @@ function wrapLines(text, maxW) {
   }
   return out;
 }
-// Numbered buttons along the bottom of the screen, with a one-line hint above them
+// Buttons along the bottom of the screen, with a one-line hint above them
 function bottomBar() {
   const acts = actions();
   const keys = [1, 2, 3, 4, 5, 0].filter(n => acts[n]);
   if (!keys.length) return;
-  ctx.font = `600 13px ${FONT}`;
-  const ch = 42, gap = 8, maxW = W - 24;
-  const items = keys.map(n => ({ n, label: acts[n].label, w: ch + ctx.measureText(acts[n].label).width + 16, h: ch }));
+  ctx.font = `600 14px ${FONT}`;
+  const ch = 48, gap = 10, maxW = W - 24;
+  const items = keys.map(n => ({ n, label: acts[n].label, w: Math.max(96, ctx.measureText(acts[n].label).width + 36), h: ch }));
   const rows = [[]]; let rw = 0;
   for (const it of items) { if (rw + it.w > maxW && rows[rows.length - 1].length) { rows.push([]); rw = 0; } rows[rows.length - 1].push(it); rw += it.w + gap; }
   let y = H - 20 - rows.length * (ch + gap);
   const hint = MODE_HINT[state.mode]?.();
   if (hint) {
     ctx.font = `400 13px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-    const tw = ctx.measureText(hint).width + 24;
+    if (ctx.measureText(hint).width > W - 48) ctx.font = `400 11px ${FONT}`;
+    const tw = Math.min(W - 24, ctx.measureText(hint).width + 24);
     rr(W / 2 - tw / 2, y - 34, tw, 26, 13); ctx.fillStyle = "rgba(16,22,28,0.55)"; ctx.fill();
     ctx.fillStyle = C.text; ctx.fillText(hint, W / 2, y - 16);
   }
@@ -648,7 +626,7 @@ function drawNotepad() {
   pad.strokes.forEach(s => drawStroke(s, a));
   if (pad.current) drawStroke(pad.current, a);
   ctx.fillStyle = "rgba(27,36,48,0.45)"; ctx.font = `400 13px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-  ctx.fillText("☝ 1 writes  ·  ✌ 2 moves  ·  5 makes text", a.x + a.w / 2, a.y + a.h - 10);
+  ctx.fillText("Pinch and hold to write  ·  To text reads it", a.x + a.w / 2, a.y + a.h - 10);
   ctx.restore();
   // what the AI read from the handwriting
   if (pad.busy || pad.text || pad.error) {
@@ -663,13 +641,13 @@ function drawNotepad() {
   }
   // pen cursor
   if (input.present || mouse.active) {
-    const p = input.present ? input : mouse, writing = input.present ? input.count === 1 : mouse.down;
+    const p = input.present ? (input.pinch ? { x: input.px, y: input.py } : input) : mouse, writing = pad.penDown;
     ctx.beginPath(); ctx.arc(p.x, p.y, writing ? 6 : 12, 0, Math.PI * 2);
     if (writing) { ctx.fillStyle = INK[pad.ink]; ctx.fill(); } else { ctx.lineWidth = 2.5; ctx.strokeStyle = C.accent; ctx.stroke(); }
   }
 }
 function drawMenu() {
-  ctx.fillStyle = "rgba(8,12,16,0.55)"; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(8,12,16,0.25)"; ctx.fillRect(0, 0, W, H);
   const ids = MENU_PAGES[state.menuPage].map((id, i) => id && { n: i + 1, app: APP[id] }).filter(Boolean);
   const cols = W < 520 ? 2 : (W < 900 ? 3 : 5);
   const rows = Math.ceil(ids.length / cols);
@@ -677,27 +655,29 @@ function drawMenu() {
   const gw = cols * tw + (cols - 1) * gap, gh = rows * th + (rows - 1) * gap;
   const x0 = (W - gw) / 2, y0 = Math.max(130, (H - gh) / 2 - 10);
   ctx.fillStyle = C.text; ctx.font = `600 13px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-  ctx.fillText(state.menuPage ? "MORE APPS · SHOW A NUMBER" : "SHOW A NUMBER TO OPEN AN APP", W / 2, y0 - 20);
+  ctx.shadowColor = "rgba(0,0,0,0.7)"; ctx.shadowBlur = 6;
+  ctx.fillText(state.menuPage ? "MORE APPS" : "POINT AT AN APP · DOUBLE-TAP TO OPEN", W / 2, y0 - 20);
+  ctx.shadowBlur = 0;
   ids.forEach((t, i) => {
     const c = i % cols, r = Math.floor(i / cols);
     const inRow = Math.min(cols, ids.length - r * cols);
     t.x = x0 + (gw - (inRow * tw + (inRow - 1) * gap)) / 2 + c * (tw + gap); t.y = y0 + r * (th + gap); t.w = tw; t.h = th;
     targets.push(t);
-    const p = progressFor(t.n);
-    rr(t.x, t.y, t.w, t.h, 20); ctx.fillStyle = p > 0 ? "rgba(255,181,71,0.95)" : C.glass; ctx.fill();
-    ctx.lineWidth = 1.5; ctx.strokeStyle = C.line; ctx.stroke();
-    ring(t.x, t.y, t.w, t.h, 20, p);
-    badge(t.n, t.x + 22, t.y + 22, 14, p > 0);
+    const st = buttonStyle(t.n, false), filled = st.text === C.onAccent;
+    rr(t.x, t.y, t.w, t.h, 20); ctx.fillStyle = st.fill; ctx.fill();
+    ctx.lineWidth = st.width; ctx.strokeStyle = st.stroke; ctx.stroke();
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillStyle = p > 0 ? C.onAccent : C.accent; ctx.font = `700 ${Math.round(t.h * 0.26)}px ${FONT}`;
-    ctx.fillText(t.app.glyph, t.x + t.w / 2, t.y + t.h * 0.42);
-    ctx.fillStyle = p > 0 ? C.onAccent : C.text; ctx.font = `600 14px ${FONT}`;
+    ctx.shadowColor = "rgba(0,0,0,0.7)"; ctx.shadowBlur = filled ? 0 : 5;
+    ctx.fillStyle = filled ? C.onAccent : C.accent; ctx.font = `700 ${Math.round(t.h * 0.28)}px ${FONT}`;
+    ctx.fillText(t.app.glyph, t.x + t.w / 2, t.y + t.h * 0.4);
+    ctx.fillStyle = st.text; ctx.font = `600 15px ${FONT}`;
     ctx.fillText(t.app.name, t.x + t.w / 2, t.y + t.h * 0.7);
-    ctx.fillStyle = p > 0 ? "rgba(36,23,3,0.7)" : C.muted; ctx.font = `400 11px ${FONT}`;
-    ctx.fillText(t.app.desc, t.x + t.w / 2, t.y + t.h * 0.85);
+    ctx.fillStyle = filled ? "rgba(36,23,3,0.75)" : "rgba(255,255,255,0.8)"; ctx.font = `400 11px ${FONT}`;
+    ctx.fillText(t.app.desc, t.x + t.w / 2, t.y + t.h * 0.86);
+    ctx.shadowBlur = 0;
   });
   const last = ids[ids.length - 1];
-  chip({ n: 0, label: "Close menu", x: W / 2 - 75, y: last.y + last.h + 18, w: 150, h: 42 }, false);
+  chip({ n: 0, label: "Close menu", x: W / 2 - 80, y: last.y + last.h + 18, w: 160, h: 48 }, false);
 }
 function drawInfo() {
   const p = infoPanel, app = state.info;
@@ -731,7 +711,7 @@ function drawGallery() {
   if (!item) {
     ctx.fillStyle = C.text; ctx.font = `600 18px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("No photos or videos yet", W / 2, H / 2 - 12);
-    ctx.fillStyle = C.muted; ctx.font = `400 14px ${FONT}`; ctx.fillText("Open Camera and show 1 to take a photo", W / 2, H / 2 + 16);
+    ctx.fillStyle = C.muted; ctx.font = `400 14px ${FONT}`; ctx.fillText("Open Camera and double-tap Photo", W / 2, H / 2 + 16);
     return;
   }
   const src = gallery.img?.complete ? gallery.img : (gallery.vid?.readyState >= 2 ? gallery.vid : null);
@@ -785,41 +765,19 @@ function drawAnswer() {
 const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 function drawHand() {
   const lm = input.lm; if (!lm) return;
-  ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 2; ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1.5; ctx.lineCap = "round";
   ctx.beginPath(); for (const [a, b] of BONES) { ctx.moveTo(lm[a].x, lm[a].y); ctx.lineTo(lm[b].x, lm[b].y); } ctx.stroke();
-  ctx.fillStyle = "rgba(255,255,255,0.8)";
-  for (const p of lm) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2); ctx.fill(); }
-  // light up each fingertip that is being counted, so a wrong number shows which finger was missed
-  (input.up || []).forEach((on, i) => {
-    const p = lm[FINGERTIPS[i]];
-    ctx.beginPath(); ctx.arc(p.x, p.y, on ? 9 : 5, 0, Math.PI * 2);
-    ctx.fillStyle = on ? C.accent : "rgba(255,255,255,0.35)"; ctx.fill();
-    if (on) { ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke(); }
-  });
-  // big number bubble above the hand with the hold ring
-  if (input.count < 0) return;
-  const top = lm.reduce((m, p) => Math.min(m, p.y), Infinity);
-  const x = Math.min(W - 40, Math.max(40, lm[9].x)), y = Math.max(140, top - 46);
-  if (!armed) {
-    // Waiting for the hand to go down before listening again
-    ctx.beginPath(); ctx.arc(x, y, 28, 0, Math.PI * 2); ctx.fillStyle = C.glass; ctx.fill();
-    ctx.fillStyle = C.muted; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = `700 26px ${FONT}`; ctx.fillText("↓", x, y + 1);
-    ctx.font = `600 13px ${FONT}`; const label = "Lower your hand"; const tw = ctx.measureText(label).width + 20;
-    rr(x - tw / 2, y + 40, tw, 26, 13); ctx.fillStyle = C.glass; ctx.fill();
-    ctx.fillStyle = C.text; ctx.fillText(label, x, y + 54);
-    return;
-  }
-  const act = actions()[input.count], p = act && !fired ? Math.min(1, holdT / holdNeeded(input.count)) : 0;
-  ctx.beginPath(); ctx.arc(x, y, 28, 0, Math.PI * 2); ctx.fillStyle = act ? C.accent : C.glass; ctx.fill();
-  ctx.lineWidth = 5;
-  if (p > 0) { ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, 34, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); }
-  ctx.fillStyle = act ? C.onAccent : C.text; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.font = `700 ${input.count === 0 ? 24 : 30}px ${FONT}`; ctx.fillText(input.count === 0 ? "✊" : String(input.count), x, y + 1);
-  if (act) {
-    const label = input.moving && !fired ? "Hold still…" : act.label;
-    ctx.font = `600 13px ${FONT}`; const tw = ctx.measureText(label).width + 20;
-    rr(x - tw / 2, y + 40, tw, 26, 13); ctx.fillStyle = C.glass; ctx.fill();
-    ctx.fillStyle = C.text; ctx.fillText(label, x, y + 54);
+  if (state.mode === "notepad" && !state.menuOpen) return; // the notepad draws its own pen
+  // cursor: a ring at the fingertip, filled while pinching, with a hint after the first tap
+  const c = cursor();
+  ctx.beginPath(); ctx.arc(c.x, c.y, input.pinch ? 9 : 15, 0, Math.PI * 2);
+  if (input.pinch) { ctx.fillStyle = C.accent; ctx.fill(); }
+  ctx.lineWidth = 3; ctx.strokeStyle = input.pinch ? "#fff" : C.accent; ctx.stroke();
+  ctx.beginPath(); ctx.arc(c.x, c.y, 2.5, 0, Math.PI * 2); ctx.fillStyle = C.accent; ctx.fill();
+  if (tap.first) {
+    ctx.font = `600 13px ${FONT}`; const label = "Tap again", tw = ctx.measureText(label).width + 20;
+    rr(c.x - tw / 2, c.y + 24, tw, 26, 13); ctx.fillStyle = "rgba(16,22,28,0.75)"; ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(label, c.x, c.y + 38);
   }
 }
 function render() {
@@ -842,8 +800,8 @@ function render() {
 // ---------- HUD ----------
 let lastLabel = "";
 function updateHud() {
-  const l = !input.present ? "Looking for your hand…" : input.count === 0 ? "Fist" : `Showing <span id="count">${input.count}</span>`;
-  if (l !== lastLabel) { $("#gesture").innerHTML = l; $("#dot").classList.toggle("on", input.present); lastLabel = l; }
+  const l = !input.present ? "Looking for your hand…" : input.pinch ? "Pinch" : "Pointing";
+  if (l !== lastLabel) { $("#gesture").textContent = l; $("#dot").classList.toggle("on", input.present); lastLabel = l; }
   const atHome = state.mode === "home" && !state.menuOpen;
   $("#backBtn").hidden = atHome;
   $("#menuBtn").hidden = state.menuOpen;

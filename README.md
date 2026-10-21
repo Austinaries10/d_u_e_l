@@ -5,16 +5,16 @@ A camera app you control with your fingers: show a number of fingers to press th
 Live: https://smarteyes.cck8.my
 
 ## Controls
-- **5 fingers**: open the menu
-- **1–5**: press the button with that number (hold still until the ring fills)
-- **Fist**: back / close
-- **After every press, lower your hand** out of view. The app waits, so you can read before the next press.
+- **Point** with your index finger: a ring follows the fingertip and the button under it lights up
+- **Double-tap**: tap thumb and index finger together twice, quickly, to press that button (a single tap does nothing)
+- **Pinch and hold** in the notepad to write
+- Buttons are see-through so the camera view stays visible
 
 ## Apps
-- **Notepad**: 1 finger writes, 2 fingers moves, 3 undo, 4 clear, 5 turns the writing into text (AI)
-- **Camera**: 1 photo (2 second timer), 2 start/stop video, 3 gallery. Kept on the phone (browser storage); "Save to phone" in the gallery copies a file to Photos/Downloads
-- **Lens**: point at something, 1 asks the AI what it is
-- **Translate**: point at text, 1 English, 2 Malay, 3 Chinese
+- **Notepad**: pinch and hold to write; Undo, Clear, and To text (the AI reads the handwriting)
+- **Camera**: Photo (2 second timer), Video start/stop, Gallery. Kept on the phone (browser storage); "Save to phone" in the gallery copies a file to Photos/Downloads
+- **Lens**: aim at something, "What is this?" asks the AI
+- **Translate**: aim at text, then English, Malay or Chinese
 - Music and Navigate are placeholders for now
 
 ## AI setup (Lens, Translate, handwriting)
