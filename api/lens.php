@@ -39,7 +39,7 @@ if ($origin !== '' && strcasecmp($originHost, $_SERVER['HTTP_HOST'] ?? '') !== 0
 
 $autoload = __DIR__ . '/../server/vendor/autoload.php';
 if (!is_file($autoload)) {
-    reply(500, ['error' => 'The AI library is missing on the server. Run the GitHub deploy again.']);
+    reply(500, ['error' => 'The AI library is missing on the server. Upload server-vendor.zip into the server folder and extract it.']);
 }
 require $autoload;
 
