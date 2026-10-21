@@ -6,12 +6,33 @@ Live: https://smarteyes.cck8.my
 
 ## Controls
 - **5 fingers**: open the menu
-- **1–5**: press the button with that number (hold until the ring fills)
+- **1–5**: press the button with that number (hold still until the ring fills)
 - **Fist**: back / close
-- **Notepad**: 1 finger writes, 2 fingers moves, 3 undo, 4 clear, 5 ink color
+- **After every press, lower your hand** out of view. The app waits, so you can read before the next press.
+
+## Apps
+- **Notepad**: 1 finger writes, 2 fingers moves, 3 undo, 4 clear, 5 turns the writing into text (AI)
+- **Camera**: 1 photo (2 second timer), 2 start/stop video, 3 gallery. Kept on the phone (browser storage); "Save to phone" in the gallery copies a file to Photos/Downloads
+- **Lens**: point at something, 1 asks the AI what it is
+- **Translate**: point at text, 1 English, 2 Malay, 3 Chinese
+- Music and Navigate are placeholders for now
+
+## AI setup (Lens, Translate, handwriting)
+`api/lens.php` calls Claude Haiku (`claude-haiku-5-5`) with the Anthropic PHP SDK. The key never goes to the browser.
+
+1. Get an API key at console.anthropic.com.
+2. In cPanel File Manager, open the site folder, go to `server/`, create `config.php` with:
+   ```php
+   <?php
+   return ['anthropic_api_key' => 'sk-ant-...'];
+   ```
+   (`server/` is blocked from the web and `config.php` is never in GitHub.)
+3. The hosting needs PHP 8.1 or newer (cPanel → MultiPHP Manager).
+
+Each request is limited to 30 per IP address per 10 minutes.
 
 ## Deploy
-Every push to `main` uploads the site to the hosting through `.github/workflows/deploy.yml`.
+Every push to `main` installs the PHP libraries (`server/vendor`) and uploads the site to the hosting through `.github/workflows/deploy.yml`.
 It needs these repository secrets (Settings → Secrets and variables → Actions):
 
 | Secret | Example |

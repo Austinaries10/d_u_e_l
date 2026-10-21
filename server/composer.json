@@ -1,0 +1,16 @@
+{
+    "name": "austinaries10/smarteyes-server",
+    "description": "Server-side helpers for SmartEyes (AI Lens and Translate)",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "anthropic-ai/sdk": "^0.61.0",
+        "guzzlehttp/guzzle": "^7.9"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    }
+}

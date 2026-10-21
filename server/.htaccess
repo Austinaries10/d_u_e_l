@@ -1,0 +1,2 @@
+# Nothing in this folder should ever be served to the browser.
+Require all denied

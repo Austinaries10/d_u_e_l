@@ -15,6 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The AI endpoint (api/lens.php) needs the Anthropic PHP SDK; install it here so the hosting needs no Composer
+      - name: Install PHP libraries
+        run: composer install --working-dir=server --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
       # Uploads only changed files. Files on the server that this repo never uploaded
       # (for example cPanel's .htaccess) are left alone.
       - name: Upload to cPanel via FTPS
@@ -30,3 +34,4 @@ jobs:
             **/.git*/**
             .github/**
             README.md
+            server/config.php
