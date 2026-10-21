@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AirHand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap">
+<style>
+  /* Layout: full-bleed camera, canvas AR layer on top, thin glass HUD at the edges */
+  :root {
+    --ink: #0f1418;
+    --glass: rgba(16, 22, 28, 0.62);
+    --line: rgba(255, 255, 255, 0.14);
+    --text: #eef2f4;
+    --muted: #9fb0ba;
+    --accent: #ffb547;
+    --danger: #ff6b5e;
+    --font: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; background: var(--ink); color: var(--text); font-family: var(--font); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+  video, canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+  video { object-fit: cover; }
+  video.mirror { transform: scaleX(-1); }
+
+  .hud { position: fixed; z-index: 5; display: flex; gap: 8px; align-items: center; }
+  .hud.top { top: calc(env(safe-area-inset-top, 0px) + 12px); left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); justify-content: space-between; flex-wrap: wrap; pointer-events: none; }
+  .hud.top > * { pointer-events: auto; }
+  .pill { background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 999px; padding: 8px 14px; font-size: 13px; display: flex; gap: 8px; align-items: center; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .btn { font: inherit; font-size: 13px; color: var(--text); background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn.primary { background: var(--accent); color: #241703; border-color: transparent; font-weight: 600; font-size: 16px; padding: 14px 26px; }
+
+  #help { position: fixed; z-index: 6; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 60px); width: min(320px, calc(100% - 24px)); background: var(--glass); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: 13px; line-height: 1.5; }
+  #help h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  #help dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
+  #help dt { color: var(--accent); font-weight: 600; white-space: nowrap; }
+  #help dd { margin: 0; color: var(--text); }
+
+  #toast { position: fixed; z-index: 6; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); transform: translateX(-50%); transition: opacity .25s; opacity: 0; pointer-events: none; }
+  #toast.show { opacity: 1; }
+
+  #start { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: radial-gradient(120% 80% at 50% 0%, #1d2a33 0%, var(--ink) 60%); padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+  .card { max-width: 440px; display: grid; gap: 18px; }
+  .card h1 { margin: 0; font-size: clamp(36px, 9vw, 52px); letter-spacing: -0.02em; line-height: 1; }
+  .card h1 span { color: var(--accent); }
+  .card p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 15px; }
+  .card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 14px; }
+  .card li { display: flex; gap: 10px; }
+  .card li b { color: var(--accent); min-width: 92px; font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  #status { min-height: 1.4em; font-size: 13px; color: var(--muted); }
+  #status.err { color: var(--danger); }
+  .card li b { font-variant-numeric: tabular-nums; }
+  #count { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<video id="cam" playsinline muted autoplay></video>
+<canvas id="fx"></canvas>
+
+<div class="hud top" id="hud" hidden>
+  <div class="pill"><span class="dot" id="dot"></span><span id="gesture">Looking for your hand…</span></div>
+  <div class="row">
+    <button class="btn" id="menuBtn" type="button">Menu</button>
+    <button class="btn" id="backBtn" type="button">Back</button>
+    <button class="btn" id="flip" type="button">Flip</button>
+    <button class="btn" id="helpBtn" type="button">Help</button>
+  </div>
+</div>
+
+<aside id="help" hidden>
+  <h3>Finger numbers</h3>
+  <dl>
+    <dt>Show a number</dt><dd>Every button has a number. Hold up that many fingers until the ring fills</dd>
+    <dt>5 fingers</dt><dd>Opens the menu from the camera screen</dd>
+    <dt>Fist</dt><dd>Goes back / closes</dd>
+    <dt>Notepad</dt><dd>1 finger writes, 2 fingers moves without writing</dd>
+  </dl>
+  <h3 style="margin-top:12px">Tips</h3>
+  <dl><dt>Hand</dt><dd>Palm facing the camera, fingers spread, good light</dd>
+  <dt>No camera</dt><dd>Tap buttons directly, or press keys 0–5</dd></dl>
+</aside>
+
+<div class="pill" id="toast"></div>
+
+<section id="start">
+  <div class="card">
+    <h1>Air<span>Hand</span></h1>
+    <p>Control virtual apps by showing numbers with your fingers. Every button in the camera view has a number. Hold up that many fingers to press it.</p>
+    <ul>
+      <li><b>5 fingers</b>Open the menu</li>
+      <li><b>1 – 5</b>Press the button with that number</li>
+      <li><b>Fist</b>Go back</li>
+      <li><b>1 finger</b>Write in the notepad</li>
+    </ul>
+    <div class="row">
+      <button class="btn primary" id="go" type="button">Start camera</button>
+      <button class="btn" id="mouseMode" type="button">Try without camera</button>
+    </div>
+    <div id="status">Tip: the back camera feels like smart glasses. Hold the phone and reach your hand out in front of it, palm facing the camera.</div>
+  </div>
+</section>
+
+<script type="module">
+const MP = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const MODEL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+const $ = s => document.querySelector(s);
+const video = $("#cam"), cv = $("#fx"), ctx = cv.getContext("2d");
+const C = { accent: "#ffb547", danger: "#ff6b5e", glass: "rgba(16,22,28,0.74)", line: "rgba(255,255,255,0.16)", text: "#eef2f4", muted: "#9fb0ba", paper: "rgba(250,247,238,0.92)", rule: "rgba(70,110,150,0.18)", dark: "#1b2430", onAccent: "#241703" };
+const FONT = '"Sora", ui-sans-serif, system-ui, sans-serif';
+const HOLD = 0.7; // seconds a number must be held to press its button
+
+let W = 0, H = 0, DPR = 1;
+let landmarker = null, stream = null, facing = "environment", mirror = false, mouseOnly = false;
+
+// ---------- Input ----------
+// count: steady number of raised fingers (0 = fist, -1 = no hand)
+const input = { present: false, count: -1, lm: null, x: 0, y: 0, moving: false, motion: 0 };
+const recent = [];
+let lastHandAt = 0;
+let holdCount = -1, holdT = 0, fired = false;
+const mouse = { x: -1, y: -1, down: false, active: false };
+
+// ---------- App state ----------
+const state = { mode: "home", menuOpen: false, info: null };
+const APPS = [
+  { id: "notepad", name: "Notepad", glyph: "✎", desc: "Write in the air" },
+  { id: "music", name: "Music", glyph: "♪", desc: "Gesture player", plan: "Show 1 to play or pause, 2 for the next track, 3 for the previous one." },
+  { id: "translate", name: "Translate", glyph: "文", desc: "Point at text", plan: "Point the camera at a sign or menu. The app reads the text and shows the translation on top of it." },
+  { id: "lens", name: "Lens", glyph: "◎", desc: "What is this?", plan: "Point the camera at an object and show a number to get an encyclopedia card about it." },
+  { id: "navigate", name: "Navigate", glyph: "➤", desc: "AR directions", plan: "Turn-by-turn arrows over the camera view, using GPS and the compass." },
+];
+let tiles = [], notepad = null, infoPanel = null;
+
+const INK = ["#1b2430", "#d6452f", "#2364c9"];
+const pad = { strokes: [], current: null, ink: 0 };
+try { const saved = JSON.parse(localStorage.getItem("airhand.notes") || "null"); if (saved && Array.isArray(saved.strokes)) pad.strokes = saved.strokes; } catch {}
+function savePad() { try { localStorage.setItem("airhand.notes", JSON.stringify({ strokes: pad.strokes })); } catch {} }
+
+// ---------- What each number does on the current screen ----------
+function actions() {
+  if (state.menuOpen) {
+    const m = { 0: { label: "Close menu", run: closeMenu } };
+    APPS.forEach((a, i) => { m[i + 1] = { label: a.name, run: () => openApp(a) }; });
+    return m;
+  }
+  if (state.mode === "notepad") return {
+    3: { label: "Undo", run: () => { pad.strokes.pop(); savePad(); toast("Undo"); } },
+    4: { label: "Clear", run: () => { pad.strokes = []; savePad(); toast("Notepad cleared"); } },
+    5: { label: "Color", run: () => { pad.ink = (pad.ink + 1) % INK.length; toast("Ink color changed"); } },
+    0: { label: "Close", run: () => { endStroke(); state.mode = "home"; toast("Notepad saved"); } },
+  };
+  if (state.mode === "info") return { 0: { label: "Close", run: () => { state.mode = "home"; state.info = null; } } };
+  return { 5: { label: "Menu", run: openMenu } };
+}
+function openMenu() { state.menuOpen = true; toast("Show 1 to 5 to open an app"); }
+function closeMenu() { state.menuOpen = false; toast("Menu closed"); }
+function openApp(app) {
+  state.menuOpen = false;
+  if (app.id === "notepad") { state.mode = "notepad"; toast("Raise 1 finger to write"); }
+  else { state.mode = "info"; state.info = app; }
+}
+function goBack() {
+  if (state.menuOpen) return closeMenu();
+  const a = actions()[0]; if (a) a.run();
+}
+function endStroke() {
+  if (pad.current) { if (pad.current.pts.length > 1) { pad.strokes.push(pad.current); savePad(); } pad.current = null; }
+}
+
+// ---------- Layout ----------
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  layout();
+}
+function layout() {
+  const cols = W < 520 ? 2 : (W < 900 ? 3 : 5);
+  const rows = Math.ceil(APPS.length / cols);
+  const gap = 14, tw = Math.min(150, (W - 32 - gap * (cols - 1)) / cols), th = tw * 0.9;
+  const gw = cols * tw + (cols - 1) * gap, gh = rows * th + (rows - 1) * gap;
+  const x0 = (W - gw) / 2, y0 = Math.max(110, (H - gh) / 2 + 10);
+  tiles = APPS.map((a, i) => {
+    const c = i % cols, r = Math.floor(i / cols);
+    const inRow = Math.min(cols, APPS.length - r * cols);
+    const rowX = x0 + (gw - (inRow * tw + (inRow - 1) * gap)) / 2;
+    return { n: i + 1, x: rowX + c * (tw + gap), y: y0 + r * (th + gap), w: tw, h: th, app: a };
+  });
+
+  const w = Math.min(680, W - 24), h = Math.min(H * 0.66, 540);
+  const x = (W - w) / 2, y = Math.max(110, (H - h) / 2 + 30);
+  // Chips flow left to right and wrap onto a second row on narrow screens
+  ctx.font = `600 13px ${FONT}`;
+  const chips = [], ch = 36, cg = 8;
+  let cx = x + 12, cy = y + 10;
+  for (const n of [3, 4, 5, 0]) {
+    const label = { 3: "Undo", 4: "Clear", 5: "Color", 0: "Close" }[n];
+    const cw = ch + ctx.measureText(label).width + (n === 5 ? 34 : 14);
+    if (cx + cw > x + w - 12) { cx = x + 12; cy += ch + cg; }
+    chips.push({ n, label, x: cx, y: cy, w: cw, h: ch });
+    cx += cw + cg;
+  }
+  const bar = cy - y + ch + 10;
+  notepad = { x, y, w, h, bar, chips, area: { x: x + 10, y: y + bar, w: w - 20, h: h - bar - 10 } };
+
+  const iw = Math.min(420, W - 32), ih = 230, iy = Math.max(110, (H - ih) / 2);
+  infoPanel = { x: (W - iw) / 2, y: iy, w: iw, h: ih, close: { n: 0, label: "Close", x: (W + iw) / 2 - 16 - 110, y: iy + ih - 16 - 40, w: 110, h: 40 } };
+}
+addEventListener("resize", resize);
+
+// ---------- Camera + model ----------
+async function startCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+  video.srcObject = stream;
+  await video.play();
+  const settings = stream.getVideoTracks()[0].getSettings();
+  mirror = (settings.facingMode || facing) === "user";
+  video.classList.toggle("mirror", mirror);
+}
+async function loadModel() {
+  const { FilesetResolver, HandLandmarker } = await import(MP + "/vision_bundle.mjs");
+  const files = await FilesetResolver.forVisionTasks(MP + "/wasm");
+  const opts = d => ({ baseOptions: { modelAssetPath: MODEL, delegate: d }, runningMode: "VIDEO", numHands: 1, minHandDetectionConfidence: 0.6, minHandPresenceConfidence: 0.6, minTrackingConfidence: 0.5 });
+  try { landmarker = await HandLandmarker.createFromOptions(files, opts("GPU")); }
+  catch { landmarker = await HandLandmarker.createFromOptions(files, opts("CPU")); }
+}
+
+function toScreen(p) {
+  const vw = video.videoWidth || W, vh = video.videoHeight || H;
+  const s = Math.max(W / vw, H / vh), dw = vw * s, dh = vh * s;
+  let x = p.x * dw + (W - dw) / 2;
+  const y = p.y * dh + (H - dh) / 2;
+  if (mirror) x = W - x;
+  return { x, y };
+}
+
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function countFingers(lm) {
+  const size = dist(lm[0], lm[9]) || 1;
+  // A finger is up when its tip is clearly farther from the wrist than its middle joint
+  let n = [[8, 6], [12, 10], [16, 14], [20, 18]].filter(([t, p]) => dist(lm[t], lm[0]) > dist(lm[p], lm[0]) * 1.1).length;
+  // Thumb is up when its tip sits well away from the palm and the index knuckle
+  const thumbUp = dist(lm[4], lm[9]) > size * 0.75 && dist(lm[4], lm[5]) > size * 0.45 && dist(lm[4], lm[17]) > dist(lm[3], lm[17]);
+  if (thumbUp) n++;
+  return n;
+}
+
+function track(t) {
+  if (!landmarker || video.readyState < 2) return;
+  const res = landmarker.detectForVideo(video, t);
+  const raw = res.landmarks && res.landmarks[0];
+  if (!raw) { input.lm = null; return; }
+  const lm = raw.map(toScreen);
+  // Majority vote over the last frames so the number does not flicker
+  recent.push(countFingers(lm)); if (recent.length > 7) recent.shift();
+  const votes = {}; let best = input.count, bestN = 0;
+  for (const c of recent) { votes[c] = (votes[c] || 0) + 1; if (votes[c] > bestN) { bestN = votes[c]; best = c; } }
+  if (bestN >= 4 || input.count < 0) input.count = best;
+  // How fast the hand is moving, relative to its size. Presses only count while it is still.
+  const size = dist(lm[0], lm[9]) || 1;
+  if (input.lm) input.motion = input.motion * 0.6 + (dist(lm[0], input.lm[0]) / size) * 0.4;
+  input.moving = input.motion > 0.05;
+  const tip = lm[8];
+  if (!input.lm) { input.x = tip.x; input.y = tip.y; }
+  input.x += (tip.x - input.x) * 0.5; input.y += (tip.y - input.y) * 0.5;
+  input.lm = lm;
+  lastHandAt = performance.now();
+}
+
+// ---------- Mouse / touch fallback ----------
+function tapTargets() {
+  if (state.menuOpen) return tiles;
+  if (state.mode === "notepad") return notepad.chips;
+  if (state.mode === "info") return [infoPanel.close];
+  return [];
+}
+cv.addEventListener("pointerdown", e => {
+  mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true;
+  const hit = tapTargets().find(r => inside(r, e.clientX, e.clientY));
+  if (hit) { const a = actions()[hit.n]; if (a) a.run(); return; }
+  mouse.down = true; cv.setPointerCapture(e.pointerId);
+});
+cv.addEventListener("pointermove", e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; });
+cv.addEventListener("pointerup", () => { mouse.down = false; });
+cv.addEventListener("pointercancel", () => { mouse.down = false; });
+addEventListener("keydown", e => {
+  if (/^[0-5]$/.test(e.key)) { const a = actions()[+e.key]; if (a) a.run(); }
+  if (e.key === "Escape") goBack();
+});
+const inside = (r, x, y) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+
+// ---------- Update ----------
+function update(dt) {
+  const handLive = input.lm && performance.now() - lastHandAt < 250;
+  if (!handLive) { input.lm = null; recent.length = 0; input.count = -1; input.motion = 0; input.moving = false; }
+  input.present = !!handLive;
+
+  // Hold a number to press its button. After a press the hand must change number before the next one.
+  const c = input.present ? input.count : -1;
+  if (c !== holdCount) { holdCount = c; holdT = 0; fired = false; }
+  else if (!fired && actions()[c]) {
+    if (input.moving) holdT = Math.max(0, holdT - dt * 2); else holdT += dt;
+    if (holdT >= HOLD) { fired = true; holdT = 0; actions()[c].run(); }
+  }
+
+  if (state.mode === "notepad" && !state.menuOpen) {
+    let pen = null, down = false;
+    if (input.present) { pen = input; down = input.count === 1; }
+    else if (mouse.active) { pen = mouse; down = mouse.down; }
+    const a = notepad.area;
+    if (down && pen && inside(a, pen.x, pen.y)) {
+      if (!pad.current) pad.current = { color: INK[pad.ink], pts: [] };
+      const u = (pen.x - a.x) / a.w, v = (pen.y - a.y) / a.h;
+      const last = pad.current.pts[pad.current.pts.length - 1];
+      if (!last || Math.hypot((u - last[0]) * a.w, (v - last[1]) * a.h) > 1.5) pad.current.pts.push([u, v]);
+    } else endStroke();
+  }
+}
+
+// ---------- Render ----------
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+const progressFor = n => (holdCount === n && !fired && actions()[n]) ? Math.min(1, holdT / HOLD) : 0;
+function badge(n, x, y, r, light) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = light ? C.dark : C.accent; ctx.fill();
+  ctx.fillStyle = light ? "#fff" : C.onAccent;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  if (n === 0) { ctx.font = `700 ${Math.round(r * 1.1)}px ${FONT}`; ctx.fillText("✊", x, y + 1); }
+  else { ctx.font = `700 ${Math.round(r * 1.2)}px ${FONT}`; ctx.fillText(String(n), x, y + 1); }
+}
+function ring(x, y, w, h, rad, p) {
+  if (p <= 0) return;
+  // progress drawn as a growing outline around the target
+  ctx.save(); rr(x - 3, y - 3, w + 6, h + 6, rad + 3);
+  ctx.lineWidth = 4; ctx.strokeStyle = C.accent; ctx.setLineDash([p * (2 * (w + h) + 20), 9999]); ctx.stroke(); ctx.restore();
+}
+function chip(c, light) {
+  const p = progressFor(c.n);
+  rr(c.x, c.y, c.w, c.h, c.h / 2);
+  ctx.fillStyle = p > 0 ? C.accent : (light ? "rgba(20,28,36,0.08)" : "rgba(255,255,255,0.1)"); ctx.fill();
+  ring(c.x, c.y, c.w, c.h, c.h / 2, p);
+  badge(c.n, c.x + c.h / 2, c.y + c.h / 2, c.h / 2 - 4, light && p === 0);
+  ctx.fillStyle = p > 0 ? C.onAccent : (light ? C.dark : C.text);
+  ctx.font = `600 13px ${FONT}`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  ctx.fillText(c.label, c.x + c.h + 4, c.y + c.h / 2 + 1);
+}
+function drawStroke(s, a) {
+  const p = s.pts; if (p.length < 2) return;
+  ctx.strokeStyle = s.color; ctx.lineWidth = Math.max(3, a.w / 160); ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(a.x + p[0][0] * a.w, a.y + p[0][1] * a.h);
+  for (let i = 1; i < p.length - 1; i++) {
+    const mx = (p[i][0] + p[i + 1][0]) / 2, my = (p[i][1] + p[i + 1][1]) / 2;
+    ctx.quadraticCurveTo(a.x + p[i][0] * a.w, a.y + p[i][1] * a.h, a.x + mx * a.w, a.y + my * a.h);
+  }
+  const l = p[p.length - 1]; ctx.lineTo(a.x + l[0] * a.w, a.y + l[1] * a.h);
+  ctx.stroke();
+}
+function drawNotepad() {
+  const n = notepad, a = n.area;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.35)"; ctx.shadowBlur = 30; ctx.shadowOffsetY = 8;
+  rr(n.x, n.y, n.w, n.h, 18); ctx.fillStyle = C.paper; ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = C.rule; ctx.lineWidth = 1;
+  for (let yy = a.y + 34; yy < a.y + a.h; yy += 34) { ctx.beginPath(); ctx.moveTo(a.x + 6, yy); ctx.lineTo(a.x + a.w - 6, yy); ctx.stroke(); }
+  ctx.strokeStyle = "rgba(214,69,47,0.25)"; ctx.beginPath(); ctx.moveTo(a.x + 40, a.y); ctx.lineTo(a.x + 40, a.y + a.h); ctx.stroke();
+  n.chips.forEach(c => chip(c, true));
+  // current ink swatch inside the Color chip
+  const cc = n.chips.find(c => c.n === 5);
+  ctx.beginPath(); ctx.arc(cc.x + cc.w - 18, cc.y + cc.h / 2, 8, 0, Math.PI * 2); ctx.fillStyle = INK[pad.ink]; ctx.fill();
+  ctx.save(); rr(a.x, a.y, a.w, a.h, 8); ctx.clip();
+  pad.strokes.forEach(s => drawStroke(s, a));
+  if (pad.current) drawStroke(pad.current, a);
+  ctx.fillStyle = "rgba(27,36,48,0.45)"; ctx.font = `400 13px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  ctx.fillText("☝ 1 finger writes  ·  ✌ 2 fingers moves", a.x + a.w / 2, a.y + a.h - 10);
+  ctx.restore();
+  // pen cursor
+  if (input.present || mouse.active) {
+    const p = input.present ? input : mouse, writing = input.present ? input.count === 1 : mouse.down;
+    ctx.beginPath(); ctx.arc(p.x, p.y, writing ? 6 : 12, 0, Math.PI * 2);
+    if (writing) { ctx.fillStyle = INK[pad.ink]; ctx.fill(); } else { ctx.lineWidth = 2.5; ctx.strokeStyle = C.accent; ctx.stroke(); }
+  }
+}
+function drawMenu() {
+  ctx.fillStyle = "rgba(8,12,16,0.5)"; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = C.text; ctx.font = `600 13px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  ctx.fillText("SHOW A NUMBER TO OPEN AN APP", W / 2, tiles[0].y - 20);
+  for (const t of tiles) {
+    const p = progressFor(t.n);
+    rr(t.x, t.y, t.w, t.h, 20); ctx.fillStyle = p > 0 ? "rgba(255,181,71,0.95)" : C.glass; ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = C.line; ctx.stroke();
+    ring(t.x, t.y, t.w, t.h, 20, p);
+    badge(t.n, t.x + 22, t.y + 22, 14, p > 0);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = p > 0 ? C.onAccent : C.accent; ctx.font = `700 ${Math.round(t.h * 0.26)}px ${FONT}`;
+    ctx.fillText(t.app.glyph, t.x + t.w / 2, t.y + t.h * 0.42);
+    ctx.fillStyle = p > 0 ? C.onAccent : C.text; ctx.font = `600 14px ${FONT}`;
+    ctx.fillText(t.app.name, t.x + t.w / 2, t.y + t.h * 0.7);
+    ctx.fillStyle = p > 0 ? "rgba(36,23,3,0.7)" : C.muted; ctx.font = `400 11px ${FONT}`;
+    ctx.fillText(t.app.desc, t.x + t.w / 2, t.y + t.h * 0.85);
+  }
+  const last = tiles[tiles.length - 1];
+  const close = { n: 0, label: "Close menu", x: W / 2 - 70, y: last.y + last.h + 18, w: 140, h: 40 };
+  chip(close, false);
+}
+function wrap(text, x, y, maxW, lh) {
+  const words = text.split(" "); let line = "";
+  for (const w of words) { const test = line ? line + " " + w : w; if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y); line = w; y += lh; } else line = test; }
+  if (line) ctx.fillText(line, x, y);
+}
+function drawInfo() {
+  const p = infoPanel, app = state.info;
+  rr(p.x, p.y, p.w, p.h, 20); ctx.fillStyle = C.glass; ctx.fill(); ctx.strokeStyle = C.line; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = C.accent; ctx.font = `600 11px ${FONT}`; ctx.fillText("COMING NEXT", p.x + 20, p.y + 32);
+  ctx.fillStyle = C.text; ctx.font = `700 24px ${FONT}`; ctx.fillText(app.glyph + "  " + app.name, p.x + 20, p.y + 64);
+  ctx.fillStyle = C.muted; ctx.font = `400 14px ${FONT}`; wrap(app.plan, p.x + 20, p.y + 94, p.w - 40, 20);
+  chip(p.close, false);
+}
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function drawHand() {
+  const lm = input.lm; if (!lm) return;
+  ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 2;
+  ctx.beginPath(); for (const [a, b] of BONES) { ctx.moveTo(lm[a].x, lm[a].y); ctx.lineTo(lm[b].x, lm[b].y); } ctx.stroke();
+  // highlight raised fingertips so the user sees what is being counted
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  for (const p of lm) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2); ctx.fill(); }
+  // big number bubble above the hand with the hold ring
+  if (input.count < 0) return;
+  const top = lm.reduce((m, p) => Math.min(m, p.y), Infinity);
+  const x = Math.min(W - 40, Math.max(40, lm[9].x)), y = Math.max(140, top - 46);
+  const act = actions()[input.count], p = act && !fired ? Math.min(1, holdT / HOLD) : 0;
+  ctx.beginPath(); ctx.arc(x, y, 28, 0, Math.PI * 2); ctx.fillStyle = act ? C.accent : C.glass; ctx.fill();
+  ctx.lineWidth = 5; ctx.lineCap = "round";
+  if (p > 0) { ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, 34, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); }
+  ctx.fillStyle = act ? C.onAccent : C.text; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.font = `700 ${input.count === 0 ? 24 : 30}px ${FONT}`; ctx.fillText(input.count === 0 ? "✊" : String(input.count), x, y + 1);
+  if (act) {
+    ctx.font = `600 13px ${FONT}`; const tw = ctx.measureText(act.label).width + 20;
+    rr(x - tw / 2, y + 40, tw, 26, 13); ctx.fillStyle = C.glass; ctx.fill();
+    ctx.fillStyle = C.text; ctx.fillText(input.moving && !fired ? "Hold still…" : act.label, x, y + 54);
+  }
+}
+function drawHint() {
+  if (state.mode !== "home" || state.menuOpen) return;
+  ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.font = `600 15px ${FONT}`;
+  const msg = input.present || mouseOnly ? "Show 5 fingers to open the menu" : "Show your hand to the camera";
+  const tw = ctx.measureText(msg).width + 32, y = H - 70;
+  rr(W / 2 - tw / 2, y - 26, tw, 40, 20); ctx.fillStyle = C.glass; ctx.fill();
+  ctx.fillStyle = C.text; ctx.fillText(msg, W / 2, y);
+}
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  if (mouseOnly) { ctx.fillStyle = "#1a242c"; ctx.fillRect(0, 0, W, H); }
+  if (state.mode === "notepad") drawNotepad();
+  if (state.mode === "info" && state.info) drawInfo();
+  drawHint();
+  if (state.menuOpen) drawMenu();
+  drawHand();
+  updateHud();
+}
+
+// ---------- HUD ----------
+let lastLabel = "";
+function updateHud() {
+  const l = !input.present ? "Looking for your hand…" : input.count === 0 ? "Fist" : `Showing <span id="count">${input.count}</span>`;
+  if (l !== lastLabel) { $("#gesture").innerHTML = l; $("#dot").classList.toggle("on", input.present); lastLabel = l; }
+}
+let toastTimer;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1600); }
+
+// ---------- Loop ----------
+let lastT = performance.now(), lastVT = -1;
+function frame(t) {
+  const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
+  if (!mouseOnly && video.currentTime !== lastVT) { lastVT = video.currentTime; try { track(t); } catch (e) { console.warn(e); } }
+  update(dt); render();
+  requestAnimationFrame(frame);
+}
+function enterApp() {
+  $("#start").hidden = true; $("#hud").hidden = false;
+  resize();
+  try { navigator.wakeLock?.request("screen").catch(() => {}); } catch {}
+  requestAnimationFrame(frame);
+}
+
+// ---------- Start ----------
+const status = $("#status");
+$("#go").addEventListener("click", async () => {
+  status.className = ""; status.textContent = "Starting camera and loading the hand model…";
+  $("#go").disabled = true;
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error("This browser cannot use the camera here. Open the page over https:// in Chrome or Safari.");
+    await Promise.all([startCamera(), loadModel()]);
+    enterApp();
+  } catch (e) {
+    status.className = "err";
+    status.textContent = (e && e.name === "NotAllowedError") ? "Camera permission was blocked. Allow camera access for this site and try again." : (e.message || String(e));
+    $("#go").disabled = false;
+  }
+});
+$("#mouseMode").addEventListener("click", () => { mouseOnly = true; $("#flip").hidden = true; enterApp(); toast("Tap Menu, then tap an app"); });
+$("#flip").addEventListener("click", async () => {
+  facing = facing === "user" ? "environment" : "user";
+  try { await startCamera(); } catch { toast("Could not switch camera"); }
+});
+$("#menuBtn").addEventListener("click", () => { if (!state.menuOpen) openMenu(); });
+$("#backBtn").addEventListener("click", goBack);
+$("#helpBtn").addEventListener("click", () => { $("#help").hidden = !$("#help").hidden; });
+resize();
+</script>
+</body>
+</html>
