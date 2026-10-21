@@ -135,7 +135,7 @@ if ($mode === 'handwriting') {
 } else {
     $prompt = "You are the encyclopedia inside a pair of smart glasses. Identify the main object, place, plant, animal, food, product or landmark in this photo.\n"
         . "Reply in exactly this format:\n"
-        . "Line 1: its name only (be specific, e.g. the species or model if you can tell).\n"
+        . "Line 1: its name only, at most 6 words (be specific, e.g. the species or model if you can tell). No confidence notes on this line.\n"
         . "Then 2 to 4 short sentences of useful, encyclopedia-style facts about it. Plain text only, no markdown.\n"
         . "If you are unsure, say what it most likely is and how confident you are.";
 }
@@ -145,7 +145,7 @@ try {
     $message = $client->messages->create(
         model: MODEL,
         maxTokens: 1024,
-        outputConfig: ['effort' => 'low'],
+        outputConfig: ['effort' => 'medium'],
         messages: [[
             'role' => 'user',
             'content' => [
@@ -167,6 +167,11 @@ try {
     }
     $lines = preg_split('/\R/', trim($text)) ?: [''];
     $title = trim(array_shift($lines), " \t*#\"");
+    if (mb_strlen($title) > 60) {
+        // Too long for a heading: show it as body text instead
+        array_unshift($lines, $title);
+        $title = $mode === 'translate' ? 'Translation' : ($mode === 'handwriting' ? '' : 'Answer');
+    }
     reply(200, ['title' => $title, 'text' => trim(implode("\n", $lines))]);
 } catch (AuthenticationException) {
     reply(502, ['error' => 'The API key on the server was rejected. Check server/config.php.']);
