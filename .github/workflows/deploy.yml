@@ -15,12 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The AI endpoint (api/lens.php) needs the Anthropic PHP SDK; install it here so the hosting needs no Composer
-      - name: Install PHP libraries
-        run: composer install --working-dir=server --no-dev --no-interaction --prefer-dist --optimize-autoloader
-
       # Uploads only changed files. Files on the server that this repo never uploaded
-      # (for example cPanel's .htaccess) are left alone.
+      # (for example cPanel's .htaccess, server/config.php and server/vendor) are left alone.
+      # server/vendor (the PHP libraries, ~5,000 files) is uploaded once by hand as a zip; see README.
       - name: Upload to cPanel via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -35,3 +32,4 @@ jobs:
             .github/**
             README.md
             server/config.php
+            server/vendor/**

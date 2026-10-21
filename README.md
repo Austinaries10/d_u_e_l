@@ -32,7 +32,13 @@ Live: https://smarteyes.cck8.my
 Each request is limited to 30 per IP address per 10 minutes.
 
 ## Deploy
-Every push to `main` installs the PHP libraries (`server/vendor`) and uploads the site to the hosting through `.github/workflows/deploy.yml`.
+Every push to `main` uploads the site to the hosting through `.github/workflows/deploy.yml`.
+
+The PHP libraries (`server/vendor`, about 4,000 files) are **not** uploaded by the deploy, because FTP is slow with many small files. Upload them once by hand:
+1. Build the zip: `cd server && composer install --no-dev --optimize-autoloader && zip -qr ../server-vendor.zip vendor`
+2. In cPanel File Manager, open the site's `server/` folder, upload `server-vendor.zip`, right-click → Extract, then delete the zip.
+
+Repeat only when `server/composer.json` changes.
 It needs these repository secrets (Settings → Secrets and variables → Actions):
 
 | Secret | Example |

@@ -133,7 +133,7 @@ let landmarker = null, stream = null, facing = "environment", mirror = false, mo
 
 // ---------- Input ----------
 // count: steady number of raised fingers (0 = fist, -1 = no hand)
-const input = { present: false, count: -1, lm: null, x: 0, y: 0, moving: false, motion: 0 };
+const input = { present: false, count: -1, lm: null, up: null, x: 0, y: 0, moving: false, motion: 0 };
 const recent = [];
 let lastHandAt = 0;
 let holdCount = -1, holdT = 0, fired = false;
@@ -455,24 +455,38 @@ function toScreen(p) {
 }
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-function countFingers(lm) {
-  const size = dist(lm[0], lm[9]) || 1;
-  // A finger is up when its tip is clearly farther from the wrist than its middle joint
-  let n = [[8, 6], [12, 10], [16, 14], [20, 18]].filter(([t, p]) => dist(lm[t], lm[0]) > dist(lm[p], lm[0]) * 1.1).length;
-  // Thumb is up when its tip sits well away from the palm and the index knuckle
-  const thumbUp = dist(lm[4], lm[9]) > size * 0.75 && dist(lm[4], lm[5]) > size * 0.45 && dist(lm[4], lm[17]) > dist(lm[3], lm[17]);
-  if (thumbUp) n++;
-  return n;
+// Counting uses MediaPipe's 3D "world" landmarks (metres, centred on the hand), so tilting the hand
+// or seeing it at an angle does not change the result. A finger is up when it is straight.
+const sub3 = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: (a.z || 0) - (b.z || 0) });
+const len3 = v => Math.hypot(v.x, v.y, v.z);
+const dist3 = (a, b) => len3(sub3(a, b));
+function angleAt(a, b, c) { // 180 = straight line through b
+  const u = sub3(a, b), v = sub3(c, b), d = len3(u) * len3(v) || 1;
+  return Math.acos(Math.max(-1, Math.min(1, (u.x * v.x + u.y * v.y + u.z * v.z) / d))) * 180 / Math.PI;
 }
+let thumbWasUp = false;
+function readFingers(w) {
+  const palmW = dist3(w[5], w[17]) || 1;
+  const up = [[5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]]
+    .map(([m, p, d, t]) => angleAt(w[m], w[p], w[d]) > 110 && dist3(w[t], w[0]) > dist3(w[p], w[0]) * 1.15);
+  // Thumb: fairly straight and pointing away from the index knuckle. Sticky, so it does not flicker.
+  const away = dist3(w[4], w[5]) / palmW, straight = angleAt(w[2], w[3], w[4]) > 140;
+  const thumbUp = thumbWasUp ? away > 0.5 : (away > 0.7 && straight) || away > 0.95;
+  thumbWasUp = thumbUp;
+  return [thumbUp, ...up]; // thumb, index, middle, ring, pinky
+}
+const FINGERTIPS = [4, 8, 12, 16, 20];
 
 function track(t) {
   if (!landmarker || video.readyState < 2) return;
   const res = landmarker.detectForVideo(video, t);
   const raw = res.landmarks && res.landmarks[0];
+  const world = (res.worldLandmarks && res.worldLandmarks[0]) || raw;
   if (!raw) { input.lm = null; return; }
   const lm = raw.map(toScreen);
   // Majority vote over the last frames so the number does not flicker
-  recent.push(countFingers(lm)); if (recent.length > 7) recent.shift();
+  input.up = readFingers(world);
+  recent.push(input.up.filter(Boolean).length); if (recent.length > 7) recent.shift();
   const votes = {}; let best = input.count, bestN = 0;
   for (const c of recent) { votes[c] = (votes[c] || 0) + 1; if (votes[c] > bestN) { bestN = votes[c]; best = c; } }
   if (bestN >= 4 || input.count < 0) input.count = best;
@@ -770,6 +784,13 @@ function drawHand() {
   ctx.beginPath(); for (const [a, b] of BONES) { ctx.moveTo(lm[a].x, lm[a].y); ctx.lineTo(lm[b].x, lm[b].y); } ctx.stroke();
   ctx.fillStyle = "rgba(255,255,255,0.8)";
   for (const p of lm) { ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2); ctx.fill(); }
+  // light up each fingertip that is being counted, so a wrong number shows which finger was missed
+  (input.up || []).forEach((on, i) => {
+    const p = lm[FINGERTIPS[i]];
+    ctx.beginPath(); ctx.arc(p.x, p.y, on ? 9 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = on ? C.accent : "rgba(255,255,255,0.35)"; ctx.fill();
+    if (on) { ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+  });
   // big number bubble above the hand with the hold ring
   if (input.count < 0) return;
   const top = lm.reduce((m, p) => Math.min(m, p.y), Infinity);
