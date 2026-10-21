@@ -26,6 +26,21 @@ function reply(int $status, array $body): never
     exit;
 }
 
+// If PHP stops with a fatal error, still answer with JSON the app can show
+register_shutdown_function(function (): void {
+    $e = error_get_last();
+    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
+        }
+        echo json_encode(['error' => 'Server error: ' . $e['message'] . ' (' . basename($e['file']) . ':' . $e['line'] . ')'], JSON_UNESCAPED_UNICODE);
+    }
+});
+set_exception_handler(function (Throwable $t): void {
+    reply(500, ['error' => 'Server error: ' . get_class($t) . ': ' . $t->getMessage()]);
+});
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     reply(405, ['error' => 'Send a POST request.']);
 }
