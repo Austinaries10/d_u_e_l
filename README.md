@@ -5,10 +5,11 @@ A camera app you control with your fingers: show a number of fingers to press th
 Live: https://smarteyes.cck8.my
 
 ## Controls
-- **Point** with your index finger: a ring follows the fingertip and the button under it lights up
-- **Double-tap**: tap thumb and index finger together twice, quickly, to press that button (a single tap does nothing)
+- **Swipe up / down** with the hand: open / close the menu; in an app, show / hide its buttons. A swipe only counts if the whole hand is still in view at the end, so lowering the hand to rest does nothing
+- **Point** by moving the hand: the ring sits just past the knuckles (visible even from the back of the hand) and moves a little further than the hand, so every button is reachable without nearing the camera's edge
+- **Double-tap**: tap thumb and index finger together twice, quickly, to press the button under the ring (a single tap does nothing)
 - **Pinch and hold** in the notepad to write
-- Buttons are see-through so the camera view stays visible
+- Buttons are see-through and kept in the middle of the view
 
 ## Apps
 - **Notepad**: pinch and hold to write; Undo, Clear, and To text (the AI reads the handwriting)
