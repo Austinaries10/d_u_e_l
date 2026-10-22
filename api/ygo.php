@@ -10,6 +10,8 @@
 //   ?action=archetypes               all archetype names
 //   ?action=packs                    the booster packs sold in the shop
 //   ?action=set&code=LOB             every card in a set, with its rarities in that set
+//   ?action=set&event=ID             the cards of a limited pack event, only while the event is on
+//   ?action=sets                     every set in the database (for the GM page)
 //   ?action=img&set=LOB              a set's pack image
 //   ?action=names&n=A|B|C            cards with exactly these names
 //   ?action=img&id=46986414          card image  (&size=small or &size=crop for the artwork only)
@@ -261,9 +263,27 @@ if ($action === 'packs') {
     exit;
 }
 
+if ($action === 'sets') {
+    echo json_encode(['sets' => array_values(allSets())]);
+    exit;
+}
+
 if ($action === 'set') {
+    $gm = is_file(__DIR__ . '/../server/data/gm.json') ? (json_decode((string)file_get_contents(__DIR__ . '/../server/data/gm.json'), true) ?: []) : [];
     $code = (string)($_GET['code'] ?? '');
-    in_array($code, PACKS, true) || in_array($code, STARTERS, true) || fail(400, 'Unknown pack.');
+    if (isset($_GET['event'])) {
+        // a limited pack: only while the GM has it switched on and inside its time frame
+        $ev = current(array_filter($gm['events'] ?? [], fn($e) => $e['id'] === $_GET['event'])) ?: fail(404, 'That event pack is not on sale.');
+        ($ev['enabled'] && strtotime($ev['start']) <= time() && strtotime($ev['end']) > time()) || fail(403, 'That event pack is not on sale right now.');
+        if (!$ev['set']) {
+            echo json_encode(['set' => ['code' => '', 'name' => $ev['name'], 'date' => substr($ev['start'], 0, 10)], 'cards' => $ev['cards']]);
+            exit;
+        }
+        $code = $ev['set'];
+    } else {
+        in_array($code, PACKS, true) || in_array($code, STARTERS, true) || fail(400, 'Unknown pack.');
+        in_array($code, $gm['disabledPacks'] ?? [], true) && fail(403, 'That pack is not on sale right now.');
+    }
     $set = allSets()[$code] ?? fail(404, 'Unknown pack.');
     $file = cacheDir('data') . "/set-$code.json";
     if (!is_file($file) || filemtime($file) < time() - DATA_TTL) {

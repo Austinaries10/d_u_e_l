@@ -1,3 +1,4 @@
 server/vendor/
 server/config.php
 server/cache/
+server/data/

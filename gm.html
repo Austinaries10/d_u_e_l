@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>AR Duel GM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap">
+<style>
+  /* Game master page: Forbidden & Limited list, packs on sale, limited pack events */
+  :root {
+    --ink: #0d1117; --panel: rgba(255,255,255,.05); --line: rgba(255,255,255,.18); --text: #eef2f6; --muted: #a3b0be;
+    --accent: #ffb547; --danger: #ff5d5d; --good: #7bd88f;
+    --font: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: radial-gradient(120% 60% at 50% 0%, #1f2440 0%, var(--ink) 60%) fixed; color: var(--text); font-family: var(--font); }
+  main { max-width: 860px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 20px) 16px 110px; display: grid; gap: 16px; }
+  h1 { margin: 0; font-size: 28px; } h1 span { color: var(--accent); }
+  h2 { margin: 0; font-size: 18px; }
+  p, .note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn { font: inherit; font-size: 14px; font-weight: 600; color: var(--text); background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+  .btn.primary { background: var(--accent); color: #241703; border-color: transparent; }
+  .btn.small { padding: 6px 10px; font-size: 12px; }
+  .btn.danger { border-color: rgba(255,93,93,.6); color: #ffb3b3; }
+  .btn:disabled { opacity: .45; }
+  .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .field { display: grid; gap: 4px; font-size: 12px; color: var(--muted); min-width: 0; }
+  input, select, textarea { font: inherit; font-size: 14px; color: var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; width: 100%; }
+  textarea { resize: vertical; min-height: 54px; }
+  .form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .wide { grid-column: 1 / -1; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 12px; min-width: 0; }
+  .tabs .btn[aria-pressed="true"] { background: var(--accent); color: #241703; border-color: transparent; }
+  .list { display: grid; gap: 6px; }
+  .item { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; border-bottom: 1px solid rgba(255,255,255,.08); padding: 6px 0; min-width: 0; }
+  .item b { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; flex: 1 1 170px; min-width: 0; }
+  .item select { width: auto; padding: 5px 8px; font-size: 12px; }
+  .packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+  .packs label { display: flex; gap: 8px; align-items: center; font-size: 13px; padding: 6px 8px; border-radius: 10px; background: rgba(255,255,255,.04); }
+  .packs input { width: auto; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 8px; }
+  .pill.on { background: rgba(123,216,143,.2); color: var(--good); } .pill.soon { background: rgba(255,181,71,.2); color: var(--accent); } .pill.off { background: rgba(255,255,255,.1); color: var(--muted); }
+  .results { display: grid; gap: 4px; max-height: 260px; overflow-y: auto; }
+  .result { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 13px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .result > span { flex: 1 1 170px; min-width: 0; }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 12px); background: rgba(13,17,23,.94); border-top: 1px solid var(--line); }
+  .bar .row { max-width: 860px; margin: 0 auto; }
+  #saveStatus { font-size: 13px; color: var(--muted); } #saveStatus.err, .err { color: var(--danger); }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 14px; } .check input { width: auto; }
+</style>
+</head>
+<body>
+<main>
+  <div><h1>AR Duel <span>GM</span></h1><p>Game master settings. Changes reach players the next time they open the game or the Shop.</p></div>
+
+  <section class="card" id="login">
+    <label class="field">GM password<input id="password" type="password" autocomplete="current-password"></label>
+    <div class="row"><button class="btn primary" id="loginBtn" type="button">Open</button><span class="note" id="loginStatus"></span></div>
+  </section>
+
+  <div id="gm" hidden>
+    <div class="tabs row" id="tabs">
+      <button class="btn small" type="button" data-tab="ban" aria-pressed="true">Forbidden &amp; Limited</button>
+      <button class="btn small" type="button" data-tab="packs" aria-pressed="false">Packs on sale</button>
+      <button class="btn small" type="button" data-tab="events" aria-pressed="false">Limited events</button>
+    </div>
+
+    <section class="card" data-panel="ban" style="margin-top:16px">
+      <h2>Forbidden &amp; Limited list</h2>
+      <p>Forbidden cards can't be put in a deck. Limited: 1 copy per deck. Semi-Limited: 2. Players' decks that break the list can't be used to duel until they are fixed. Story duelists' decks are not affected.</p>
+      <div class="form">
+        <label class="field">List name<input id="banName" placeholder="e.g. TCG list, October 2026"></label>
+      </div>
+      <div class="row"><button class="btn" id="official" type="button">Load the latest official TCG list</button><button class="btn danger small" id="banClear" type="button">Clear the list</button><span class="note" id="banStatus"></span></div>
+      <div class="row"><label class="field" style="flex:1 1 220px">Add a card<input id="banFind" placeholder="Card name" autocomplete="off"></label><button class="btn" id="banFindBtn" type="button">Search</button></div>
+      <div class="results" id="banResults"></div>
+      <div class="row"><label class="field" style="flex:1 1 220px">Filter the list<input id="banFilter" placeholder="Type to filter" autocomplete="off"></label><span class="note" id="banCount"></span></div>
+      <div class="list" id="banList"></div>
+    </section>
+
+    <section class="card" data-panel="packs" hidden style="margin-top:16px">
+      <h2>Booster packs on sale</h2>
+      <p>Untick a pack to take it off sale in the Shop straight away (after you save). Starter decks given to new players are not affected.</p>
+      <div class="row"><label class="field" style="flex:1 1 220px">Find<input id="packFilter" placeholder="Pack name or code" autocomplete="off"></label><button class="btn small" id="allOn" type="button">All on sale</button><button class="btn small" id="allOff" type="button">None on sale</button></div>
+      <p id="packCount"></p>
+      <div class="packs" id="packList"></div>
+    </section>
+
+    <section class="card" data-panel="events" hidden style="margin-top:16px">
+      <h2>Limited pack events</h2>
+      <p>An event pack is sold only between its start and end time, then disappears from the Shop. Switch it off or press End now to stop sales at any time. A pack can be a real set (any set in the database, with its real rarities) or your own list of cards with the rarity you choose for each. Event packs cost coins; daily free packs can't be used on them.</p>
+      <div class="row"><button class="btn primary" id="newEvent" type="button">+ New event</button></div>
+      <div class="list" id="events" style="gap:14px"></div>
+    </section>
+  </div>
+</main>
+<div class="bar" id="bar" hidden><div class="row"><button class="btn primary" id="save" type="button">Save changes</button><span id="saveStatus"></span></div></div>
+<datalist id="setNames"></datalist>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (tag, props = {}, ...kids) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e; };
+const LIMITS = ["Forbidden", "Limited", "Semi-Limited"];
+const RARITIES = ["Common", "Rare", "Super Rare", "Ultra Rare", "Secret Rare", "Ultimate Rare", "Quarter Century Secret Rare", "Collector's Rare", "Ghost Rare", "Starlight Rare"];
+let password = "", cfg = null, packs = [], sets = [], dirty = false;
+
+async function call(action, body) {
+  const r = await fetch("api/gm.php?action=" + action, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password, ...body }) });
+  const j = await r.json().catch(() => ({ error: "The server sent an unexpected reply." }));
+  if (!r.ok || j.error) throw new Error(j.error || `Server error ${r.status}`);
+  return j;
+}
+async function ygo(params) {
+  const r = await fetch("api/ygo.php?" + new URLSearchParams(params)); const j = await r.json();
+  if (!r.ok || j.error) throw new Error(j.error || `Server error ${r.status}`);
+  return j;
+}
+const errText = e => e.message === "Failed to fetch" ? "No internet connection." : e.message;
+function changed() { dirty = true; $("#saveStatus").className = ""; $("#saveStatus").textContent = "Unsaved changes"; }
+addEventListener("beforeunload", e => { if (dirty) e.preventDefault(); });
+
+// ---------- Opening ----------
+async function open() {
+  password = $("#password").value; $("#loginStatus").textContent = "Opening…";
+  try {
+    cfg = await call("load");
+    cfg.banlist.cards = Array.isArray(cfg.banlist.cards) ? {} : cfg.banlist.cards;
+    [packs, sets] = await Promise.all([ygo({ action: "packs" }).then(j => j.packs), ygo({ action: "sets" }).then(j => j.sets)]);
+    $("#setNames").innerHTML = ""; for (const s of sets) $("#setNames").append(el("option", { value: `${s.name} (${s.code})` }));
+    try { sessionStorage.setItem("gmPass", password); } catch {}
+    $("#login").hidden = true; $("#gm").hidden = false; $("#bar").hidden = false;
+    renderBan(); renderPacks(); renderEvents();
+  } catch (e) { $("#loginStatus").textContent = errText(e); $("#loginStatus").className = "note err"; }
+}
+$("#loginBtn").addEventListener("click", open);
+$("#password").addEventListener("keydown", e => { if (e.key === "Enter") open(); });
+try { const p = sessionStorage.getItem("gmPass"); if (p) { $("#password").value = p; open(); } } catch {}
+for (const b of $("#tabs").children) b.addEventListener("click", () => {
+  for (const x of $("#tabs").children) x.setAttribute("aria-pressed", String(x === b));
+  for (const p of document.querySelectorAll("[data-panel]")) p.hidden = p.dataset.panel !== b.dataset.tab;
+});
+
+// ---------- Forbidden & Limited ----------
+function renderBan() {
+  $("#banName").value = cfg.banlist.name || "";
+  const all = Object.entries(cfg.banlist.cards), q = $("#banFilter").value.trim().toLowerCase();
+  $("#banCount").textContent = `${all.length} cards: ` + LIMITS.map((n, i) => `${all.filter(([, v]) => v === i).length} ${n}`).join(", ");
+  const box = $("#banList"); box.innerHTML = "";
+  for (const [name, v] of all.filter(([n]) => !q || n.toLowerCase().includes(q)).sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])).slice(0, 400)) {
+    const sel = el("select"); LIMITS.forEach((n, i) => sel.append(new Option(n, String(i)))); sel.value = String(v);
+    sel.onchange = () => { cfg.banlist.cards[name] = +sel.value; changed(); renderBan(); };
+    box.append(el("div", { className: "item" }, el("b", { textContent: name }), sel, el("button", { type: "button", className: "btn small", textContent: "Remove", onclick: () => { delete cfg.banlist.cards[name]; changed(); renderBan(); } })));
+  }
+  if (all.length > 400 && !q) box.append(el("p", { textContent: "Showing the first 400. Use the filter to find others." }));
+}
+$("#banName").addEventListener("input", () => { cfg.banlist.name = $("#banName").value; changed(); });
+$("#banFilter").addEventListener("input", renderBan);
+$("#official").addEventListener("click", async () => {
+  if (Object.keys(cfg.banlist.cards).length && !confirm("Replace the current list with the latest official TCG list?")) return;
+  $("#banStatus").textContent = "Loading…";
+  try {
+    const { cards } = await call("official");
+    cfg.banlist.cards = cards; cfg.banlist.name = `Official TCG list (loaded ${new Date().toLocaleDateString()})`;
+    $("#banStatus").textContent = `Loaded ${Object.keys(cards).length} cards. Press Save to put it in force.`; changed(); renderBan();
+  } catch (e) { $("#banStatus").textContent = errText(e); }
+});
+$("#banClear").addEventListener("click", () => { if (!confirm("Remove every card from the list?")) return; cfg.banlist.cards = {}; changed(); renderBan(); });
+async function findCards(q, box, actions) {
+  box.innerHTML = ""; if (q.length < 2) return;
+  try {
+    const { cards } = await ygo({ action: "search", q });
+    for (const c of cards.filter(c => !c.inText).slice(0, 25)) box.append(el("div", { className: "result" }, el("span", { textContent: `${c.name} · ${c.kind}` }), el("div", { className: "row" }, ...actions(c))));
+    if (!box.children.length) box.append(el("p", { textContent: "No card names match." }));
+  } catch (e) { box.append(el("p", { textContent: errText(e) })); }
+}
+const banSearch = () => findCards($("#banFind").value.trim(), $("#banResults"), c => LIMITS.map((n, i) => el("button", { type: "button", className: "btn small", textContent: n, onclick: () => { cfg.banlist.cards[c.name] = i; changed(); renderBan(); $("#banStatus").textContent = `${c.name}: ${n}`; } })));
+$("#banFindBtn").addEventListener("click", banSearch);
+$("#banFind").addEventListener("keydown", e => { if (e.key === "Enter") banSearch(); });
+
+// ---------- Packs on sale ----------
+function renderPacks() {
+  const q = $("#packFilter").value.trim().toLowerCase(), box = $("#packList"); box.innerHTML = "";
+  $("#packCount").textContent = `${packs.length - cfg.disabledPacks.length} of ${packs.length} packs on sale`;
+  for (const p of packs.filter(p => !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase() === q)) {
+    const cb = el("input", { type: "checkbox", checked: !cfg.disabledPacks.includes(p.code) });
+    cb.onchange = () => { cfg.disabledPacks = cfg.disabledPacks.filter(c => c !== p.code); if (!cb.checked) cfg.disabledPacks.push(p.code); changed(); renderPacks(); };
+    box.append(el("label", {}, cb, el("span", { textContent: `${p.name} (${p.code}, ${p.date.slice(0, 4)})` })));
+  }
+}
+$("#packFilter").addEventListener("input", renderPacks);
+$("#allOn").addEventListener("click", () => { cfg.disabledPacks = []; changed(); renderPacks(); });
+$("#allOff").addEventListener("click", () => { if (!confirm("Take every booster pack off sale?")) return; cfg.disabledPacks = packs.map(p => p.code); changed(); renderPacks(); });
+
+// ---------- Limited events ----------
+// datetime-local inputs use this phone's time zone; the server stores UTC
+const toLocal = iso => { const d = new Date(iso); return isNaN(d) ? "" : new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
+const fromLocal = v => v ? new Date(v).toISOString() : "";
+function state(ev) {
+  const now = Date.now(), s = Date.parse(ev.start), e = Date.parse(ev.end);
+  if (!ev.enabled) return ["off", "Switched off"];
+  if (e <= now) return ["off", "Ended"];
+  if (s > now) return ["soon", "Starts " + new Date(s).toLocaleString()];
+  return ["on", "On sale until " + new Date(e).toLocaleString()];
+}
+function renderEvents() {
+  const box = $("#events"); box.innerHTML = "";
+  if (!cfg.events.length) box.append(el("p", { textContent: "No events yet." }));
+  cfg.events.forEach((ev, k) => box.append(eventCard(ev, k)));
+}
+function eventCard(ev, k) {
+  const [cls, label] = state(ev), card = el("div", { className: "card" });
+  const field = (label, input, wide) => el("label", { className: "field" + (wide ? " wide" : "") }, label, input);
+  const title = el("h2", { textContent: ev.name || "New event" }), pill = el("span", { className: "pill " + cls, textContent: label });
+  // typing updates the event in place; only the header changes, so a search in progress keeps its results
+  const bind = (input, key, conv = v => v) => { input.addEventListener("input", () => { ev[key] = conv(input.value); changed(); title.textContent = ev.name || "New event"; const [c, l] = state(ev); pill.className = "pill " + c; pill.textContent = l; }); return input; };
+  card.append(el("div", { className: "row", style: "justify-content:space-between" }, title, pill));
+  const enabled = el("input", { type: "checkbox", checked: ev.enabled }); enabled.onchange = () => { ev.enabled = enabled.checked; changed(); renderEvents(); };
+  const form = el("div", { className: "form" },
+    field("Event name", bind(el("input", { value: ev.name, maxLength: 60 }), "name"), true),
+    field("Description (shown in the Shop)", bind(el("textarea", { value: ev.about, maxLength: 300 }), "about"), true),
+    field("Starts", bind(el("input", { type: "datetime-local", value: toLocal(ev.start) }), "start", fromLocal)),
+    field("Ends", bind(el("input", { type: "datetime-local", value: toLocal(ev.end) }), "end", fromLocal)),
+    field("Price (coins)", bind(el("input", { type: "number", min: 0, step: 10, value: ev.price }), "price", Number)),
+    field("Packs per player (0 = no limit)", bind(el("input", { type: "number", min: 0, value: ev.limit }), "limit", Number)),
+  );
+  card.append(form, el("label", { className: "check" }, enabled, "On sale (switch off to stop sales at once)"));
+  // what is in the pack
+  const real = el("input", { type: "radio", name: "src" + k, checked: !!ev.set }), custom = el("input", { type: "radio", name: "src" + k, checked: !ev.set });
+  real.onchange = () => { ev.set = ev.set || (sets[0]?.code ?? null); changed(); renderEvents(); };
+  custom.onchange = () => { ev.set = null; changed(); renderEvents(); };
+  card.append(el("div", { className: "row" }, el("label", { className: "check" }, real, "A real set"), el("label", { className: "check" }, custom, "My own card list")));
+  if (ev.set) {
+    const cur = sets.find(s => s.code === ev.set), inp = el("input", { value: cur ? `${cur.name} (${cur.code})` : ev.set, placeholder: "Type a set name", autocomplete: "off" });
+    inp.setAttribute("list", "setNames");
+    inp.onchange = () => { const m = inp.value.match(/\(([A-Z0-9-]+)\)\s*$/); if (m) { ev.set = m[1]; changed(); } renderEvents(); };
+    card.append(field("Set", inp, true));
+  } else {
+    const results = el("div", { className: "results" }), find = el("input", { placeholder: "Search a card to add", autocomplete: "off" });
+    const go = () => findCards(find.value.trim(), results, c => [el("button", { type: "button", className: "btn small", textContent: "Add", onclick: () => {
+      if (ev.cards.some(x => x.id === c.id)) return; const { inText, ...card } = c; ev.cards.push({ ...card, rarities: ["Common"] }); if (!ev.image) ev.image = c.id; changed(); renderEvents();
+    } })]);
+    find.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+    card.append(el("div", { className: "row" }, el("label", { className: "field", style: "flex:1 1 200px" }, "Add cards", find), el("button", { type: "button", className: "btn", textContent: "Search", onclick: go })), results);
+    const list = el("div", { className: "list" });
+    for (const c of ev.cards) {
+      const sel = el("select"); RARITIES.forEach(r => sel.append(new Option(r, r))); sel.value = c.rarities[0];
+      sel.onchange = () => { c.rarities = [sel.value]; changed(); };
+      const pic = el("button", { type: "button", className: "btn small", textContent: ev.image === c.id ? "Pack picture ✓" : "Use as picture", onclick: () => { ev.image = c.id; changed(); renderEvents(); } });
+      list.append(el("div", { className: "item" }, el("b", { textContent: c.name }), sel, el("div", { className: "row" }, pic, el("button", { type: "button", className: "btn small", textContent: "Remove", onclick: () => { ev.cards = ev.cards.filter(x => x !== c); changed(); renderEvents(); } }))));
+    }
+    card.append(el("p", { textContent: `${ev.cards.length} cards. Packs are made like real ones: Commons, a Rare and a foil slot, using the rarities you set (at least 5 cards).` }), list);
+  }
+  card.append(el("div", { className: "row" },
+    el("button", { type: "button", className: "btn small", textContent: "End now", onclick: () => { ev.end = new Date().toISOString(); if (Date.parse(ev.start) >= Date.parse(ev.end)) ev.start = new Date(Date.now() - 60000).toISOString(); changed(); renderEvents(); } }),
+    el("button", { type: "button", className: "btn small danger", textContent: "Delete event", onclick: () => { if (confirm(`Delete "${ev.name || "this event"}"?`)) { cfg.events.splice(k, 1); changed(); renderEvents(); } } })));
+  return card;
+}
+$("#newEvent").addEventListener("click", () => {
+  const start = new Date(); start.setMinutes(0, 0, 0); start.setHours(start.getHours() + 1);
+  const end = new Date(start); end.setDate(end.getDate() + 7);
+  cfg.events.unshift({ name: "", about: "", start: start.toISOString(), end: end.toISOString(), enabled: true, price: 200, limit: 0, set: null, image: null, cards: [] });
+  changed(); renderEvents();
+});
+
+// ---------- Saving ----------
+$("#save").addEventListener("click", async () => {
+  $("#saveStatus").className = ""; $("#saveStatus").textContent = "Saving…";
+  try {
+    const j = await call("save", { config: cfg });
+    cfg = j.config; cfg.banlist.cards = Array.isArray(cfg.banlist.cards) ? {} : cfg.banlist.cards;
+    dirty = false; $("#saveStatus").textContent = "Saved. Players get the changes the next time they open the game or the Shop.";
+    renderBan(); renderPacks(); renderEvents();
+  } catch (e) { $("#saveStatus").className = "err"; $("#saveStatus").textContent = errText(e); }
+});
+</script>
+</body>
+</html>

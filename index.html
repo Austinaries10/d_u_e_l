@@ -129,6 +129,12 @@
   .quote { font-size: 15px; line-height: 1.5; margin: 6px 0 10px; color: var(--text); }
   .code { font-size: 40px; font-weight: 700; letter-spacing: .18em; color: var(--accent); font-variant-numeric: tabular-nums; }
   #bannerNote { white-space: pre-line; max-width: 320px; margin: 0 auto 12px; }
+  .lim { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 6px; padding: 1px 5px; margin-left: 4px; vertical-align: 1px; }
+  .lim.l0 { background: #7a1d1d; color: #ffd0d0; } .lim.l1 { background: #7a4b12; color: #ffe2b8; } .lim.l2 { background: #6b6418; color: #fff6b8; }
+  .pack.event { border-color: rgba(255,181,71,.6); background: linear-gradient(160deg, rgba(255,181,71,.18), rgba(255,255,255,.03)); }
+  .pack.soon { opacity: .6; }
+  details.banlist summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+  details.banlist .cols { columns: 2 180px; font-size: 12px; color: var(--muted); margin-top: 8px; }
   h2.section { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; }
 </style>
 </head>
@@ -219,6 +225,7 @@
     <div class="row" style="justify-content:space-between"><h1 style="font-size:28px">My decks</h1><button class="btn small" id="decksDone" type="button">Done</button></div>
     <p class="note">Keep up to 10 decks. A deck can only use cards you own, up to 3 copies of each, and needs 20–60 cards to duel.</p>
     <div class="slots" id="deckSlots"></div>
+    <div id="banlist"></div>
     <div class="row"><button class="btn primary" id="newDeck" type="button">+ New deck</button><span class="note" id="slotStatus"></span></div>
   </div>
 </section>
@@ -1057,6 +1064,39 @@ const today = () => new Date().toLocaleDateString("en-CA");
 function topUp() { if (wallet.day !== today()) { wallet.day = today(); wallet.free = FREE_PACKS; saveWallet(); } }
 const deckCards = d => (d?.ids || []).map(id => coll[id]?.card).filter(Boolean);
 
+// ---------- Game master settings: Forbidden & Limited list, packs on sale, limited pack events (api/gm.php) ----------
+const gm = store.get("gm", { banlist: { name: "", cards: {} }, disabledPacks: [], events: [] });
+let clockSkew = 0; // server time minus this phone's time, so event times don't depend on the phone's clock
+const nowMs = () => Date.now() + clockSkew;
+async function loadGm() {
+  try {
+    const r = await fetch("api/gm.php?action=config"), j = await r.json();
+    if (!r.ok || j.error) return;
+    clockSkew = Date.parse(j.now) - Date.now();
+    Object.assign(gm, { banlist: j.banlist, disabledPacks: j.disabledPacks, events: j.events }); store.put("gm", gm);
+    if (!$("#shop").hidden) renderShop();
+    if (!$("#decks").hidden) renderSlots();
+    if (!$("#editor").hidden) renderDeck();
+  } catch {}
+}
+const LIMIT_NAME = ["Forbidden", "Limited", "Semi-Limited"];
+const limitOf = c => gm.banlist.cards?.[c.name] ?? 3; // copies allowed in a deck
+// What makes a deck not legal to duel with; empty when it is fine
+function deckProblems(cards) {
+  const out = [], count = new Map();
+  if (cards.length < 20 || cards.length > 60) out.push(`needs 20–60 cards (has ${cards.length})`);
+  for (const c of cards) count.set(c.name, (count.get(c.name) || 0) + 1);
+  for (const [name, n] of count) { const max = gm.banlist.cards?.[name] ?? 3; if (n > max) out.push(max ? `${name}: ${LIMIT_NAME[max]}, at most ${max}` : `${name} is Forbidden`); }
+  return out;
+}
+// Drop Forbidden cards and copies over the limit
+function legalize(ids) {
+  const seen = new Map();
+  return ids.filter(id => { const c = coll[id]?.card; if (!c) return false; const n = (seen.get(c.name) || 0) + 1; seen.set(c.name, n); return n <= limitOf(c); });
+}
+function limitBadge(c) { const n = limitOf(c); if (n >= 3) return null; const b = document.createElement("span"); b.className = "lim l" + n; b.textContent = n === 0 ? "Forbidden" : n === 1 ? "Limited" : "Semi-Limited"; return b; }
+function fmtLeft(ms) { const m = Math.max(1, Math.round(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60); return d ? `${d}d ${h}h` : h ? `${h}h ${m % 60}m` : `${m}m`; }
+
 // Rarities, lowest first; the number is the rank used for colours and glow
 const RARITY = { "Common": [0, "C"], "Short Print": [0, "SP"], "Super Short Print": [0, "SSP"], "Rare": [1, "R"], "Super Rare": [2, "SR"], "Ultra Rare": [3, "UR"],
   "Secret Rare": [4, "ScR"], "Ultimate Rare": [5, "UtR"], "Quarter Century Secret Rare": [6, "QCSR"], "Collector's Rare": [6, "CR"], "Ghost Rare": [7, "GR"],
@@ -1083,7 +1123,7 @@ async function giveStarter() {
     const { starters } = await api({ action: "packs" }), code = starters[Math.floor(Math.random() * starters.length)];
     const { set, cards } = await api({ action: "set", code });
     for (const c of cards) own(c, c.rarities[0]);
-    if (decks.length < MAX_DECKS) decks.push({ name: set.name, ids: cards.map(c => c.id) });
+    if (decks.length < MAX_DECKS) decks.push({ name: set.name, ids: legalize(cards.map(c => c.id)) });
     wallet.starter = set.name; saveColl(); saveDecks(); saveWallet();
     $("#status").className = ""; $("#status").textContent = `Welcome! You got ${set.name} (${cards.length} cards) to start with.`;
     renderHome();
@@ -1109,9 +1149,11 @@ function renderSlots() {
   if (!decks.length) box.append(Object.assign(document.createElement("p"), { className: "note", textContent: "No decks yet. Make a new one." }));
   decks.forEach((d, i) => {
     const el = document.createElement("div"); el.className = "slot";
-    const n = d.ids.length, ok = n >= 20 && n <= 60;
-    el.append(Object.assign(document.createElement("b"), { textContent: d.name }), Object.assign(document.createElement("small"), { textContent: `${n} card${n === 1 ? "" : "s"}` + (ok ? "" : " · needs 20–60 to duel") }));
+    const n = d.ids.length, problems = deckProblems(deckCards(d));
+    el.append(Object.assign(document.createElement("b"), { textContent: d.name }), Object.assign(document.createElement("small"), { textContent: `${n} card${n === 1 ? "" : "s"}` + (problems.length ? ` · not legal: ${problems.join("; ")}` : " · ready to duel") }));
     const row = document.createElement("div"); row.className = "row";
+    const over = legalize(d.ids).length < d.ids.length;
+    if (over) row.append(smallBtn("Remove banned copies", () => { d.ids = legalize(d.ids); saveDecks(); renderSlots(); }, "danger"));
     row.append(smallBtn("Edit", () => openEditor(i), "primary"), smallBtn("Rename", () => renameDeck(i)),
       smallBtn("Copy", () => {
         if (decks.length >= MAX_DECKS) return $("#slotStatus").textContent = `You can keep up to ${MAX_DECKS} decks.`;
@@ -1122,6 +1164,19 @@ function renderSlots() {
   });
   $("#newDeck").disabled = decks.length >= MAX_DECKS;
   $("#slotStatus").textContent = `${decks.length} of ${MAX_DECKS} decks`;
+  renderBanlist();
+}
+// The current Forbidden & Limited list, for players to read
+function renderBanlist() {
+  const box = $("#banlist"), cards = Object.entries(gm.banlist.cards || {}); box.innerHTML = "";
+  if (!cards.length) { box.append(note("No Forbidden & Limited list is in force.")); return; }
+  const d = el("details", { className: "banlist" }); d.append(el("summary", { textContent: `Forbidden & Limited list${gm.banlist.name ? ": " + gm.banlist.name : ""} (${cards.length} cards)` }));
+  for (const n of [0, 1, 2]) {
+    const list = cards.filter(([, v]) => v === n).map(([k]) => k); if (!list.length) continue;
+    d.append(el("h2", { className: "section", textContent: `${LIMIT_NAME[n]} (${n === 0 ? "not allowed" : `${n} per deck`})` }));
+    const c = el("div", { className: "cols" }); for (const name of list) c.append(el("div", { textContent: name })); d.append(c);
+  }
+  box.append(d);
 }
 function renameDeck(i) {
   const name = prompt("Deck name", decks[i].name)?.trim();
@@ -1139,6 +1194,7 @@ function cardRow(c, actions, rarity) {
   d.append(Object.assign(document.createElement("img"), { src: imgUrl(c, "small"), alt: "", loading: "lazy" }));
   const info = document.createElement("div"); info.style.minWidth = "0";
   const name = Object.assign(document.createElement("b"), { textContent: c.name }); if (rarity) name.append(rarBadge(rarity));
+  const lim = limitBadge(c); if (lim) name.append(lim);
   info.append(name, Object.assign(document.createElement("small"), { textContent: (c.kind === "monster" ? `${c.attribute} ${c.race || ""} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type) + (c.inText ? " · found in card text" : "") }));
   d.append(info);
   const row = document.createElement("div"); row.className = "row"; for (const a of actions) row.append(a); d.append(row);
@@ -1149,7 +1205,8 @@ const note = text => Object.assign(document.createElement("span"), { className: 
 function renderDeck() {
   const deck = decks[editing], cards = deckCards(deck);
   $("#edName").textContent = deck.name;
-  $("#deckCount").textContent = `${cards.length} card${cards.length === 1 ? "" : "s"}`;
+  const problems = deckProblems(cards);
+  $("#deckCount").textContent = `${cards.length} card${cards.length === 1 ? "" : "s"}` + (problems.length ? ` · not legal: ${problems.join("; ")}` : "");
   const groups = new Map(); for (const c of cards) { const g = groups.get(c.id) || { c, n: 0 }; g.n++; groups.set(c.id, g); }
   const list = $("#deckList"); list.innerHTML = "";
   if (!cards.length) list.append(Object.assign(document.createElement("p"), { className: "note", textContent: "This deck is empty. Add cards you own from below (20–60 cards)." }));
@@ -1160,7 +1217,9 @@ function renderDeck() {
 function addToDeck({ inText, ...c }) {
   const deck = decks[editing], inDeck = deck.ids.filter(id => id === c.id).length, owned = coll[c.id]?.n || 0;
   if (!owned) return $("#deckStatus").textContent = "You don't own this card yet. Open packs in the Shop to get it.";
-  if (inDeck >= Math.min(3, owned)) return $("#deckStatus").textContent = owned < 3 ? `You own ${owned} ${owned === 1 ? "copy" : "copies"} of ${c.name}.` : "A deck can hold up to 3 copies of a card.";
+  const max = limitOf(c);
+  if (max === 0) return $("#deckStatus").textContent = `${c.name} is Forbidden and can't be used in a deck.`;
+  if (inDeck >= Math.min(max, owned)) return $("#deckStatus").textContent = max < 3 && max <= owned ? `${c.name} is ${LIMIT_NAME[max]}: at most ${max} per deck.` : owned < 3 ? `You own ${owned} ${owned === 1 ? "copy" : "copies"} of ${c.name}.` : "A deck can hold up to 3 copies of a card.";
   if (deck.ids.length >= 60) return $("#deckStatus").textContent = "A deck can hold up to 60 cards.";
   deck.ids.push(c.id); saveDecks(); $("#deckStatus").textContent = `${c.name} added.`; renderDeck();
 }
@@ -1281,7 +1340,19 @@ async function renderShop() {
   }
   const q = $("#packFind").value.trim().toLowerCase();
   box.innerHTML = "";
-  for (const pk of packList.filter(p => !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase() === q)) {
+  // limited events first: on sale between their start and end, then gone
+  const bought = store.get("eventBuys", {});
+  for (const ev of gm.events.filter(e => Date.parse(e.end) > nowMs() && (!q || e.name.toLowerCase().includes(q)))) {
+    const soon = Date.parse(ev.start) > nowMs(), left = ev.limit ? ev.limit - (bought[ev.id] || 0) : Infinity;
+    const tile = el("div", { className: "pack event" + (soon ? " soon" : "") });
+    tile.append(el("img", { src: ev.set ? `api/ygo.php?action=img&set=${ev.set}` : ev.image ? imgUrl({ id: ev.image }, "small") : "", alt: "", loading: "lazy" }),
+      el("b", { textContent: ev.name }), el("small", { textContent: `Limited event · ${soon ? `starts in ${fmtLeft(Date.parse(ev.start) - nowMs())}` : `ends in ${fmtLeft(Date.parse(ev.end) - nowMs())}`}${ev.limit ? ` · ${Math.max(0, left)} of ${ev.limit} left for you` : ""}` }));
+    if (ev.about) tile.append(el("small", { textContent: ev.about }));
+    const row = el("div", { className: "row" });
+    const b = smallBtn(soon ? "Coming soon" : left <= 0 ? "Sold out" : ev.price ? `Buy ${ev.price}` : "Open free", () => openPack({ event: ev, name: ev.name }, "event"), "primary");
+    b.disabled = soon || left <= 0; row.append(b); tile.append(row); box.append(tile);
+  }
+  for (const pk of packList.filter(p => !gm.disabledPacks.includes(p.code) && (!q || p.name.toLowerCase().includes(q) || p.code.toLowerCase() === q))) {
     const el = document.createElement("div"); el.className = "pack";
     el.append(Object.assign(document.createElement("img"), { src: `api/ygo.php?action=img&set=${pk.code}`, alt: "", loading: "lazy" }),
       Object.assign(document.createElement("b"), { textContent: pk.name }), Object.assign(document.createElement("small"), { textContent: `${pk.code} · ${pk.date.slice(0, 4)}` }));
@@ -1294,13 +1365,22 @@ $("#packFind").addEventListener("input", renderShop);
 let lastPack = null;
 async function openPack(pk, pay) {
   topUp();
+  const ev = pk.event, price = ev ? ev.price : PACK_PRICE;
+  if (ev) {
+    const bought = store.get("eventBuys", {});
+    if (Date.parse(ev.start) > nowMs() || Date.parse(ev.end) <= nowMs()) { alert("This event pack is not on sale right now."); loadGm(); return; }
+    if (ev.limit && (bought[ev.id] || 0) >= ev.limit) { alert(`You have bought all ${ev.limit} of this event's packs.`); return; }
+  } else if (gm.disabledPacks.includes(pk.code)) { alert("This pack is not on sale right now."); return; }
   if (pay === "free" && wallet.free < 1) pay = "coins";
-  if (pay === "coins" && wallet.coins < PACK_PRICE) { alert(`You need ${PACK_PRICE} coins. Finish duels to earn more, or come back tomorrow for free packs.`); return; }
-  let data = setCache.get(pk.code);
-  try { if (!data) { data = await api({ action: "set", code: pk.code }); setCache.set(pk.code, data); } } catch (e) { alert(errText(e)); return; }
+  if (pay !== "free" && wallet.coins < price) { alert(`You need ${price} coins. Win duels in Story or online to earn more, or come back tomorrow for free packs.`); return; }
+  // the server checks again that the pack is on sale before handing out its cards
+  const key = ev ? "ev:" + ev.id : pk.code;
+  let data = setCache.get(key);
+  try { if (!data) { data = await api(ev ? { action: "set", event: ev.id } : { action: "set", code: pk.code }); setCache.set(key, data); } } catch (e) { alert(errText(e)); loadGm(); return; }
   const pulls = makePack(data.set, data.cards);
   if (!pulls.length) { alert("This pack has no cards in the database yet."); return; }
-  if (pay === "free") wallet.free--; else wallet.coins -= PACK_PRICE;
+  if (pay === "free") wallet.free--; else wallet.coins -= price;
+  if (ev) { const bought = store.get("eventBuys", {}); bought[ev.id] = (bought[ev.id] || 0) + 1; store.put("eventBuys", bought); }
   for (const p of pulls) own(p.card, p.r);
   saveColl(); saveWallet(); lastPack = pk;
   // show them face down, best last
@@ -1315,11 +1395,15 @@ async function openPack(pk, pay) {
   }
   $("#opening").hidden = false; renderOpenAgain(); renderShop();
 }
-function renderOpenAgain() { $("#openAgain").textContent = wallet.free > 0 ? "Open another (free)" : `Open another (${PACK_PRICE} coins)`; }
+function renderOpenAgain() {
+  const ev = lastPack?.event;
+  $("#openAgain").textContent = ev ? (ev.price ? `Open another (${ev.price} coins)` : "Open another") : wallet.free > 0 ? "Open another (free)" : `Open another (${PACK_PRICE} coins)`;
+}
 $("#revealAll").addEventListener("click", () => { for (const b of $("#pulls").children) b.classList.add("open"); });
-$("#openAgain").addEventListener("click", () => { $("#opening").hidden = true; openPack(lastPack, wallet.free > 0 ? "free" : "coins"); });
+$("#openAgain").addEventListener("click", () => { $("#opening").hidden = true; openPack(lastPack, lastPack.event ? "event" : wallet.free > 0 ? "free" : "coins"); });
 $("#openDone").addEventListener("click", () => { $("#opening").hidden = true; });
-$("#openShop").addEventListener("click", () => { show("shop"); renderShop(); });
+$("#openShop").addEventListener("click", () => { show("shop"); renderShop(); loadGm(); });
+setInterval(() => { if (!$("#shop").hidden && $("#opening").hidden) renderShop(); }, 60000); // keep event countdowns current
 $("#shopDone").addEventListener("click", () => { show("start"); renderHome(); });
 
 // ---------- Story: duelists around Malaysia, each with an ace card (王牌) you can win ----------
@@ -1415,7 +1499,8 @@ function openSetup(kind, ch = null) {
 }
 function chosenDeck() {
   const i = $("#myDeck").value, cards = i === "" ? [] : deckCards(decks[+i]);
-  if (cards.length < 20 || cards.length > 60) { $("#setupStatus").className = "note err"; $("#setupStatus").textContent = "Your deck needs 20–60 cards. Build one in My decks."; return null; }
+  const problems = deckProblems(cards);
+  if (problems.length) { $("#setupStatus").className = "note err"; $("#setupStatus").textContent = `This deck is not legal: ${problems.join("; ")}. Fix it in My decks.`; return null; }
   store.put("myDeck", +i);
   return shuffle(cards.map(c => ({ ...c })));
 }
@@ -1427,7 +1512,7 @@ async function beginAI(view) {
     else {
       const [type, id] = $("#oppDeck").value.split(":");
       if (type === "npc") { const ch = STORY.find(c => c.id === id); opp = await npcDeck(ch); vs = { kind: "ai", name: ch.name, npc: ch.id }; }
-      else { opp = deckCards(decks[+id]); vs = { kind: "ai", name: "Computer" }; if (opp.length < 20) { $("#setupStatus").textContent = "That deck needs at least 20 cards."; return; } }
+      else { opp = deckCards(decks[+id]); vs = { kind: "ai", name: "Computer" }; if (opp.length < 20 || opp.length > 60) { $("#setupStatus").textContent = "The opponent's deck needs 20–60 cards."; return; } }
     }
   } catch (e) { $("#setupStatus").textContent = errText(e); return; }
   const first = Math.random() < 0.5 ? 0 : 1;
@@ -1748,6 +1833,7 @@ loadModels().then(() => renderAll());
 updatePiles();
 renderHome();
 giveStarter();
+loadGm();
 if (net.room) net.open(net.room); // back into an online duel after the page reloads
 if (new URLSearchParams(location.search).has("debug")) window.duel = { S, act, me, ui, net, STORY, wallet, coll }; // for testing
 </script>

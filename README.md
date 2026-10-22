@@ -31,6 +31,12 @@ Live: https://smarteyes.cck8.my
 - **Scan real cards**: Claude Haiku (`api/card.php`) reads a card held up to the camera and it is matched to the database for its artwork
 - **Own models**: attach a `.glb` model to any card name and that card shows it
 
+## Game master (GM)
+`gm.html` (not linked from the game) is the GM page. Its password is `'gm_password'` in `server/config.php` on the hosting (see `server/config.example.php`). Settings are saved in `server/data/gm.json`, which is blocked from the web and never touched by deploys. Players get changes the next time they open the game or the Shop.
+- **Forbidden & Limited list**: load the latest official TCG list from YGOPRODeck with one button, then add, change or remove cards. Forbidden cards can't go in a deck; Limited allows 1 copy, Semi-Limited 2. A deck that breaks the list can't be used to duel until it is fixed; My decks shows why and has a **Remove banned copies** button. New players' starter decks follow the list. Story duelists' decks are not affected
+- **Packs on sale**: take any booster pack off sale (or put it back) at any time
+- **Limited pack events**: a pack sold only between a start and end time, with a name, description, price in coins and an optional limit per player. The pack is either a real set (any set in the database, with its real rarities) or the GM's own card list with a rarity for each card. Switch an event off or press **End now** to stop sales at once; after its end time it disappears from the Shop. The server refuses to hand out the cards of a pack that is not on sale
+
 ## Card data
 `api/ygo.php` fetches card data, set lists and images from the YGOPRODeck API and caches them in `server/cache` (blocked from the web, not in git, not touched by deploys), so each image is downloaded only once.
 
