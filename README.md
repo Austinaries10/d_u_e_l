@@ -1,24 +1,33 @@
 # AR Duel (SmartEyes)
 
-A Yu-Gi-Oh! style card duel in AR for the phone browser: the duel board is placed on a real table (or shown in a 3D preview) and played with virtual decks of real cards.
+A Yu-Gi-Oh! style card duel in AR for the phone browser: the duel board is placed on a real table (or shown in a 3D preview) and played with virtual decks of real cards, against story duelists, the computer, or a friend online.
 
 Live: https://smarteyes.cck8.my
 
+## Playing
+- **Story**: eight duelists around Malaysia, from Danial in Kampung Baru to the Shadow Duelist at the Petronas Twin Towers, each with a themed deck and an ace card (王牌): Gaia The Fierce Knight, Dark Magician, Cyber Dragon, Levia-Dragon - Daedalus, Infernal Flame Emperor, Red-Eyes Black Dragon, Blue-Eyes White Dragon and Obelisk the Tormentor. The first win gives the ace and coins (150 up to 800) and unlocks the next duelist; rematches pay a third of the coins with a 1 in 4 chance of another copy of the ace. Duelists and decks are in `STORY` and `NPC_DECKS` in `index.html`
+- **Practice**: your deck against the computer, using a story duelist's deck (once you've met them) or one of your own decks. No rewards
+- **Online duel**: one player creates a room and shares the 5-letter code, the other joins. Both phones post their moves to `api/room.php` and poll for the other's once a second; rooms are files in `server/cache/rooms` and expire after a day. Reloading the page rebuilds the duel from the room's moves. The winner gets 100 coins, the loser 30
+- **The computer** plays known spells when they help, Normal Summons its best monster (tributing when worth it), sets its traps, attacks only when it wins the battle, and answers your attacks with its traps
+
+## Rules the game applies
+- One Normal Summon or Set per turn; level 5–6 monsters need 1 tribute, level 7+ need 2, the Egyptian gods 3. No attacks on the first turn of the duel
+- Battles follow the standard ATK/DEF rules. When you are attacked and have a face-down trap, the game asks whether to activate it
+- These effects happen by themselves: Pot of Greed, Raigeki, Dark Hole, Fissure, Hinotama, Sparks, Dian Keto the Cure Master, Monster Reborn (brings back the strongest monster in either graveyard), Harpie's Feather Duster, Heavy Storm, and the traps Mirror Force, Magic Cylinder, Negate Attack, Waboku and Sakuretsu Armor. Other cards are played by hand: activate them, then use Life points or Send to graveyard (`SPELLS` and `TRAPS` in `index.html`)
+
 ## Collecting
 - **Starter deck**: a new player gets one of the real starter decks (Yugi, Kaiba, Joey or Pegasus) at random, as their first deck
-- **Packs**: 3 free packs every day (reset at midnight, phone time), and more in the **Shop** for 100 coins each. Each finished duel pays 100 coins; a new player starts with 500
+- **Packs**: 3 free packs every day (reset at midnight, phone time), and more in the **Shop** for 100 coins each. Coins come from Story and online duels; a new player starts with 500
 - **Real packs**: the Shop sells about 140 real booster sets (`PACKS` in `api/ygo.php`). Each card comes at its real rarity in that set. A pack has 9 cards: 7 Commons, a Rare (or Super Rare in newer sets) and a foil slot. Older sets (before 2008) have 8 Commons and one Rare-or-better. All-foil sets (Battles of Legend and similar) have 5 cards. Foil odds (`FOIL_ODDS` in `index.html`): Ultra Rare about 1 in 6, Secret Rare 1 in 12, Quarter Century and Ultimate 1 in 24, Ghost 1 in 144, Starlight and Platinum Secret 1 in 576, otherwise Super Rare
 - Cards, decks and coins are kept on the phone (localStorage). Clearing the browser's site data resets them, and they can be changed by someone who knows how. Accounts on the server are needed before coins can be sold for real money
 
 ## Decks
 - Up to 10 decks: create, rename, copy, delete
-- A deck uses only cards you own (up to 3 copies, and no more than you own) and needs 20–60 cards to duel. Each player picks a deck on the home screen
+- A deck uses only cards you own (up to 3 copies, and no more than you own) and needs 20–60 cards to duel. You pick your deck before each duel
 - **Search** your own cards, or all 14,000+ cards in the database. The words are matched in card names and in card text (monsters, spells and traps); name matches come first, and text matches are marked "found in card text". Filter by kind, attribute, type (Dragon, Spellcaster, Quick-Play…), level and archetype. Sort A–Z, by card type (monsters, spells, traps), ATK, DEF or level
 
-## Duel
-- New duel shuffles both decks and deals 5 cards each; each turn the next player draws one (running out of cards loses). A pass screen hides the hand until the next player taps
+## Board
 - **Board**: real card-size zones (5 monster and 5 spell/trap per player, deck pile that shrinks as you draw, graveyard). Cards show their real images; a summoned monster's artwork rises above its zone as a glowing hologram
-- **Battles** follow the standard ATK/DEF rules; direct attacks, positions, flipping, graveyard and life point changes for card effects are included
 - **Scan real cards**: Claude Haiku (`api/card.php`) reads a card held up to the camera and it is matched to the database for its artwork
 - **Own models**: attach a `.glb` model to any card name and that card shows it
 
