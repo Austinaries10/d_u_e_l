@@ -34,6 +34,7 @@
   .dot.on { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
   .btn { font: inherit; font-size: 13px; color: var(--text); background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  a.btn { text-decoration: none; display: inline-block; }
   .btn.primary { background: var(--accent); color: #241703; border-color: transparent; font-weight: 600; font-size: 16px; padding: 14px 26px; }
 
   #help { position: fixed; z-index: 7; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 60px); width: min(340px, calc(100% - 24px)); max-height: calc(100% - 120px); overflow-y: auto; background: rgba(16, 22, 28, 0.9); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: 13px; line-height: 1.5; }
@@ -108,6 +109,7 @@
     <div class="row">
       <button class="btn primary" id="go" type="button">Start camera</button>
       <button class="btn" id="mouseMode" type="button">Try without camera</button>
+      <a class="btn" href="ar.html">Play AR Hunt</a>
     </div>
     <div id="status">Tip: the back camera feels like smart glasses. Hold the phone and reach your hand out in front of it, palm facing the camera.</div>
   </div>
@@ -157,13 +159,14 @@ const APP = {
   camera: { name: "Camera", glyph: "◉", desc: "Photo & video" },
   lens: { name: "Lens", glyph: "◎", desc: "What is this?" },
   translate: { name: "Translate", glyph: "文", desc: "Point at text" },
+  hunt: { name: "AR Hunt", glyph: "◈", desc: "Catch & collect" },
   more: { name: "More", glyph: "⋯", desc: "More apps" },
   music: { name: "Music", glyph: "♪", desc: "Gesture player", plan: "Show 1 to play or pause, 2 for the next track, 3 for the previous one." },
   navigate: { name: "Navigate", glyph: "➤", desc: "AR directions", plan: "Turn-by-turn arrows over the camera view, using GPS and the compass." },
   gallery: { name: "Gallery", glyph: "▦", desc: "Photos & videos" },
   back: { name: "Back", glyph: "←", desc: "First page" },
 };
-const MENU_PAGES = [["notepad", "camera", "lens", "translate", "more"], ["music", "navigate", "gallery", null, "back"]];
+const MENU_PAGES = [["hunt", "camera", "lens", "notepad", "more"], ["translate", "gallery", "music", "navigate", "back"]];
 let notepad = null, infoPanel = null;
 
 const INK = ["#1b2430", "#d6452f", "#2364c9"];
@@ -255,6 +258,7 @@ function closeMenu() { state.menuOpen = false; }
 function goHome() { state.mode = "home"; state.info = null; state.controlsHidden = false; }
 function openApp(id) {
   if (id === "more") { state.menuPage = 1; return; }
+  if (id === "hunt") { location.href = "ar.html"; return; }
   if (id === "back") { state.menuPage = 0; return; }
   state.menuOpen = false; state.controlsHidden = false;
   ai = { busy: false, mode: "", title: "", text: "", error: "", shown: false, lang: "" };

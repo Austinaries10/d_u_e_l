@@ -16,7 +16,16 @@ Live: https://smarteyes.cck8.my
 - **Camera**: Photo (2 second timer), Video start/stop, Gallery. Kept on the phone (browser storage); "Save to phone" in the gallery copies a file to Photos/Downloads
 - **Lens**: aim at something, "What is this?" asks the AI
 - **Translate**: aim at text, then English, Malay or Chinese
+- **AR Hunt** (`ar.html`): a Pokémon Go-style collecting game, played by touch. See below
 - Music and Navigate are placeholders for now
+
+## AR Hunt
+- **Theme packs by location**: GPS (reverse-geocoded with BigDataCloud's free client API, with a built-in fallback) picks Malaysia, Thailand, Singapore, Indonesia or a Treasure pack. The pack can also be chosen by hand
+- **3D objects** are built in code with Three.js (PBR materials, environment lighting, soft shadows): durian, rambutan, ketupat, teh tarik, bunga raya, wau bulan, Petronas Twin Towers, Kenyalang hornbill, tuk-tuk, golden chedi, elephant, kaya toast, orchid, Marina Bay Sands, satay, gamelan gong, wayang kulit, Komodo dragon and treasure items
+- **Two modes**: on phones with WebXR (Android Chrome with ARCore) objects stand on the real floor; elsewhere they appear in the camera view and you turn the phone to look around (radar and an arrow point to them)
+- **Catching**: tap an object to throw a sepak takraw ball. Rarer objects escape more often; legendary ones move. Every item has a cultural fact. Points and levels are saved on the phone
+- **My objects**: import your own `.glb` models; they join the hunt or can be placed in front of you. Stored on the phone (IndexedDB)
+- **Photos** (camera mode) are saved to the AirHand gallery
 
 ## AI setup (Lens, Translate, handwriting)
 `api/lens.php` calls Claude Haiku (`claude-haiku-5-5`) with the Anthropic PHP SDK. The key never goes to the browser.
