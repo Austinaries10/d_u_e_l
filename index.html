@@ -46,6 +46,7 @@
   #radar { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 130px); width: 92px; height: 92px; }
   #arrow { position: absolute; width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-bottom: 26px solid var(--accent); filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); transform-origin: 50% 60%; }
   #hint { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); text-align: center; font-size: 14px; max-width: min(86%, 420px); }
+  #swipe { position: absolute; left: 0; right: 0; bottom: 0; height: 48%; touch-action: none; }
   #toast { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 74px); transform: translateX(-50%); transition: opacity .25s; opacity: 0; white-space: nowrap; }
   #toast.show { opacity: 1; }
 
@@ -113,6 +114,7 @@
   <div class="pill" id="toast"></div>
   <div class="pill" id="hint" hidden></div>
   <div id="arrow" hidden></div>
+  <div id="swipe" class="ui" aria-label="Swipe the ball up to throw it"></div>
   <canvas id="radar" width="184" height="184" hidden></canvas>
   <div id="catchCard" class="ui" hidden>
     <div class="tag" id="ccTag">Caught</div>
@@ -175,10 +177,10 @@
 <section id="start">
   <div class="intro">
     <h1>AR <span>Hunt</span></h1>
-    <p>Things from where you are appear around you in the camera: the food, animals and landmarks of your state. Find them, tap to throw a sepak takraw ball, and collect them all. Visit real landmarks to collect their chop.</p>
+    <p>Things from where you are appear around you in the camera: the food, animals and landmarks of your state. Find them, flick a sepak takraw ball at them, and collect them all. Visit real landmarks to collect their chop.</p>
     <ul>
       <li><b>Look around</b>Turn your phone. The radar shows where things are</li>
-      <li><b>Tap</b>Throw the ball at an object to catch it</li>
+      <li><b>Swipe</b>Flick the ball toward an object. Faster goes further; it can miss</li>
       <li><b>Collect</b>Every item has a story. Rare ones run away</li>
       <li><b>Chops</b>Stand at a real landmark to make it appear and get its chop</li>
     </ul>
@@ -873,6 +875,23 @@ const LANDMARKS = [
   ["lm-timpohon", "Timpohon Gate", "Kinabalu Park, Sabah", 6.029704, 116.547065, 500, "kinabalu", 3, "The start of the Mount Kinabalu summit trail, in Malaysia's first UNESCO World Heritage Site."],
   ["lm-sampohtong", "Sam Poh Tong Temple", "Gunung Rapat, Ipoh", 4.563738, 101.115416, 500, "templeCave", 3, "A Buddhist temple built inside a limestone cave."],
 ];
+// Famous spots (coordinates from OpenStreetMap): here their items turn up far more often.
+// [name, latitude, longitude, radius in metres, item ids]
+const HOTSPOTS = [
+  ["Anjung Gurney, Gurney Drive", 5.439811, 100.309129, 300, ["charKwayTeow", "asamLaksa"]],
+  ["Air Itam Market", 5.401216, 100.277882, 250, ["asamLaksa"]],
+  ["Jonker Street", 2.196365, 102.246889, 300, ["trishawMelaka"]],
+  ["Jalan Alor", 3.145547, 101.708490, 250, ["satay", "tehTarik"]],
+  ["Kampung Baru", 3.161270, 101.706798, 500, ["nasiLemak"]],
+  ["Medan Satay Kajang", 2.994272, 101.785299, 400, ["satay"]],
+  ["Ipoh Old Town", 4.594798, 101.078070, 600, ["whiteCoffee"]],
+  ["Siti Khadijah Market", 6.130080, 102.239248, 250, ["nasiKerabu"]],
+  ["Kuching Waterfront", 1.559184, 110.346793, 500, ["kekLapis", "sarawakLaksa", "cat"]],
+  ["Semenggoh Nature Reserve", 1.401938, 110.314437, 1500, ["orangutan", "hornbill"]],
+  ["Sepilok Orangutan Centre", 5.864972, 117.948781, 1000, ["orangutan"]],
+  ["Rafflesia Information Centre", 5.777292, 116.343549, 1000, ["rafflesia"]],
+  ["Rantau Abang turtle beach", 4.870347, 103.390458, 2000, ["turtle"]],
+];
 const ITEMS = {};
 // opts.needs: { itemId: count } owned before it can appear. opts.limit: how many one person can own.
 for (const [id, name, local, rarity, h, fact, where, opts = {}] of ITEM_LIST) ITEMS[id] = { id, name, local, rarity, h, fact, where: where.split(","), needs: opts.needs, limit: opts.limit, build: MODELS[id] };
@@ -966,14 +985,21 @@ let area = "MY";          // where the player is (a key of AREAS)
 const live = [];          // spawned objects: { item, obj, holder, angle, dist, phase, busy }
 const flights = [];       // balls in the air
 const bursts = [];        // catch sparkles
-const MAX_LIVE = 5;
+// Wild things are kept rare so each one feels special: a few at a time, spaced out, more when you walk
+const WILD_MAX = 2, WILD_MAX_HOT = 3, WILD_TTL = 180, WILD_WALK = 150;
+const wild = [];          // wild things anchored to a real spot near you
+let wildSeq = 0, wildNextAt = 0, wildFrom = null, lastHot = null;
 const viewPos = new THREE.Vector3();
 
 const owned = id => save.get().caught[id] || 0;
 const unlocked = it => !it.needs || Object.entries(it.needs).every(([id, n]) => owned(id) >= n);
 const available = it => unlocked(it) && (!it.limit || owned(it.id) < it.limit);
 // Things from this state count most, then the country, then the everyday things found everywhere
-function pickItem() {
+function pickItem(hot) {
+  if (hot && Math.random() < 0.7) {
+    const local = hot[4].map(id => ITEMS[id]).filter(it => it && available(it));
+    if (local.length) return local[Math.floor(Math.random() * local.length)];
+  }
   const pool = [], country = AREAS[area].country;
   for (const it of Object.values(ITEMS)) {
     if (!available(it)) continue;
@@ -1025,25 +1051,102 @@ function takraw() {
   for (const [x, y, z] of [[0, 0, 0], [Math.PI / 2, 0, 0], [0, Math.PI / 2, 0], [Math.PI / 4, Math.PI / 4, 0], [-Math.PI / 4, Math.PI / 4, 0], [0, Math.PI / 4, Math.PI / 2]]) { const r = new THREE.Mesh(ring, rattan); r.rotation.set(x, y, z); r.castShadow = true; g.add(r); }
   return g;
 }
-function throwAt(e) {
-  if (e.busy) return;
-  e.busy = true;
-  const ball = takraw();
-  const start = new THREE.Vector3(0, -0.25, -0.35).applyQuaternion(camera.quaternion).add(viewPos);
-  const end = e.holder.position.clone().add(new THREE.Vector3(0, e.item.h * 0.5, 0));
-  ball.position.copy(start); scene.add(ball);
-  flights.push({ ball, start, end, t: 0, dur: Math.min(1.3, 0.55 + start.distanceTo(end) * 0.05), e });
+// Swipe to throw: the ball's speed comes from how fast you flick, its direction from the swipe angle,
+// and a curved swipe adds spin. It flies under gravity and can miss.
+const GRAVITY = 5;                 // m/s², gentler than real so a strong flick reaches far landmarks
+const LAUNCH_UP = 0.32;            // radians above where the phone points
+const HOLD_AT = new THREE.Vector3(0, -0.28, -0.8); // where the ball sits, in front of the camera
+const BALL_SCALE = 0.6;
+const heldBall = takraw(); heldBall.scale.setScalar(BALL_SCALE); heldBall.visible = false; scene.add(heldBall);
+let ballReadyAt = 0;
+const swipe = { active: false, pts: [] };
+const swipeEl = $("#swipe");
+const canThrow = () => mode && !(mode === "xr" && !floorFound) && $("#catchCard").hidden && !flights.length && performance.now() > ballReadyAt;
+swipeEl.addEventListener("pointerdown", e => {
+  if (!canThrow()) return;
+  swipe.active = true; swipe.pts = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+  try { swipeEl.setPointerCapture(e.pointerId); } catch {}
+});
+swipeEl.addEventListener("pointermove", e => {
+  if (!swipe.active) return;
+  swipe.pts.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+  if (swipe.pts.length > 60) swipe.pts.shift();
+});
+const endSwipe = () => { if (!swipe.active) return; swipe.active = false; launch(swipe.pts); };
+swipeEl.addEventListener("pointerup", endSwipe);
+swipeEl.addEventListener("pointercancel", () => { swipe.active = false; });
+function launch(pts) {
+  if (pts.length < 2) return toast("Swipe the ball up toward an object");
+  const last = pts[pts.length - 1], first = pts.find(q => q.t >= last.t - 120) || pts[0];
+  const dt = Math.max(16, last.t - first.t) / 1000;
+  const vx = (last.x - first.x) / dt, vy = (last.y - first.y) / dt;
+  if (-vy < 250) return toast("Flick upward to throw the ball");
+  // speed: screen heights per second -> metres per second
+  const flick = Math.hypot(vx, vy) / innerHeight, speed = Math.min(30, Math.max(3, 1.5 + flick * 4));
+  const side = Math.max(-0.9, Math.min(0.9, Math.atan2(vx, -vy)));
+  // spin from how much the swipe bends away from a straight line
+  const a = pts[0], dx = last.x - a.x, dy = last.y - a.y, len = Math.hypot(dx, dy) || 1;
+  let bend = 0; for (const q of pts) { const dev = ((q.x - a.x) * dy - (q.y - a.y) * dx) / len; if (Math.abs(dev) > Math.abs(bend)) bend = dev; }
+  const curve = Math.max(-0.5, Math.min(0.5, bend / len));
+  const dir = new THREE.Vector3(Math.sin(side) * Math.cos(LAUNCH_UP), Math.sin(LAUNCH_UP), -Math.cos(side) * Math.cos(LAUNCH_UP)).applyQuaternion(camera.quaternion).normalize();
+  const ball = takraw(); ball.scale.setScalar(BALL_SCALE); ball.position.copy(heldBall.position); scene.add(ball);
+  heldBall.visible = false;
+  flights.push({ ball, vel: dir.multiplyScalar(speed), curve, t: 0, bounced: false });
 }
-function resolveThrow(f) {
-  const e = f.e, rar = RARITY[e.item.rarity];
-  if (Math.random() < rar.chance) {
-    caught(e, f.ball);
-  } else {
-    scene.remove(f.ball);
-    e.busy = false; e.hop = 0.6;
-    if (e.item.rarity === "legendary" || e.item.rarity === "epic") e.angle += (Math.random() < 0.5 ? -1 : 1) * 0.5;
-    toast(`${e.item.name} broke free! Try again`);
+// Where an object can be hit, and how big that target is
+function target(e) { return { c: e.holder.position.clone().add(new THREE.Vector3(0, e.item.h * 0.5, 0)), r: Math.max(0.3, e.item.h * 0.55) }; }
+function stepFlight(f, dt) {
+  const steps = Math.ceil(f.vel.length() * dt / 0.08); // small steps so a fast ball cannot pass through
+  for (let i = 0; i < steps; i++) {
+    const h = dt / steps;
+    if (f.curve) { const flat = new THREE.Vector3(f.vel.x, 0, f.vel.z), sideways = new THREE.Vector3(-flat.z, 0, flat.x).normalize(); f.vel.addScaledVector(sideways, f.curve * 14 * h); }
+    f.vel.y -= GRAVITY * h;
+    f.ball.position.addScaledVector(f.vel, h);
+    for (const e of live) {
+      if (e.busy || e.catching) continue;
+      const tg = target(e), dist = f.ball.position.distanceTo(tg.c);
+      if (dist < tg.r + 0.08) return hit(f, e, 1 - Math.min(1, dist / tg.r));
+    }
+    if (f.ball.position.y < floorY + 0.08 && f.vel.y < 0) {
+      if (f.bounced) return miss(f);
+      f.bounced = true; f.vel.y *= -0.45; f.vel.x *= 0.6; f.vel.z *= 0.6; f.ball.position.y = floorY + 0.08;
+    }
   }
+  f.ball.rotation.x += dt * 14; f.ball.rotation.y += dt * 9 + f.curve * dt * 30;
+  if ((f.t += dt) > 4) miss(f);
+}
+function doneFlight(f) { flights.splice(flights.indexOf(f), 1); ballReadyAt = performance.now() + 500; }
+function miss(f) {
+  doneFlight(f); scene.remove(f.ball);
+  toast("Missed! Swipe again");
+}
+// A hit: the closer to the centre, the better the chance to catch
+function hit(f, e, accuracy) {
+  doneFlight(f);
+  e.busy = true;
+  const praise = accuracy > 0.75 ? "Excellent!" : accuracy > 0.45 ? "Great!" : "Nice!";
+  toast(praise);
+  setTimeout(() => {
+    const chance = Math.min(0.98, RARITY[e.item.rarity].chance * (0.7 + 0.6 * accuracy));
+    if (Math.random() < chance) caught(e, f.ball);
+    else {
+      scene.remove(f.ball);
+      e.busy = false; e.hop = 0.6;
+      if (e.item.rarity === "legendary" || e.item.rarity === "epic") e.angle += (Math.random() < 0.5 ? -1 : 1) * 0.5;
+      toast(`${e.item.name} broke free! Aim for the middle`);
+    }
+  }, 350);
+}
+// The ball waits in front of the camera and follows your finger while you swipe
+function updateHeldBall() {
+  heldBall.visible = !!mode && canThrow();
+  if (!heldBall.visible) return;
+  if (swipe.active && swipe.pts.length) {
+    const q = swipe.pts[swipe.pts.length - 1];
+    ray.setFromCamera(new THREE.Vector2(q.x / innerWidth * 2 - 1, -(q.y / innerHeight) * 2 + 1), camera);
+    heldBall.position.copy(ray.ray.origin).addScaledVector(ray.ray.direction, 0.8);
+  } else heldBall.position.copy(HOLD_AT).applyQuaternion(camera.quaternion).add(camera.getWorldPosition(new THREE.Vector3()));
+  heldBall.rotation.y += 0.01;
 }
 function caught(e, ball) {
   e.catching = { t: 0, ball };
@@ -1051,6 +1154,7 @@ function caught(e, ball) {
 }
 function finishCatch(e) {
   scene.remove(e.catching.ball); removeEntry(e);
+  if (e.item.wild) { wild.splice(wild.indexOf(e.item), 1); e = { ...e, item: e.item.base }; } // counts as the item itself
   const s = save.get(), first = !s.caught[e.item.id], pts = RARITY[e.item.rarity].points * (first ? 2 : 1);
   s.caught[e.item.id] = (s.caught[e.item.id] || 0) + 1; s.xp += pts;
   const today = new Date().toISOString().slice(0, 10);
@@ -1067,7 +1171,6 @@ function finishCatch(e) {
   // items that just became possible because of this catch
   const opened = Object.values(ITEMS).filter(it => it.needs && it.needs[e.item.id] && owned(e.item.id) === it.needs[e.item.id] && unlocked(it));
   if (opened.length) setTimeout(() => toast(`Something rare is now out there…`), 1200);
-  if (!e.item.lat) setTimeout(() => { if (mode && live.filter(x => !x.item.lat).length < MAX_LIVE) spawn(); }, 2500);
 }
 function sparkle(pos, color) {
   const n = 40, geo = new THREE.BufferGeometry(), arr = new Float32Array(n * 3), vel = [];
@@ -1162,7 +1265,7 @@ function bearing(lat1, lon1, lat2, lon2) { // degrees from north
   const d = Math.PI / 180, y = Math.sin((lon2 - lon1) * d) * Math.cos(lat2 * d), x = Math.cos(lat1 * d) * Math.sin(lat2 * d) - Math.sin(lat1 * d) * Math.cos(lat2 * d) * Math.cos((lon2 - lon1) * d);
   return (Math.atan2(y, x) / d + 360) % 360;
 }
-const places = () => Object.values(ITEMS).filter(it => it.lat != null);
+const places = () => [...Object.values(ITEMS).filter(it => it.lat != null), ...wild];
 // Landmarks and partner shops are anchored to their real position:
 // far away nothing shows; within the visible radius a beacon stands in the real direction;
 // within the catch radius the 3D object stands at the real spot and can be caught (once per visit).
@@ -1213,7 +1316,7 @@ function updateAnchors() {
     if (near && !st.entry) {
       // with a compass it stands at its real spot; without one it is placed in front of you
       st.entry = spawn(it, a ?? viewYaw(), a == null ? 4 : Math.max(2.5, d));
-      toast(it.rarity === "partner" ? `You're at ${it.name}! Catch it for a reward` : `You're at ${it.name}! Catch it to collect the chop`);
+      toast(it.wild ? `A ${it.name} appeared nearby!` : it.rarity === "partner" ? `You're at ${it.name}! Catch it for a reward` : `You're at ${it.name}! Catch it to collect the chop`);
     }
     if (st.entry && !near && !st.entry.busy && !st.entry.catching) { removeEntry(st.entry); st.entry = null; }
     // follow the real spot as you move (very close up the GPS bearing is too noisy to follow)
@@ -1221,7 +1324,7 @@ function updateAnchors() {
       const p = st.entry.holder.position, tx = viewPos.x - Math.sin(a) * d, tz = viewPos.z - Math.cos(a) * d;
       p.x += (tx - p.x) * 0.1; p.z += (tz - p.z) * 0.1; p.y = floorY;
     }
-    if (a != null && d > it.catchR && d <= it.r) {
+    if (a != null && !it.wild && d > it.catchR && d <= it.r) {
       if (!st.beacon) st.beacon = makeBeacon(it);
       const vd = Math.min(d, 60), p = st.beacon.position, tx = viewPos.x - Math.sin(a) * vd, tz = viewPos.z - Math.cos(a) * vd;
       if (!st.beacon.userData.placed) { p.set(tx, floorY, tz); st.beacon.userData.placed = true; }
@@ -1231,6 +1334,44 @@ function updateAnchors() {
   }
 }
 const checkLandmarks = updateAnchors;
+function currentHotspot() {
+  if (geo.sLat == null) return null;
+  return HOTSPOTS.find(h => distKm(geo.sLat, geo.sLon, h[1], h[2]) * 1000 <= h[3]) || null;
+}
+function dropWild(w) {
+  wild.splice(wild.indexOf(w), 1);
+  const st = anchors.get(w.id);
+  if (st?.entry && live.includes(st.entry) && !st.entry.busy && !st.entry.catching) removeEntry(st.entry);
+  anchors.delete(w.id);
+}
+// A new wild thing every 45-90 s (15-30 s at a famous spot) or after walking 150 m, never more than a few at once.
+// With GPS and a compass it is anchored to a real spot 4-8 m away, somewhere in front of you.
+function spawnWild(hot) {
+  const item = pickItem(hot), now = performance.now() / 1000, h = heading();
+  if (!item) return;
+  if (geo.sLat != null && h != null) {
+    const deg = Math.PI / 180, b = (h + (Math.random() - 0.5) * 120) * deg, d = mode === "xr" ? 2 + Math.random() * 3 : 4 + Math.random() * 4;
+    const lat = geo.sLat + d * Math.cos(b) / 111320, lon = geo.sLon + d * Math.sin(b) / (111320 * Math.cos(geo.sLat * deg));
+    wild.push(Object.assign(Object.create(item), { id: "wild-" + (++wildSeq), base: item, lat, lon, r: WILD_WALK, catchR: 40, wild: true, expires: now + WILD_TTL }));
+  } else {
+    const e = spawn(item); e.expires = now + WILD_TTL;
+  }
+}
+function scheduleWild() {
+  if (!mode || (mode === "xr" && !floorFound)) return;
+  const now = performance.now() / 1000;
+  for (const w of [...wild]) if (now > w.expires) dropWild(w);
+  for (const e of [...live]) if (e.expires && now > e.expires && !e.busy && !e.catching) removeEntry(e);
+  const hot = currentHotspot();
+  if (hot && hot !== lastHot) { toast(`Famous spot: ${hot[0]}. Look out for ${hot[4].map(id => ITEMS[id].name).join(" and ")}!`); wildNextAt = Math.min(wildNextAt, now + 5); }
+  lastHot = hot;
+  if (wild.length + live.filter(e => e.expires).length >= (hot ? WILD_MAX_HOT : WILD_MAX)) return;
+  const walked = wildFrom && geo.sLat != null ? distKm(wildFrom[0], wildFrom[1], geo.sLat, geo.sLon) * 1000 : 0;
+  if (now < wildNextAt && walked < WILD_WALK) return;
+  spawnWild(hot);
+  wildNextAt = now + (hot ? 15 + Math.random() * 15 : 45 + Math.random() * 45);
+  wildFrom = geo.sLat != null ? [geo.sLat, geo.sLon] : null;
+}
 function fmtDist(km) { return km < 1 ? `${Math.round(km * 1000)} m` : km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`; }
 $("#areaSelect").append(new Option("Use my location", "auto"));
 for (const [code, a] of Object.entries(AREAS)) $("#areaSelect").append(new Option(a.country === "MY" && code !== "MY" ? `Malaysia · ${a.name}` : a.name, code));
@@ -1285,8 +1426,7 @@ function hitEntry() { const hits = ray.intersectObjects(live.map(e => e.holder),
 function tapAt(x, y) {
   if (!$("#catchCard").hidden) return;
   ray.setFromCamera(new THREE.Vector2(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1), camera);
-  const e = hitEntry();
-  if (e) throwAt(e); else toast("Tap on an object to throw the ball");
+  if (hitEntry()) toast("Swipe the ball up toward it to throw");
 }
 
 // ---------- Radar and the arrow to the nearest object ----------
@@ -1310,7 +1450,7 @@ function drawRadar() {
   const h = heading();
   if (h == null || geo.lat == null) return;
   for (const it of places()) {
-    if (live.some(e => e.item === it) || distKm(geo.lat, geo.lon, it.lat, it.lon) > 1.5) continue;
+    if (it.wild || live.some(e => e.item === it) || distKm(geo.lat, geo.lon, it.lat, it.lon) > 1.5) continue;
     const rel = THREE.MathUtils.degToRad(bearing(geo.lat, geo.lon, it.lat, it.lon) - h), x = c + Math.sin(rel) * (R - 4), y = c - Math.cos(rel) * (R - 4);
     rctx.save(); rctx.translate(x, y); rctx.rotate(Math.PI / 4);
     rctx.fillStyle = it.rarity === "partner" ? (it.brand || "#2ec4b6") : "#e63946"; rctx.fillRect(-7, -7, 14, 14);
@@ -1349,7 +1489,7 @@ async function startXR() {
     if (!$("#catchCard").hidden || !floorFound) return;
     const m = new THREE.Matrix4().extractRotation(controller.matrixWorld);
     ray.ray.origin.setFromMatrixPosition(controller.matrixWorld); ray.ray.direction.set(0, 0, -1).applyMatrix4(m);
-    const e = hitEntry(); if (e) throwAt(e); else toast("Tap on an object to throw the ball");
+    if (hitEntry()) toast("Swipe the ball up toward it to throw");
   });
   $("#overlay").addEventListener("beforexrselect", ev => { if (ev.target.closest(".ui")) ev.preventDefault(); });
   session.addEventListener("end", () => { hitSource = null; renderer.xr.enabled = false; if (reticle) scene.remove(reticle); endGame(); });
@@ -1371,11 +1511,13 @@ function enterGame(m) {
   watchLocation(true); landmarkShown.clear();
   for (const st of anchors.values()) if (st.beacon) scene.remove(st.beacon);
   anchors.clear(); north.ok = false;
-  if (m !== "xr") { for (let i = 0; i < MAX_LIVE; i++) spawn(); checkLandmarks(); hint(look.gotSensor || m === "nocam" ? "" : "Turn around with your phone to find things"); setTimeout(() => hint(""), 4000); }
+  wild.length = 0; wildFrom = null; lastHot = null; wildNextAt = performance.now() / 1000 + 4;
+  if (m !== "xr") { checkLandmarks(); hint("Things appear now and then. Walk around to find more, then swipe the ball at them"); setTimeout(() => hint(""), 5000); }
 }
 function endGame() {
   mode = null; watchLocation(false);
   for (const e of [...live]) removeEntry(e);
+  wild.length = 0;
   for (const f of flights.splice(0)) scene.remove(f.ball);
   if (video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.srcObject = null; }
   video.hidden = true; $("#overlay").hidden = true; $("#start").hidden = false;
@@ -1496,7 +1638,16 @@ function renderNearby() {
   const g = $("#nearbyGrid"), s = save.get(), h = heading(); g.innerHTML = "";
   if (geo.lat == null) { $("#nearbySummary").textContent = "Turn on location to see what's near you."; }
   else $("#nearbySummary").textContent = `Landmarks and partner shops by distance. ${h == null ? "No compass on this phone, so arrows point relative to north." : "Arrows point the way."}${geo.acc ? ` GPS accuracy about ±${Math.round(geo.acc)} m.` : ""} Within ${CATCH_R} m the landmark stands at its real spot.`;
-  const list = places().map(it => ({ it, d: geo.lat == null ? null : distKm(geo.lat, geo.lon, it.lat, it.lon) })).sort((a, b) => (a.d ?? 0) - (b.d ?? 0));
+  const list = places().filter(it => !it.wild).map(it => ({ it, d: geo.lat == null ? null : distKm(geo.lat, geo.lon, it.lat, it.lon) })).sort((a, b) => (a.d ?? 0) - (b.d ?? 0));
+  if (geo.lat != null) for (const hsp of HOTSPOTS.map(h => ({ h, d: distKm(geo.lat, geo.lon, h[1], h[2]) })).sort((a, b) => a.d - b.d).slice(0, 4)) {
+    const card = document.createElement("div"); card.className = "card";
+    const arrowEl = Object.assign(document.createElement("div"), { className: "dir", textContent: "↑" }); arrowEl.style.transform = `rotate(${bearing(geo.lat, geo.lon, hsp.h[1], hsp.h[2]) - (h ?? 0)}deg)`;
+    card.append(arrowEl, Object.assign(document.createElement("div"), { className: "meta", textContent: "Famous spot" }),
+      Object.assign(document.createElement("h3"), { textContent: hsp.h[0] }),
+      Object.assign(document.createElement("div"), { className: "local", textContent: fmtDist(hsp.d) + (hsp.d * 1000 <= hsp.h[3] ? " · you're here" : "") }),
+      Object.assign(document.createElement("div"), { className: "need", textContent: "Known for " + hsp.h[4].map(id => ITEMS[id].name).join(", ") }));
+    g.append(card);
+  }
   for (const { it, d } of list) {
     const card = document.createElement("div"); card.className = "card";
     if (d != null) { const arrowEl = Object.assign(document.createElement("div"), { className: "dir", textContent: "↑" }); arrowEl.style.transform = `rotate(${bearing(geo.lat, geo.lon, it.lat, it.lon) - (h ?? 0)}deg)`; card.append(arrowEl); }
@@ -1578,8 +1729,8 @@ renderer.setAnimationLoop((time, frame) => {
           floorFound = true; reticle.visible = false; hint("");
           const yaw = Math.atan2(-renderer.xr.getCamera().getWorldDirection(new THREE.Vector3()).x, -renderer.xr.getCamera().getWorldDirection(new THREE.Vector3()).z);
           camera.rotation.y = yaw;
-          for (let i = 0; i < MAX_LIVE; i++) spawn();
-          toast("Found the floor! Look around for things to catch");
+          wildNextAt = performance.now() / 1000 + 3;
+          toast("Found the floor! Things will appear around you");
           checkLandmarks();
         }
       }
@@ -1604,19 +1755,15 @@ renderer.setAnimationLoop((time, frame) => {
     if (e.item.lat == null) e.holder.rotation.y += dt * 0.3; // landmarks stay put like the real thing
     m.traverse(o => o.userData.animate?.(o, t + e.phase));
   }
-  for (const f of [...flights]) {
-    f.t += dt; const k = Math.min(1, f.t / f.dur);
-    f.ball.position.lerpVectors(f.start, f.end, k); f.ball.position.y += Math.sin(k * Math.PI) * 0.6;
-    f.ball.rotation.x += dt * 14; f.ball.rotation.y += dt * 9;
-    if (k >= 1) { flights.splice(flights.indexOf(f), 1); resolveThrow(f); }
-  }
+  for (const f of [...flights]) stepFlight(f, dt);
+  updateHeldBall();
   for (const b of [...bursts]) {
     b.t += dt; const pos = b.pts.geometry.attributes.position;
     for (let i = 0; i < b.vel.length; i++) { b.vel[i].y -= dt * 2.5; pos.setXYZ(i, pos.getX(i) + b.vel[i].x * dt, pos.getY(i) + b.vel[i].y * dt, pos.getZ(i) + b.vel[i].z * dt); }
     pos.needsUpdate = true; b.pts.material.opacity = Math.max(0, 1 - b.t / 1.2);
     if (b.t > 1.2) { scene.remove(b.pts); bursts.splice(bursts.indexOf(b), 1); }
   }
-  if (mode) updateAnchors();
+  if (mode) { scheduleWild(); updateAnchors(); }
   if (mode) { sun.position.set(viewPos.x + 2, floorY + 6, viewPos.z + 3); sun.target.position.set(viewPos.x, floorY, viewPos.z); }
   if (mode && mode !== "xr") { drawRadar(); updateArrow(); } else arrow.hidden = true;
   renderer.render(scene, camera);

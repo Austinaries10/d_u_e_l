@@ -7,7 +7,9 @@ Live: https://smarteyes.cck8.my
 ## How it plays
 - **Location decides what appears.** GPS gives the country and Malaysian state (reverse-geocoded with BigDataCloud's free client API, with rough state boxes as a fallback). Items from your state count most, then Malaysia-wide items, then everyday things found everywhere (cats, dogs, butterflies, treasure). The area can also be chosen by hand
 - **Two modes**: on phones with WebXR (Android Chrome with ARCore) objects stand on the real floor; elsewhere they appear in the camera view and you turn the phone to look around, with a radar and an arrow pointing to them
-- **Catching**: tap an object to throw a sepak takraw ball. Rarer objects escape more often; legendary ones move. Every item has a local name and a fact. Points and levels are saved on the phone
+- **Catching**: flick the sepak takraw ball at an object. The flick's speed sets how far it flies, its angle sets left/right, and a curved swipe adds spin; the ball flies under gravity and can miss. A hit near the centre ("Excellent!") gives a better catch chance than a graze ("Nice!"). Rarer objects escape more often; legendary ones move. Every item has a local name and a fact. Points and levels are saved on the phone
+- **Not crowded**: at most 2 wild things at once (3 at a famous spot). A new one appears every 45–90 s (15–30 s at a famous spot) or after walking 150 m. With GPS and a compass each is anchored to a real spot 4–8 m away; it disappears after 3 minutes or when you walk away
+- **Famous spots**: places known for an item make it far more likely there, e.g. char kway teow at Gurney Drive, asam laksa at Air Itam Market, orangutans at Semenggoh and Sepilok, turtles at Rantau Abang. See `HOTSPOTS` in `index.html`
 - **Landmark chops**: real places anchored to their real position. Far away nothing shows. Within the visible radius (about 500 m) a light beacon with the name and distance stands in the real direction. Within 60 m the 3D landmark stands at its real spot (it gets bigger as you walk closer and stays put when you turn) and can be caught, which stamps a dated chop in the passport. Anchoring uses GPS plus the phone's compass; without a compass the landmark is placed in front of you once you are within 60 m
 - **My objects**: import your own `.glb` models; they join the hunt or can be placed in front of you. Stored on the phone (IndexedDB)
 - **Photo** (camera mode) shares or downloads the AR picture
@@ -46,6 +48,7 @@ Shops and restaurants can appear in the game with their own branded 3D sign (or 
 
 ## Adding things
 - **New item**: add a model function to `MODELS` and a row to `ITEM_LIST` with where it appears (`"*"`, a country code, or state codes such as `"PNG,MLK"`)
+- **New famous spot**: add a row to `HOTSPOTS` with name, latitude, longitude, radius in metres and the item ids it is known for
 - **New landmark**: add a row to `LANDMARKS` with its exact latitude and longitude (right-click the spot in Google Maps, or look it up on OpenStreetMap), visible radius in metres, model and height
 
 All 3D models are built in code with Three.js (PBR materials, environment lighting, soft shadows).
