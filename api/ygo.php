@@ -1,10 +1,10 @@
 <?php
 // Card database and card images for AR Duel, from YGOPRODeck (https://ygoprodeck.com/api-guide/).
 // Everything fetched is cached on this server (server/cache, which is blocked from the web),
-// so each image is downloaded from YGOPRODeck only once, as their guide asks.
+// so each image is downloaded from YGOPRODeck only once, as their guide asks. Searches run on a
+// copy of the whole card database kept here and refreshed daily.
 //
-//   ?action=search&q=dragon          cards whose name contains the text, 40 at a time
-//        &in=text                     ...or whose card text contains it
+//   ?action=search&q=dragon          cards whose name or card text contains the words (name matches first), 40 at a time
 //        &kind=monster|spell|trap &attribute=LIGHT &race=Dragon &level=8 &archetype=Blue-Eyes
 //        &sort=name|atk|def|level|type &offset=40
 //   ?action=archetypes               all archetype names
@@ -69,7 +69,7 @@ function trimCard(array $c): array
         'race' => (string)($c['race'] ?? ''),
         'archetype' => (string)($c['archetype'] ?? ''),
         'type' => trim(($kind === 'monster' ? ($c['race'] ?? '') . ' / ' : ($c['race'] ?? '') . ' ') . preg_replace('/ (Monster|Card)$/', '', $type)),
-        'summary' => mb_substr(trim((string)($c['desc'] ?? '')), 0, 600),
+        'summary' => trim((string)($c['desc'] ?? '')),
     ];
 }
 
@@ -105,10 +105,53 @@ function allSets(): array
     return json_decode((string)file_get_contents($file), true) ?: [];
 }
 
-const MONSTER_TYPES = 'Effect Monster,Flip Effect Monster,Flip Tuner Effect Monster,Gemini Monster,Normal Monster,Normal Tuner Monster,'
-    . 'Pendulum Effect Monster,Pendulum Effect Ritual Monster,Pendulum Flip Effect Monster,Pendulum Normal Monster,Pendulum Tuner Effect Monster,'
-    . 'Ritual Effect Monster,Ritual Monster,Spirit Monster,Toon Monster,Tuner Monster,Union Effect Monster,Fusion Monster,Link Monster,'
-    . 'Pendulum Effect Fusion Monster,Synchro Monster,Synchro Pendulum Effect Monster,Synchro Tuner Monster,XYZ Monster,XYZ Pendulum Effect Monster';
+// The whole card database, trimmed, sorted by name, kept as a PHP file so OPcache holds it in memory.
+// Rebuilt once a day by whichever request comes first; others keep using the old copy meanwhile.
+const DB_FILE = CACHE . '/data/db.php';
+function cardDb(): array
+{
+    $fresh = fn() => is_file(DB_FILE) && filemtime(DB_FILE) > time() - DATA_TTL;
+    if (!$fresh()) {
+        $lock = fopen(cacheDir('data') . '/db.lock', 'c');
+        if ($lock && flock($lock, is_file(DB_FILE) ? LOCK_EX | LOCK_NB : LOCK_EX)) {
+            clearstatcache();
+            if (!$fresh() && !buildDb() && is_file(DB_FILE)) {
+                touch(DB_FILE, time() - DATA_TTL + 3600); // the database is down: try again in an hour
+            }
+            flock($lock, LOCK_UN);
+        }
+    }
+    is_file(DB_FILE) || fail(502, 'Could not reach the card database. Try again.');
+    return require DB_FILE;
+}
+function buildDb(): bool
+{
+    @set_time_limit(120);
+    $cards = [];
+    for ($offset = 0, $total = 1; $offset < $total; $offset += 2000) {
+        $json = json_decode((string)fetchUrl(API . '?' . http_build_query(['num' => 2000, 'offset' => $offset, 'sort' => 'id'])), true);
+        if (!is_array($json['data'] ?? null)) {
+            return false;
+        }
+        foreach ($json['data'] as $c) {
+            $cards[] = trimCard($c);
+        }
+        $total = (int)($json['meta']['total_rows'] ?? 0);
+        unset($json);
+    }
+    if (count($cards) < 10000) {
+        return false;
+    }
+    usort($cards, fn($a, $b) => strcasecmp($a['name'], $b['name']));
+    $tmp = DB_FILE . '.tmp';
+    if (!file_put_contents($tmp, '<?php return ' . var_export($cards, true) . ';') || !rename($tmp, DB_FILE)) {
+        return false;
+    }
+    if (function_exists('opcache_invalidate')) {
+        @opcache_invalidate(DB_FILE, true);
+    }
+    return true;
+}
 
 // Fetch (or read from the cache) one API query: the trimmed cards and the total number of matches
 function query(string $query): array
@@ -160,64 +203,41 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: public, max-age=3600');
 
 if ($action === 'search') {
-    $q = trim((string)($_GET['q'] ?? ''));
-    $params = [];
-    if ($q !== '') {
-        if (mb_strlen($q) < 2 || mb_strlen($q) > 60) {
-            fail(400, 'Type at least 2 letters.');
-        }
-        $params[($_GET['in'] ?? '') === 'text' ? 'desc' : 'fname'] = $q;
+    $q = mb_strtolower(trim((string)($_GET['q'] ?? '')));
+    if ($q !== '' && (mb_strlen($q) < 2 || mb_strlen($q) > 60)) {
+        fail(400, 'Type at least 2 letters.');
     }
     $kind = (string)($_GET['kind'] ?? '');
-    if ($kind !== '') {
-        $params['type'] = ['monster' => MONSTER_TYPES, 'spell' => 'Spell Card', 'trap' => 'Trap Card'][$kind] ?? fail(400, 'Unknown card kind.');
-    }
-    $attribute = strtolower((string)($_GET['attribute'] ?? ''));
-    if ($attribute !== '') {
-        in_array($attribute, ['dark', 'light', 'fire', 'water', 'earth', 'wind', 'divine'], true) || fail(400, 'Unknown attribute.');
-        $params['attribute'] = $attribute;
-    }
-    if (($_GET['race'] ?? '') !== '') {
-        $params['race'] = mb_substr((string)$_GET['race'], 0, 30);
-    }
-    if (($_GET['level'] ?? '') !== '') {
-        $params['level'] = max(0, min(13, (int)$_GET['level']));
-    }
-    if (($_GET['archetype'] ?? '') !== '') {
-        $params['archetype'] = mb_substr((string)$_GET['archetype'], 0, 60);
-    }
-    if (!$params) {
+    $attribute = strtoupper((string)($_GET['attribute'] ?? ''));
+    $race = (string)($_GET['race'] ?? '');
+    $level = (string)($_GET['level'] ?? '');
+    $archetype = (string)($_GET['archetype'] ?? '');
+    if ($q === '' && $kind === '' && $attribute === '' && $race === '' && $level === '' && $archetype === '') {
         fail(400, 'Type a name or choose a filter.');
     }
-    $sort = (string)($_GET['sort'] ?? 'name');
-    $params['sort'] = in_array($sort, ['name', 'atk', 'def', 'level', 'type'], true) ? $sort : 'name';
-    $offset = max(0, min(20000, (int)($_GET['offset'] ?? 0)));
-    if ($params['sort'] === 'name') {
-        $result = query(http_build_query($params + ['num' => 40, 'offset' => $offset]));
-    } elseif ($params['sort'] === 'type') {
-        // The database cannot sort by card type: page through monsters, then spells, then traps, each A-Z
-        $params['sort'] = 'name';
-        $kinds = isset($params['type']) ? [$params['type']] : [MONSTER_TYPES, 'Spell Card', 'Trap Card'];
-        $result = ['cards' => [], 'total' => 0];
-        $skip = $offset;
-        foreach ($kinds as $type) {
-            $part = ['type' => $type] + $params;
-            $n = query(http_build_query($part + ['num' => 1, 'offset' => 0]))['total'];
-            $result['total'] += $n;
-            $want = 40 - count($result['cards']);
-            if ($want > 0 && $skip < $n) {
-                $result['cards'] = array_merge($result['cards'], query(http_build_query($part + ['num' => $want, 'offset' => $skip]))['cards']);
-            }
-            $skip = max(0, $skip - $n);
+    // cards whose name has the words come first, then those whose card text has them
+    $byName = $byText = [];
+    foreach (cardDb() as $c) {
+        if (($kind !== '' && $c['kind'] !== $kind) || ($attribute !== '' && $c['attribute'] !== $attribute) || ($race !== '' && $c['race'] !== $race)
+            || ($level !== '' && $c['level'] !== (int)$level) || ($archetype !== '' && $c['archetype'] !== $archetype)) {
+            continue;
         }
-    } else {
-        // The database sorts numbers lowest first; for strongest first, read the matching page from the end and reverse it
-        $total = query(http_build_query($params + ['num' => 1, 'offset' => 0]))['total'];
-        $num = max(0, min(40, $total - $offset));
-        $result = $num ? query(http_build_query($params + ['num' => $num, 'offset' => $total - $offset - $num])) : ['cards' => []];
-        $result = ['cards' => array_reverse($result['cards']), 'total' => $total];
+        if ($q === '' || str_contains(mb_strtolower($c['name']), $q)) {
+            $byName[] = $c;
+        } elseif (str_contains(mb_strtolower($c['summary']), $q)) {
+            $byText[] = $c + ['inText' => true];
+        }
     }
-    echo json_encode(['cards' => $result['cards'], 'total' => $result['total'], 'offset' => $offset]);
+    $list = array_merge($byName, $byText);
+    $sort = (string)($_GET['sort'] ?? 'name');
+    $kindOrder = ['monster' => 0, 'spell' => 1, 'trap' => 2];
+    if ($sort === 'type') {
+        usort($list, fn($a, $b) => $kindOrder[$a['kind']] <=> $kindOrder[$b['kind']] ?: strcasecmp($a['name'], $b['name']));
+    } elseif (in_array($sort, ['atk', 'def', 'level'], true)) {
+        usort($list, fn($a, $b) => ($b[$sort] ?? -1) <=> ($a[$sort] ?? -1) ?: strcasecmp($a['name'], $b['name']));
+    }
+    $offset = max(0, (int)($_GET['offset'] ?? 0));
+    echo json_encode(['cards' => array_slice($list, $offset, 40), 'total' => count($list), 'offset' => $offset]);
     exit;
 }
 

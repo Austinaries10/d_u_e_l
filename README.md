@@ -13,7 +13,7 @@ Live: https://smarteyes.cck8.my
 ## Decks
 - Up to 10 decks: create, rename, copy, delete
 - A deck uses only cards you own (up to 3 copies, and no more than you own) and needs 20–60 cards to duel. Each player picks a deck on the home screen
-- **Search** your own cards, or all 14,000+ cards in the database, by name or card text. Filter by kind, attribute, type (Dragon, Spellcaster, Quick-Play…), level and archetype. Sort A–Z, by card type (monsters, spells, traps), ATK, DEF or level
+- **Search** your own cards, or all 14,000+ cards in the database. The words are matched in card names and in card text (monsters, spells and traps); name matches come first, and text matches are marked "found in card text". Filter by kind, attribute, type (Dragon, Spellcaster, Quick-Play…), level and archetype. Sort A–Z, by card type (monsters, spells, traps), ATK, DEF or level
 
 ## Duel
 - New duel shuffles both decks and deals 5 cards each; each turn the next player draws one (running out of cards loses). A pass screen hides the hand until the next player taps

@@ -194,9 +194,8 @@
     <div class="decklist" id="deckList"></div>
     <h2 class="section">Add cards</h2>
     <div class="tabs row" id="srcTabs"><button class="btn small" type="button" data-src="mine" aria-pressed="true">My cards</button><button class="btn small" type="button" data-src="all" aria-pressed="false">All cards</button></div>
-    <div class="row"><label class="field" style="flex:1 1 220px">Search<input id="searchBox" placeholder="e.g. dark magician" autocomplete="off"></label><button class="btn primary" id="searchBtn" type="button">Search</button></div>
+    <div class="row"><label class="field" style="flex:1 1 220px">Search card names and card text<input id="searchBox" placeholder="e.g. dark magician, destroy, draw 2" autocomplete="off"></label><button class="btn primary" id="searchBtn" type="button">Search</button></div>
     <div class="form">
-      <label class="field">Look in<select id="sIn"><option value="">Card name</option><option value="text">Card text</option></select></label>
       <label class="field">Kind<select id="sKind"><option value="">Any</option><option value="monster">Monster</option><option value="spell">Spell</option><option value="trap">Trap</option></select></label>
       <label class="field">Attribute<select id="sAttr"><option value="">Any</option><option>DARK</option><option>LIGHT</option><option>FIRE</option><option>WATER</option><option>EARTH</option><option>WIND</option><option>DIVINE</option></select></label>
       <label class="field">Type<select id="sRace"><option value="">Any</option></select></label>
@@ -869,7 +868,7 @@ function cardRow(c, actions, rarity) {
   d.append(Object.assign(document.createElement("img"), { src: imgUrl(c, "small"), alt: "", loading: "lazy" }));
   const info = document.createElement("div"); info.style.minWidth = "0";
   const name = Object.assign(document.createElement("b"), { textContent: c.name }); if (rarity) name.append(rarBadge(rarity));
-  info.append(name, Object.assign(document.createElement("small"), { textContent: c.kind === "monster" ? `${c.attribute} ${c.race || ""} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type }));
+  info.append(name, Object.assign(document.createElement("small"), { textContent: (c.kind === "monster" ? `${c.attribute} ${c.race || ""} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type) + (c.inText ? " · found in card text" : "") }));
   d.append(info);
   const row = document.createElement("div"); row.className = "row"; for (const a of actions) row.append(a); d.append(row);
   return d;
@@ -887,7 +886,7 @@ function renderDeck() {
     list.append(cardRow(c, [note(`×${n}`), smallBtn("−", () => { deck.ids.splice(deck.ids.indexOf(c.id), 1); saveDecks(); renderDeck(); })], coll[c.id]?.r));
   }
 }
-function addToDeck(c) {
+function addToDeck({ inText, ...c }) {
   const deck = decks[editing], inDeck = deck.ids.filter(id => id === c.id).length, owned = coll[c.id]?.n || 0;
   if (!owned) return $("#deckStatus").textContent = "You don't own this card yet. Open packs in the Shop to get it.";
   if (inDeck >= Math.min(3, owned)) return $("#deckStatus").textContent = owned < 3 ? `You own ${owned} ${owned === 1 ? "copy" : "copies"} of ${c.name}.` : "A deck can hold up to 3 copies of a card.";
@@ -924,15 +923,16 @@ for (const b of $("#srcTabs").children) b.addEventListener("click", () => { src 
 const found = { params: null, offset: 0, total: 0, list: null };
 function filters() {
   const [, race] = $("#sRace").value.split("|");
-  return { q: $("#searchBox").value.trim(), in: $("#sIn").value, kind: $("#sKind").value, attribute: $("#sAttr").value, race: race || "", level: $("#sLevel").value, archetype: $("#sArch").value, sort: $("#sSort").value };
+  return { q: $("#searchBox").value.trim(), kind: $("#sKind").value, attribute: $("#sAttr").value, race: race || "", level: $("#sLevel").value, archetype: $("#sArch").value, sort: $("#sSort").value };
 }
-// filter and sort your own cards here on the phone
+// filter and sort your own cards here on the phone: name matches first, then card text matches
 function myCards(f) {
   const q = f.q.toLowerCase(), by = (k, c) => c[k] ?? -1;
   return Object.values(coll).map(e => e.card).filter(c =>
-    (!q || (f.in === "text" ? c.summary : c.name).toLowerCase().includes(q)) && (!f.kind || c.kind === f.kind) && (!f.attribute || c.attribute === f.attribute)
+    (!f.kind || c.kind === f.kind) && (!f.attribute || c.attribute === f.attribute)
     && (!f.race || c.race === f.race) && (!f.level || c.level === +f.level) && (!f.archetype || c.archetype === f.archetype)
-  ).sort((a, b) => (f.sort === "type" ? KIND_ORDER[a.kind] - KIND_ORDER[b.kind] : f.sort === "name" ? 0 : by(f.sort, b) - by(f.sort, a)) || a.name.localeCompare(b.name));
+  ).map(c => !q || c.name.toLowerCase().includes(q) ? c : (c.summary || "").toLowerCase().includes(q) ? { ...c, inText: true } : null).filter(Boolean)
+    .sort((a, b) => (f.sort === "type" ? KIND_ORDER[a.kind] - KIND_ORDER[b.kind] : f.sort === "name" ? !!a.inText - !!b.inText : by(f.sort, b) - by(f.sort, a)) || a.name.localeCompare(b.name));
 }
 async function search(more = false) {
   const box = $("#results"), info = $("#resultInfo");
@@ -940,7 +940,7 @@ async function search(more = false) {
     const f = filters();
     Object.assign(found, { params: f, offset: 0, total: 0, list: null }); box.innerHTML = "";
     if (src === "mine") { found.list = myCards(f); found.total = found.list.length; }
-    else if (!f.q && !f.kind && !f.attribute && !f.race && !f.level && !f.archetype) { info.textContent = "Search 14,000+ cards by name or card text, or pick filters to browse. You can add the cards you own."; $("#moreBtn").hidden = true; return; }
+    else if (!f.q && !f.kind && !f.attribute && !f.race && !f.level && !f.archetype) { info.textContent = "Search 14,000+ cards by name and card text, or pick filters to browse. You can add the cards you own."; $("#moreBtn").hidden = true; return; }
   }
   $("#moreBtn").hidden = true;
   let cards;
@@ -963,7 +963,7 @@ async function search(more = false) {
 $("#moreBtn").addEventListener("click", () => search(true));
 $("#searchBtn").addEventListener("click", () => search());
 $("#searchBox").addEventListener("keydown", e => { if (e.key === "Enter") search(); });
-for (const id of ["#sIn", "#sKind", "#sAttr", "#sRace", "#sLevel", "#sArch", "#sSort"]) $(id).addEventListener("change", () => { if (src === "mine") search(); });
+for (const id of ["#sKind", "#sAttr", "#sRace", "#sLevel", "#sArch", "#sSort"]) $(id).addEventListener("change", () => { if (src === "mine") search(); });
 
 // ---------- Shop: real booster packs ----------
 // Chance of each rarity in the foil slot (Super Rare is the usual pull)
