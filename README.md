@@ -1,63 +1,44 @@
-# SmartEyes (AirHand)
+# AR Hunt (SmartEyes)
 
-A camera app you control with your fingers: show a number of fingers to press the button with that number. Runs in the phone browser using MediaPipe hand tracking.
+A Pokémon Go-style AR collecting game for the phone browser. Things from where you are (the food, animals and landmarks of your state) appear around you in the camera. Tap to throw a sepak takraw ball and collect them. Stand at a real landmark to make it appear and collect its chop.
 
 Live: https://smarteyes.cck8.my
 
-## Controls
-- **Swipe up / down** with the hand: open / close the menu; in an app, show / hide its buttons. A swipe only counts if the whole hand is still in view at the end, so lowering the hand to rest does nothing
-- **Point** by moving the hand: the ring sits just past the knuckles (visible even from the back of the hand) and moves a little further than the hand, so every button is reachable without nearing the camera's edge
-- **Double-tap**: tap thumb and index finger together twice, quickly, to press the button under the ring (a single tap does nothing)
-- **Pinch and hold** in the notepad to write
-- Buttons are see-through and kept in the middle of the view
-
-## Apps
-- **Notepad**: pinch and hold to write; Undo, Clear, and To text (the AI reads the handwriting)
-- **Camera**: Photo (2 second timer), Video start/stop, Gallery. Kept on the phone (browser storage); "Save to phone" in the gallery copies a file to Photos/Downloads
-- **Lens**: aim at something, "What is this?" asks the AI
-- **Translate**: aim at text, then English, Malay or Chinese
-- **AR Hunt** (`ar.html`): a Pokémon Go-style collecting game, played by touch. See below
-- Music and Navigate are placeholders for now
-
-## AR Hunt
-- **Theme packs by location**: GPS (reverse-geocoded with BigDataCloud's free client API, with a built-in fallback) picks Malaysia, Thailand, Singapore, Indonesia or a Treasure pack. The pack can also be chosen by hand
-- **3D objects** are built in code with Three.js (PBR materials, environment lighting, soft shadows): durian, rambutan, ketupat, teh tarik, bunga raya, wau bulan, Petronas Twin Towers, Kenyalang hornbill, tuk-tuk, golden chedi, elephant, kaya toast, orchid, Marina Bay Sands, satay, gamelan gong, wayang kulit, Komodo dragon and treasure items
-- **Two modes**: on phones with WebXR (Android Chrome with ARCore) objects stand on the real floor; elsewhere they appear in the camera view and you turn the phone to look around (radar and an arrow point to them)
-- **Catching**: tap an object to throw a sepak takraw ball. Rarer objects escape more often; legendary ones move. Every item has a cultural fact. Points and levels are saved on the phone
+## How it plays
+- **Location decides what appears.** GPS gives the country and Malaysian state (reverse-geocoded with BigDataCloud's free client API, with rough state boxes as a fallback). Items from your state count most, then Malaysia-wide items, then everyday things found everywhere (cats, dogs, butterflies, treasure). The area can also be chosen by hand
+- **Two modes**: on phones with WebXR (Android Chrome with ARCore) objects stand on the real floor; elsewhere they appear in the camera view and you turn the phone to look around, with a radar and an arrow pointing to them
+- **Catching**: tap an object to throw a sepak takraw ball. Rarer objects escape more often; legendary ones move. Every item has a local name and a fact. Points and levels are saved on the phone
+- **Landmark chops**: real places with GPS coordinates. Within the radius, the landmark appears; catching it stamps a dated chop in the passport, which also shows how far away the others are
 - **My objects**: import your own `.glb` models; they join the hunt or can be placed in front of you. Stored on the phone (IndexedDB)
-- **Photos** (camera mode) are saved to the AirHand gallery
+- **Photo** (camera mode) shares or downloads the AR picture
 
-## AI setup (Lens, Translate, handwriting)
-`api/lens.php` calls Claude Haiku (`claude-haiku-5-5`) with the Anthropic PHP SDK. The key never goes to the browser.
+## What appears where
+| Area | Items |
+|---|---|
+| Everywhere | cat, dog, butterfly, gold coin, crystal, treasure chest |
+| Malaysia | durian, rambutan, ketupat, teh tarik, nasi lemak, bunga raya, Rajah Brooke's birdwing |
+| Kuala Lumpur | Petronas Twin Towers, Menara KL |
+| Penang | char kway teow, asam laksa, trishaw |
+| Melaka | Christ Church, Melaka trishaw |
+| Sarawak | Sarawak laksa, kek lapis, Kenyalang hornbill, orangutan, rafflesia |
+| Sabah | Mount Kinabalu, orangutan, green turtle, rafflesia |
+| Kelantan | wau bulan, nasi kerabu, rafflesia |
+| Terengganu | green turtle |
+| Perak | Ipoh white coffee, rafflesia |
+| Selangor | satay |
+| Thailand, Singapore, Indonesia | their own sets |
 
-1. Get an API key at console.anthropic.com.
-2. In cPanel File Manager, open the site folder, go to `server/`, create `config.php` with:
-   ```php
-   <?php
-   return ['anthropic_api_key' => 'sk-ant-...'];
-   ```
-   (`server/` is blocked from the web and `config.php` is never in GitHub.)
-3. The hosting needs PHP 8.1 or newer (cPanel → MultiPHP Manager).
+**Landmark chops**: Petronas Twin Towers, Menara KL, Thean Hou Temple, Kek Lok Si, Khoo Kongsi, Cheng Hoon Teng, Christ Church Melaka, A Famosa, Tua Pek Kong Kuching, Great Cat of Kuching, Kinabalu Park, Sam Poh Tong. Coordinates are approximate (each has a 400 m–2 km radius) and live in the `LANDMARKS` list in `index.html`, so they are easy to correct or extend.
 
-Each request is limited to 30 per IP address per 10 minutes.
+## Adding things
+- **New item**: add a model function to `MODELS` and a row to `ITEM_LIST` with where it appears (`"*"`, a country code, or state codes such as `"PNG,MLK"`)
+- **New landmark**: add a row to `LANDMARKS` with its latitude, longitude, radius in metres and model
+
+All 3D models are built in code with Three.js (PBR materials, environment lighting, soft shadows).
 
 ## Deploy
-Every push to `main` uploads the site to the hosting through `.github/workflows/deploy.yml`.
+Every push to `main` uploads the site to the hosting through `.github/workflows/deploy.yml` (FTPS, using the `FTP_SERVER`, `FTP_USERNAME` and `FTP_PASSWORD` repository secrets). Only changed files are sent; files on the server that the repo never uploaded are left alone.
 
-The PHP libraries (`server/vendor`, about 4,000 files) are **not** uploaded by the deploy, because FTP is slow with many small files. Upload them once by hand:
-1. Build the zip: `cd server && composer install --no-dev --optimize-autoloader && zip -qr ../server-vendor.zip vendor`
-2. In cPanel File Manager, open the site's `server/` folder, upload `server-vendor.zip`, right-click → Extract, then delete the zip.
+The camera and GPS only work over `https://`.
 
-Repeat only when `server/composer.json` changes.
-It needs these repository secrets (Settings → Secrets and variables → Actions):
-
-| Secret | Example |
-|---|---|
-| `FTP_SERVER` | `ftp.cck8.my` |
-| `FTP_USERNAME` | `deploy@smarteyes.cck8.my` |
-| `FTP_PASSWORD` | the FTP account password |
-| `FTP_SERVER_DIR` | optional, defaults to `./` |
-
-Create a dedicated FTP account in cPanel whose directory is the `smarteyes.cck8.my` document root, so the deploy can only touch this site.
-
-The camera only works over `https://`.
+`server/` holds the PHP setup from the earlier AI features (Claude Haiku). It is unused by the game right now but kept for future AI features such as quizzes; its `.htaccess` blocks web access to it.
