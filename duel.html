@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AR Duel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap">
+<style>
+  /* Layout: the duel board on a real table (WebXR) or in a 3D preview; glass HUD with life points on top and your hand below */
+  :root {
+    --ink: #0d1117;
+    --glass: rgba(14, 18, 26, 0.62);
+    --line: rgba(255, 255, 255, 0.18);
+    --text: #eef2f6;
+    --muted: #a3b0be;
+    --p0: #ff9f1c;
+    --p1: #4cc9f0;
+    --accent: #ffb547;
+    --danger: #ff5d5d;
+    --good: #7bd88f;
+    --font: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; background: var(--ink); color: var(--text); font-family: var(--font); overflow: hidden; -webkit-user-select: none; user-select: none; }
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  .btn { font: inherit; font-size: 14px; font-weight: 600; color: var(--text); background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 10px 15px; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .btn.primary { background: var(--accent); color: #241703; border-color: transparent; }
+  .btn.small { padding: 7px 11px; font-size: 12px; }
+  .btn.danger { border-color: rgba(255,93,93,.6); color: #ffb3b3; }
+  .btn:disabled { opacity: .45; }
+  .btn:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  #overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+  #overlay .ui { pointer-events: auto; }
+  .lpbar { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+  .lp { background: var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 8px 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .lp small { display: block; font-size: 11px; color: var(--muted); }
+  .lp b { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .lp.p0 { border-color: rgba(255,159,28,.6); } .lp.p0 b { color: var(--p0); }
+  .lp.p1 { border-color: rgba(76,201,240,.6); text-align: right; } .lp.p1 b { color: var(--p1); }
+  .lp.active { box-shadow: 0 0 0 2px currentColor inset; }
+  .turn { font-size: 12px; text-align: center; color: var(--muted); }
+  #toast { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 78px); transform: translateX(-50%); transition: opacity .25s; opacity: 0; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: 13px; max-width: 92%; text-align: center; }
+  #toast.show { opacity: 1; }
+  #hint { position: absolute; left: 50%; top: 30%; transform: translateX(-50%); background: var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; font-size: 14px; max-width: min(86%, 420px); text-align: center; }
+  #banner { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); background: rgba(14,18,26,.9); border: 2px solid var(--accent); border-radius: 20px; padding: 22px 26px; text-align: center; }
+  #banner h2 { margin: 0 0 10px; font-size: 28px; color: var(--accent); }
+
+  .dock { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); display: grid; gap: 8px; }
+  #panel { background: rgba(14,18,26,.85); border: 1px solid var(--line); border-radius: 16px; padding: 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  #panel h3 { margin: 0 0 2px; font-size: 16px; }
+  #panel .meta { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  #panel p { margin: 0 0 10px; font-size: 13px; line-height: 1.45; }
+  #hand { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .hcard { flex: 0 0 auto; width: 104px; border-radius: 12px; padding: 8px; background: rgba(14,18,26,.85); border: 1px solid var(--line); text-align: left; color: var(--text); font: inherit; cursor: pointer; }
+  .hcard b { display: block; font-size: 12px; line-height: 1.2; height: 2.4em; overflow: hidden; }
+  .hcard small { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .hcard.monster { border-color: rgba(255,159,28,.55); } .hcard.spell { border-color: rgba(123,216,143,.6); } .hcard.trap { border-color: rgba(240,113,203,.6); }
+  .hcard[aria-pressed="true"] { background: rgba(255,181,71,.25); border-color: var(--accent); }
+  .empty-hand { font-size: 12px; color: var(--muted); padding: 10px 4px; }
+
+  .screen { position: fixed; inset: 0; z-index: 10; overflow-y: auto; background: radial-gradient(120% 80% at 50% 0%, #1f2440 0%, var(--ink) 60%); padding: calc(env(safe-area-inset-top, 0px) + 20px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 24px) max(16px, env(safe-area-inset-left, 0px)); }
+  .intro { max-width: 520px; margin: 0 auto; display: grid; gap: 16px; }
+  .intro h1 { margin: 0; font-size: clamp(36px, 10vw, 52px); letter-spacing: -0.02em; line-height: 1; }
+  .intro h1 span { color: var(--accent); }
+  .intro p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 15px; }
+  .intro ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 14px; }
+  .intro li { display: flex; gap: 10px; } .intro li b { color: var(--accent); min-width: 84px; font-weight: 600; }
+  .note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  #status { min-height: 1.4em; font-size: 13px; color: var(--muted); } #status.err { color: var(--danger); }
+  a.link { color: var(--muted); font-size: 13px; }
+
+  #scan video { width: 100%; max-height: 46vh; object-fit: cover; border-radius: 16px; background: #000; }
+  .frame { position: relative; }
+  .frame::after { content: ""; position: absolute; left: 50%; top: 50%; width: 52%; aspect-ratio: 59 / 86; transform: translate(-50%, -50%); border: 2px dashed rgba(255,255,255,.7); border-radius: 10px; pointer-events: none; max-height: 90%; }
+  .form { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .field { display: grid; gap: 4px; font-size: 12px; color: var(--muted); min-width: 0; }
+  .field input, .field select { font: inherit; font-size: 14px; color: var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; width: 100%; }
+  .field.wide { grid-column: 1 / -1; }
+  .lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .libcard { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: rgba(255,255,255,.04); min-width: 0; }
+  .libcard b { font-size: 13px; display: block; } .libcard small { font-size: 11px; color: var(--muted); display: block; margin: 4px 0 8px; }
+  h2.section { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="overlay" hidden>
+  <div class="lpbar">
+    <div class="lp p0 ui" id="lp0"><small>Player 1</small><b id="lp0v">8000</b></div>
+    <div class="turn" id="turnLabel">Player 1's turn</div>
+    <div class="lp p1 ui" id="lp1"><small>Player 2</small><b id="lp1v">8000</b></div>
+  </div>
+  <div id="toast"></div>
+  <div id="hint" hidden></div>
+  <div id="banner" class="ui" hidden><h2 id="bannerText"></h2><button class="btn primary" id="rematch" type="button">New duel</button></div>
+  <div class="dock ui">
+    <div id="panel" hidden></div>
+    <div id="hand"></div>
+    <div class="row">
+      <button class="btn" id="scanBtn" type="button">Scan card</button>
+      <button class="btn" id="lpBtn" type="button">Life points</button>
+      <button class="btn primary" id="endBtn" type="button">End turn</button>
+      <button class="btn" id="exitBtn" type="button">Exit</button>
+    </div>
+  </div>
+</div>
+
+<section class="screen" id="start">
+  <div class="intro">
+    <h1>AR <span>Duel</span></h1>
+    <p>Put a duel board on a real table and battle with your own trading cards. Scan a card with the camera, place it on a zone, and its hologram monster appears on the table.</p>
+    <ul>
+      <li><b>Scan</b>Hold a card up to the camera. The AI reads its name, ATK and DEF</li>
+      <li><b>Place</b>Pick a card from your hand and tap a zone on the table</li>
+      <li><b>Battle</b>Tap your monster, then Attack, then the target</li>
+      <li><b>Pass</b>Two players share one phone and pass it each turn</li>
+    </ul>
+    <div class="row">
+      <button class="btn primary" id="startXR" type="button" hidden>Start on the table (AR)</button>
+      <button class="btn" id="startPreview" type="button">Play in 3D preview</button>
+      <button class="btn" id="openScan" type="button">Scan cards</button>
+    </div>
+    <div id="status"></div>
+    <p class="note" id="handNote"></p>
+    <p class="note">This is a fan tool for your own cards. Monsters appear as original holograms based on their attribute and level, not the official artwork. You can attach your own 3D model (.glb) to any card name under Scan cards.</p>
+    <a class="link" href="index.html">← Back to AR Hunt</a>
+  </div>
+</section>
+
+<section class="screen" id="scan" hidden>
+  <div class="intro">
+    <div class="row" style="justify-content:space-between"><h1 style="font-size:28px">Scan cards</h1><button class="btn small" id="scanDone" type="button">Done</button></div>
+    <div class="frame"><video id="cam" playsinline muted autoplay></video></div>
+    <div class="row"><button class="btn primary" id="readBtn" type="button">Read card</button><button class="btn" id="typeBtn" type="button">Type it in</button><span id="scanStatus" class="note"></span></div>
+    <div id="cardForm" hidden>
+      <div class="form">
+        <label class="field wide">Name<input id="fName"></label>
+        <label class="field">Kind<select id="fKind"><option value="monster">Monster</option><option value="spell">Spell</option><option value="trap">Trap</option></select></label>
+        <label class="field">Attribute<select id="fAttr"><option value="">—</option><option>DARK</option><option>LIGHT</option><option>FIRE</option><option>WATER</option><option>EARTH</option><option>WIND</option><option>DIVINE</option></select></label>
+        <label class="field">Level<input id="fLevel" type="number" min="0" max="13"></label>
+        <label class="field">ATK<input id="fAtk" type="number" min="0" step="50"></label>
+        <label class="field">DEF<input id="fDef" type="number" min="0" step="50"></label>
+        <label class="field wide">Type<input id="fType"></label>
+        <label class="field wide">What it does<input id="fSummary"></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="toP0" type="button">Add to Player 1's hand</button>
+        <button class="btn primary" id="toP1" type="button" style="background:var(--p1)">Add to Player 2's hand</button>
+      </div>
+    </div>
+    <h2 class="section">Recent cards</h2>
+    <div class="lib" id="library"></div>
+    <h2 class="section">3D models for cards</h2>
+    <p class="note">Have a .glb model you want a card to use? Type the card name, choose the file, and that card will appear as your model.</p>
+    <div class="row">
+      <label class="field" style="flex:1 1 180px">Card name<input id="mName"></label>
+      <label class="btn" for="mFile">Choose .glb</label><input id="mFile" type="file" accept=".glb,model/gltf-binary" hidden>
+      <span class="note" id="mStatus"></span>
+    </div>
+    <div class="lib" id="modelList"></div>
+  </div>
+</section>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+const $ = s => document.querySelector(s);
+const canvas = $("#gl");
+const PLAYER = ["Player 1", "Player 2"], PCOLOR = [0xff9f1c, 0x4cc9f0];
+
+// ---------- Board size: zones are real card size, so physical cards can lie on them ----------
+const CARD_W = 0.059, CARD_H = 0.086, PITCH = 0.08;
+const COLS = [-2, -1, 0, 1, 2].map(i => i * PITCH);
+// player 0 sits on the +z side (nearest the phone when the board is placed), player 1 opposite
+const ROW_Z = { m: 0.065, s: 0.17 };
+const zoneZ = (p, row) => (p === 0 ? 1 : -1) * ROW_Z[row];
+const pileX = p => (p === 0 ? 1 : -1) * 0.25;
+
+// ---------- Scene ----------
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 0.9));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(0.3, 1, 0.4); scene.add(sun);
+const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.01, 50);
+addEventListener("resize", () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); if (mode === "preview") aimPreview(); });
+const board = new THREE.Group(); board.visible = false; scene.add(board);
+const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, ...o });
+function canvasTex(w, h, draw) { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }
+function rrect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+// ---------- Zones: glowing outlines on the table ----------
+const zoneMeshes = [];
+function zoneTexture(color, label) {
+  return canvasTex(128, 184, (g, w, h) => {
+    const c = "#" + color.toString(16).padStart(6, "0");
+    g.shadowColor = c; g.shadowBlur = 18; g.strokeStyle = c; g.lineWidth = 5; rrect(g, 10, 10, w - 20, h - 20, 10); g.stroke();
+    g.shadowBlur = 0; g.fillStyle = c + "22"; rrect(g, 10, 10, w - 20, h - 20, 10); g.fill();
+    if (label) { g.fillStyle = c; g.font = "700 18px Sora, sans-serif"; g.textAlign = "center"; g.fillText(label, w / 2, h / 2 + 6); }
+  });
+}
+function buildBoard() {
+  const texCache = {};
+  const zoneGeo = new THREE.PlaneGeometry(CARD_W * 1.18, CARD_H * 1.12); zoneGeo.rotateX(-Math.PI / 2);
+  for (const p of [0, 1]) for (const row of ["m", "s"]) for (let i = 0; i < 5; i++) {
+    const key = p + row; texCache[key] ??= zoneTexture(PCOLOR[p], row === "s" ? "S/T" : "");
+    const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: texCache[key], transparent: true, depthWrite: false }));
+    z.position.set(p === 0 ? COLS[i] : -COLS[i], 0.001, zoneZ(p, row));
+    z.userData.zone = { p, row, i }; board.add(z); zoneMeshes.push(z);
+  }
+  for (const p of [0, 1]) {
+    for (const [row, label] of [["s", "DECK"], ["m", "GY"]]) {
+      const t = zoneTexture(PCOLOR[p], label);
+      const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
+      z.position.set(pileX(p), 0.001, zoneZ(p, row)); if (p === 1) z.rotation.y = Math.PI;
+      z.userData.pile = { p, kind: label }; board.add(z); zoneMeshes.push(z);
+    }
+    // a deck of face-down cards on the deck zone
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, 0.012, CARD_H), [mat(0x222833), mat(0x222833), new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), mat(0x222833), mat(0x222833), mat(0x222833)]);
+    deck.position.set(pileX(p), 0.007, zoneZ(p, "s")); board.add(deck);
+  }
+  // centre line
+  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.002).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 }));
+  board.add(line);
+}
+
+// ---------- Card faces and backs (original design) ----------
+const backTex = canvasTex(256, 372, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, "#14213d"); gr.addColorStop(1, "#0b1226");
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  g.strokeStyle = "#e9c46a"; g.lineWidth = 6; rrect(g, 10, 10, w - 20, h - 20, 14); g.stroke();
+  g.strokeStyle = "rgba(233,196,106,.45)"; g.lineWidth = 2;
+  for (let y = 40; y < h - 30; y += 28) for (let x = 36; x < w - 30; x += 28) { g.beginPath(); g.moveTo(x, y - 9); g.lineTo(x + 9, y); g.lineTo(x, y + 9); g.lineTo(x - 9, y); g.closePath(); g.stroke(); }
+  g.fillStyle = "#e9c46a"; g.beginPath(); g.arc(w / 2, h / 2, 34, 0, 7); g.fill();
+  g.fillStyle = "#14213d"; g.font = "700 30px Sora, sans-serif"; g.textAlign = "center"; g.fillText("AR", w / 2, h / 2 + 11);
+});
+const KIND_COLOR = { monster: "#c77d2a", spell: "#2a9d6f", trap: "#b5468f" };
+const ATTR_COLOR = { DARK: 0x9b5de5, LIGHT: 0xffd166, FIRE: 0xff5400, WATER: 0x3a86ff, EARTH: 0xb08968, WIND: 0x52b788, DIVINE: 0xf9c74f };
+function faceTexture(card) {
+  return canvasTex(256, 372, (g, w, h) => {
+    g.fillStyle = KIND_COLOR[card.kind] || "#666"; g.fillRect(0, 0, w, h);
+    g.fillStyle = "rgba(0,0,0,.35)"; rrect(g, 12, 12, w - 24, h - 24, 10); g.fill();
+    g.fillStyle = "#fff"; g.font = "700 22px Sora, sans-serif"; g.textAlign = "left";
+    const words = card.name.split(" "); let line = "", y = 46; const lines = [];
+    for (const wd of words) { const t = line ? line + " " + wd : wd; if (g.measureText(t).width > w - 48 && line) { lines.push(line); line = wd; } else line = t; }
+    lines.push(line); lines.slice(0, 2).forEach((l, i) => g.fillText(l, 24, y + i * 26));
+    const ac = card.attribute && ATTR_COLOR[card.attribute] ? "#" + ATTR_COLOR[card.attribute].toString(16).padStart(6, "0") : "#ddd";
+    g.fillStyle = ac; g.beginPath(); g.arc(w / 2, 170, 56, 0, 7); g.fill();
+    g.fillStyle = "#111"; g.font = "700 20px Sora, sans-serif"; g.textAlign = "center";
+    g.fillText(card.kind === "monster" ? (card.attribute || "?") : card.kind.toUpperCase(), w / 2, 177);
+    if (card.level) { g.fillStyle = "#ffd166"; g.font = "700 18px Sora, sans-serif"; g.fillText("★".repeat(Math.min(card.level, 12)), w / 2, 254, w - 30); }
+    if (card.kind === "monster") { g.fillStyle = "#fff"; g.font = "700 24px Sora, sans-serif"; g.fillText(`${card.atk ?? "?"} / ${card.def ?? "-"}`, w / 2, 330); }
+    else { g.fillStyle = "#fff"; g.font = "400 15px Sora, sans-serif"; g.fillText((card.type || "").slice(0, 24), w / 2, 320); }
+  });
+}
+function cardMesh(card) {
+  const face = new THREE.MeshStandardMaterial({ map: faceTexture(card), roughness: 0.55 }), back = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), edge = mat(0x1c1f26);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, 0.0015, CARD_H), [edge, edge, face, back, edge, edge]);
+  m.userData.face = face; m.userData.back = back;
+  return m;
+}
+
+// ---------- Hologram monsters: original designs by attribute, sized by level ----------
+const holoMat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.35, metalness: 0.2, transparent: true, opacity: 0.88, ...o });
+const mesh = (geo, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); return o; };
+function petalGeo(len, wid) { const s = new THREE.Shape(); s.moveTo(0, 0); s.bezierCurveTo(wid, len * 0.3, wid * 0.8, len * 0.9, 0, len); s.bezierCurveTo(-wid * 0.8, len * 0.9, -wid, len * 0.3, 0, 0); return new THREE.ShapeGeometry(s, 12); }
+const HOLO = {
+  DARK(c) { // hooded wraith with a staff
+    const g = new THREE.Group(), m = holoMat(c), dark = holoMat(0x1a0a2e, { emissiveIntensity: 0.2 });
+    g.add(mesh(new THREE.ConeGeometry(0.28, 0.75, 20, 1, true), m, 0, 0.42));
+    g.add(mesh(new THREE.SphereGeometry(0.12, 16, 12), dark, 0, 0.86));
+    g.add(mesh(new THREE.ConeGeometry(0.17, 0.32, 16), m, 0, 0.98));
+    for (const s of [-1, 1]) g.add(mesh(new THREE.SphereGeometry(0.02, 8, 6), holoMat(0xff4fd8, { emissiveIntensity: 1.5 }), s * 0.045, 0.87, 0.1));
+    const staff = mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.0, 8), holoMat(0xe0e0ff), 0.3, 0.5); staff.rotation.z = -0.1; g.add(staff);
+    g.add(mesh(new THREE.IcosahedronGeometry(0.07, 0), holoMat(0xff4fd8, { emissiveIntensity: 1.2 }), 0.25, 1.02));
+    g.userData.animate = (t) => { g.position.y = Math.sin(t * 2) * 0.03; };
+    return g;
+  },
+  LIGHT(c) { // winged guardian with a halo
+    const g = new THREE.Group(), m = holoMat(c), white = holoMat(0xffffff, { emissiveIntensity: 0.8 });
+    g.add(mesh(new THREE.CapsuleGeometry(0.13, 0.42, 6, 16), m, 0, 0.42));
+    g.add(mesh(new THREE.SphereGeometry(0.11, 16, 12), m, 0, 0.82));
+    const halo = mesh(new THREE.TorusGeometry(0.12, 0.012, 8, 32), white, 0, 0.98); halo.rotation.x = Math.PI / 2; g.add(halo);
+    const wings = [];
+    for (const s of [-1, 1]) { const w = mesh(petalGeo(0.55, 0.22), holoMat(0xffffff, { side: THREE.DoubleSide, opacity: 0.7 }), s * 0.08, 0.5, -0.06); w.rotation.z = -s * 1.0; g.add(w); wings.push([w, s]); }
+    g.userData.animate = (t) => { for (const [w, s] of wings) w.rotation.z = -s * (0.9 + Math.sin(t * 3) * 0.2); halo.rotation.z = t; };
+    return g;
+  },
+  FIRE(c) { // flame spirit
+    const g = new THREE.Group(), flames = [];
+    for (let i = 0; i < 6; i++) { const f = mesh(new THREE.ConeGeometry(0.22 - i * 0.025, 0.5 - i * 0.03, 12), holoMat(i % 2 ? 0xffb703 : c, { opacity: 0.75 }), Math.sin(i * 2) * 0.05, 0.25 + i * 0.1, Math.cos(i * 2) * 0.05); g.add(f); flames.push(f); }
+    for (const s of [-1, 1]) g.add(mesh(new THREE.SphereGeometry(0.025, 8, 6), holoMat(0xffffff, { emissiveIntensity: 2 }), s * 0.06, 0.62, 0.17));
+    g.userData.animate = (t) => flames.forEach((f, i) => { f.scale.y = 1 + Math.sin(t * 9 + i) * 0.15; f.rotation.y = t * (i % 2 ? 1 : -1); });
+    return g;
+  },
+  WATER(c) { // sea serpent rising in a spiral
+    const g = new THREE.Group(), pts = [];
+    for (let i = 0; i <= 40; i++) { const k = i / 40; pts.push(new THREE.Vector3(Math.cos(k * 9) * 0.22 * (1 - k * 0.6), k * 0.85, Math.sin(k * 9) * 0.22 * (1 - k * 0.6))); }
+    const body = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, 0.05, 10), holoMat(c)); g.add(body);
+    const head = mesh(new THREE.SphereGeometry(0.09, 16, 12), holoMat(c), pts[40].x, 0.9, pts[40].z); head.scale.set(1.4, 0.9, 1); g.add(head);
+    g.add(mesh(new THREE.ConeGeometry(0.03, 0.14, 6), holoMat(0xbde0fe), pts[40].x, 1.0, pts[40].z));
+    g.userData.animate = (t) => { g.rotation.y = Math.sin(t) * 0.4; };
+    return g;
+  },
+  EARTH(c) { // rock golem
+    const g = new THREE.Group(), m = holoMat(c, { flatShading: true });
+    g.add(mesh(new THREE.IcosahedronGeometry(0.24, 0), m, 0, 0.42));
+    g.add(mesh(new THREE.IcosahedronGeometry(0.13, 0), m, 0, 0.76));
+    for (const s of [-1, 1]) { g.add(mesh(new THREE.IcosahedronGeometry(0.1, 0), m, s * 0.3, 0.46)); g.add(mesh(new THREE.IcosahedronGeometry(0.12, 0), m, s * 0.34, 0.24)); g.add(mesh(new THREE.BoxGeometry(0.1, 0.2, 0.12), m, s * 0.1, 0.1)); }
+    for (const s of [-1, 1]) g.add(mesh(new THREE.SphereGeometry(0.02, 8, 6), holoMat(0xffd166, { emissiveIntensity: 2 }), s * 0.05, 0.78, 0.11));
+    g.userData.animate = (t) => { g.rotation.y = Math.sin(t * 0.8) * 0.25; };
+    return g;
+  },
+  WIND(c) { // great bird
+    const g = new THREE.Group(), m = holoMat(c);
+    const body = mesh(new THREE.SphereGeometry(0.16, 16, 12), m, 0, 0.55); body.scale.set(1, 0.9, 1.5); g.add(body);
+    g.add(mesh(new THREE.SphereGeometry(0.09, 14, 10), m, 0, 0.66, 0.2));
+    const beak = mesh(new THREE.ConeGeometry(0.03, 0.1, 8), holoMat(0xffd166), 0, 0.65, 0.31); beak.rotation.x = Math.PI / 2; g.add(beak);
+    const wings = [];
+    for (const s of [-1, 1]) { const pivot = new THREE.Group(); pivot.position.set(s * 0.1, 0.6, 0); const w = mesh(new THREE.BoxGeometry(0.5, 0.02, 0.22), holoMat(c, { opacity: 0.8 }), s * 0.25, 0, 0); pivot.add(w); g.add(pivot); wings.push([pivot, s]); }
+    g.add(mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.42, 6), holoMat(0xffffff), 0, 0.21));
+    g.userData.animate = (t) => { for (const [p, s] of wings) p.rotation.z = s * Math.sin(t * 6) * 0.6; };
+    return g;
+  },
+  DIVINE(c) { // golden core with orbiting rings
+    const g = new THREE.Group();
+    g.add(mesh(new THREE.SphereGeometry(0.2, 32, 24), holoMat(c, { metalness: 0.8, emissiveIntensity: 0.9 }), 0, 0.6));
+    const rings = [];
+    for (let i = 0; i < 3; i++) { const r = mesh(new THREE.TorusGeometry(0.3 + i * 0.06, 0.012, 8, 48), holoMat(0xffffff, { emissiveIntensity: 1 }), 0, 0.6); r.rotation.set(i * 0.9, i * 0.5, 0); g.add(r); rings.push(r); }
+    g.userData.animate = (t) => rings.forEach((r, i) => { r.rotation.x += 0.01 * (i + 1); r.rotation.y += 0.007; });
+    return g;
+  },
+  NONE(c) { // crystal
+    const g = new THREE.Group(); g.add(mesh(new THREE.OctahedronGeometry(0.25, 0), holoMat(c), 0, 0.5)); g.children[0].scale.y = 1.6;
+    g.userData.animate = (t) => { g.rotation.y = t; };
+    return g;
+  },
+};
+const loader = new GLTFLoader();
+const customModels = new Map(); // card name (lower case) -> loaded scene
+function hologram(card) {
+  const g = new THREE.Group();
+  const custom = customModels.get(card.name.trim().toLowerCase());
+  const model = custom ? custom.clone(true) : (HOLO[card.attribute] || HOLO.NONE)(ATTR_COLOR[card.attribute] || 0x9fb3c8);
+  // the model animates itself; sizing and lifting it onto the zone happen on a wrapper so they do not clash
+  const wrap = new THREE.Group(); wrap.add(model);
+  const box = new THREE.Box3().setFromObject(wrap), size = box.getSize(new THREE.Vector3());
+  const height = 0.1 + Math.min(card.level || 4, 12) * 0.014; // level 1: 11 cm ... level 12: 27 cm
+  wrap.scale.setScalar(height / (size.y || 1));
+  const b2 = new THREE.Box3().setFromObject(wrap); wrap.position.y -= b2.min.y;
+  g.add(wrap); g.userData.model = model; g.userData.height = height;
+  // glowing base ring
+  const ring = mesh(new THREE.RingGeometry(0.03, 0.036, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: ATTR_COLOR[card.attribute] || 0xffffff, transparent: true, opacity: 0.8, side: THREE.DoubleSide }), 0, 0.002);
+  g.add(ring);
+  return g;
+}
+function statLabel() {
+  const c = document.createElement("canvas"); c.width = 256; c.height = 80;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true }));
+  s.scale.set(0.07, 0.022, 1); s.renderOrder = 5; s.userData = { c, t };
+  return s;
+}
+function drawLabel(s, slot) {
+  const g = s.userData.c.getContext("2d"), c = s.userData.c, card = slot.card;
+  g.clearRect(0, 0, c.width, c.height);
+  g.fillStyle = "rgba(10,14,20,.82)"; rrect(g, 4, 4, c.width - 8, c.height - 8, 18); g.fill();
+  g.font = "700 30px Sora, sans-serif"; g.textAlign = "center";
+  g.fillStyle = slot.pos === "atk" ? "#ffb547" : "#7a8796"; g.fillText(`ATK ${card.atk ?? "?"}`, 70, 52);
+  g.fillStyle = slot.pos === "def" ? "#4cc9f0" : "#7a8796"; g.fillText(`DEF ${card.def ?? "-"}`, 186, 52);
+  s.userData.t.needsUpdate = true;
+}
+
+// ---------- Duel state ----------
+const S = { lp: [8000, 8000], turn: 0, hand: [[], []], gy: [[], []], zones: [{ m: Array(5).fill(null), s: Array(5).fill(null) }, { m: Array(5).fill(null), s: Array(5).fill(null) }], attacked: new Set(), over: false };
+const ui = { mode: "idle", pick: null, how: null, sel: null };
+const effects = []; // short animations
+function zonePos(p, row, i) { return new THREE.Vector3(p === 0 ? COLS[i] : -COLS[i], 0, zoneZ(p, row)); }
+
+function renderSlot(p, row, i) {
+  const slot = S.zones[p][row][i];
+  if (!slot) return;
+  if (slot.obj) { board.remove(slot.obj.group); }
+  const group = new THREE.Group(); group.position.copy(zonePos(p, row, i)); board.add(group);
+  const cm = cardMesh(slot.card); cm.position.y = 0.002;
+  if (slot.faceDown) cm.rotation.z = Math.PI; // back up
+  if (p === 1) cm.rotation.y = Math.PI;
+  if (slot.pos === "def") cm.rotation.y += Math.PI / 2;
+  group.add(cm);
+  let holo = null, label = null;
+  if (slot.card.kind === "monster" && !slot.faceDown) {
+    holo = hologram(slot.card); holo.rotation.y = p === 0 ? Math.PI : 0; // face the opponent
+    if (slot.pos === "def") holo.scale.setScalar(0.85);
+    group.add(holo);
+    label = statLabel(); label.position.y = holo.userData.height + 0.03; drawLabel(label, slot); group.add(label);
+  }
+  slot.obj = { group, cm, holo, label };
+}
+function clearSlot(p, row, i) { const slot = S.zones[p][row][i]; if (slot?.obj) board.remove(slot.obj.group); S.zones[p][row][i] = null; }
+function renderAll() { for (const p of [0, 1]) for (const row of ["m", "s"]) for (let i = 0; i < 5; i++) renderSlot(p, row, i); }
+
+// ---------- Actions ----------
+function place(p, row, i) {
+  const card = S.hand[p][ui.pick];
+  const slot = { card, pos: ui.how === "set" && card.kind === "monster" ? "def" : "atk", faceDown: ui.how === "set", turnPlaced: S.turnCount };
+  S.zones[p][row][i] = slot; S.hand[p].splice(ui.pick, 1);
+  renderSlot(p, row, i);
+  if (slot.obj.holo) summonEffect(slot);
+  toast(slot.faceDown ? `${PLAYER[p]} set a card` : `${PLAYER[p]} played ${card.name}`);
+  ui.mode = "idle"; ui.pick = null; hint(""); saveDuel(); refreshUI();
+}
+function summonEffect(slot) {
+  const holo = slot.obj.holo, color = ATTR_COLOR[slot.card.attribute] || 0xffffff;
+  holo.scale.setScalar(0.001);
+  const ring = mesh(new THREE.TorusGeometry(0.04, 0.004, 8, 48), new THREE.MeshBasicMaterial({ color, transparent: true }), 0, 0.004); ring.rotation.x = Math.PI / 2;
+  const beam = mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.35, 24, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }), 0, 0.175);
+  slot.obj.group.add(ring, beam);
+  const full = slot.pos === "def" ? 0.85 : 1;
+  effects.push({ t: 0, dur: 0.9, step: k => { ring.scale.setScalar(1 + k * 2.5); ring.material.opacity = 1 - k; beam.material.opacity = 0.5 * (1 - k); holo.scale.setScalar(full * Math.min(1, k * 1.6)); }, done: () => slot.obj.group.remove(ring, beam) });
+}
+function sparks(pos, color) {
+  const n = 36, geo = new THREE.BufferGeometry(), arr = new Float32Array(n * 3), vel = [];
+  for (let i = 0; i < n; i++) { arr.set([pos.x, pos.y, pos.z], i * 3); vel.push(new THREE.Vector3((Math.random() - .5) * 0.6, Math.random() * 0.6, (Math.random() - .5) * 0.6)); }
+  geo.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size: 0.008, transparent: true, depthWrite: false })); board.add(pts);
+  effects.push({ t: 0, dur: 0.9, step: (k, dt) => { const a = pts.geometry.attributes.position; for (let i = 0; i < n; i++) { vel[i].y -= dt * 1.2; a.setXYZ(i, a.getX(i) + vel[i].x * dt, a.getY(i) + vel[i].y * dt, a.getZ(i) + vel[i].z * dt); } a.needsUpdate = true; pts.material.opacity = 1 - k; }, done: () => board.remove(pts) });
+}
+function destroy(p, row, i) {
+  const slot = S.zones[p][row][i]; if (!slot) return;
+  S.gy[p].push(slot.card);
+  const g = slot.obj.group, pos = g.position.clone(); pos.y = 0.06;
+  sparks(pos, ATTR_COLOR[slot.card.attribute] || 0xffffff);
+  S.zones[p][row][i] = null;
+  effects.push({ t: 0, dur: 0.6, step: k => { g.scale.setScalar(1 - k); g.rotation.y += 0.2; }, done: () => board.remove(g) });
+}
+function damage(p, n) {
+  if (n <= 0) return;
+  S.lp[p] = Math.max(0, S.lp[p] - n);
+  floatText(`-${n}`, p);
+  refreshUI();
+  if (S.lp[p] === 0 && !S.over) { S.over = true; setTimeout(() => { $("#bannerText").textContent = `${PLAYER[1 - p]} wins!`; $("#banner").hidden = false; }, 900); }
+}
+function floatText(text, p) { const el = p === 0 ? $("#lp0") : $("#lp1"); el.animate([{ transform: "scale(1.25)" }, { transform: "scale(1)" }], { duration: 500 }); toast(`${PLAYER[p]} takes ${text.replace("-", "")} damage`); }
+// Standard battle rules: ATK vs ATK, or ATK vs DEF
+function attack(ap, ai, dp, di) {
+  const att = S.zones[ap].m[ai], def = di == null ? null : S.zones[dp].m[di];
+  S.attacked.add(ai);
+  lunge(att, def ? def.obj.group.position : zonePos(dp, "s", 2), () => {
+    if (!def) { damage(dp, att.card.atk || 0); toast(`${att.card.name} attacks directly!`); return finishBattle(); }
+    if (def.faceDown) { def.faceDown = false; renderSlot(dp, "m", di); }
+    const A = att.card.atk || 0;
+    if (def.pos === "atk") {
+      const D = def.card.atk || 0;
+      if (A > D) { destroy(dp, "m", di); damage(dp, A - D); }
+      else if (A < D) { destroy(ap, "m", ai); damage(ap, D - A); }
+      else { destroy(ap, "m", ai); destroy(dp, "m", di); toast("Both monsters are destroyed"); }
+    } else {
+      const D = def.card.def || 0;
+      if (A > D) { destroy(dp, "m", di); toast(`${def.card.name} is destroyed`); }
+      else if (A < D) damage(ap, D - A);
+      else toast("Neither monster is destroyed");
+    }
+    finishBattle();
+  });
+}
+function finishBattle() { ui.mode = "idle"; ui.sel = null; hint(""); saveDuel(); refreshUI(); }
+function lunge(slot, targetPos, onHit) {
+  const g = slot.obj.holo || slot.obj.group, from = g.position.clone();
+  const to = board.worldToLocal(board.localToWorld(targetPos.clone())).sub(slot.obj.group.position).multiplyScalar(0.8);
+  let hitDone = false;
+  effects.push({ t: 0, dur: 0.7, step: k => { const f = k < 0.5 ? k * 2 : 2 - k * 2; g.position.lerpVectors(from, to, f * f); if (k >= 0.5 && !hitDone) { hitDone = true; const p = slot.obj.group.position.clone().add(to); p.y = 0.08; sparks(p, 0xffffff); onHit(); } }, done: () => g.position.copy(from) });
+}
+function changePos(p, i) { const s = S.zones[p].m[i]; s.pos = s.pos === "atk" ? "def" : "atk"; if (s.faceDown) s.faceDown = false; renderSlot(p, "m", i); if (s.obj.holo) summonEffect(s); saveDuel(); refreshUI(); }
+function flip(p, row, i) { const s = S.zones[p][row][i]; s.faceDown = false; renderSlot(p, row, i); if (s.obj.holo) summonEffect(s); toast(`${s.card.name} is revealed`); saveDuel(); refreshUI(); }
+function toGrave(p, row, i) { destroy(p, row, i); ui.sel = null; saveDuel(); refreshUI(); }
+function endTurn() {
+  S.turn = 1 - S.turn; S.turnCount = (S.turnCount || 1) + 1; S.attacked.clear(); ui.mode = "idle"; ui.sel = null; ui.pick = null;
+  toast(`${PLAYER[S.turn]}'s turn. Pass the phone`);
+  if (mode === "preview") aimPreview();
+  saveDuel(); refreshUI();
+}
+
+// ---------- Tapping the board ----------
+const ray = new THREE.Raycaster();
+function onZone(z) {
+  if (S.over) return;
+  if (z.pile) { if (z.pile.kind === "GY") { const gy = S.gy[z.pile.p]; toast(gy.length ? `${PLAYER[z.pile.p]}'s graveyard: ${gy.map(c => c.name).join(", ")}` : "The graveyard is empty"); } else toast("Draw a real card, then tap Scan card to add it"); return; }
+  const { p, row, i } = z.zone, slot = S.zones[p][row][i];
+  if (ui.mode === "place") {
+    const card = S.hand[S.turn][ui.pick];
+    if (p !== S.turn) return toast("Place cards on your own side");
+    if ((card.kind === "monster") !== (row === "m")) return toast(card.kind === "monster" ? "Monsters go in the front row" : "Spells and traps go in the back row");
+    if (slot) return toast("That zone is taken");
+    return place(p, row, i);
+  }
+  if (ui.mode === "attack") {
+    if (p === S.turn || row !== "m" || !slot) return toast("Tap one of your opponent's monsters");
+    return attack(S.turn, ui.sel.i, p, i);
+  }
+  ui.sel = slot ? { p, row, i } : null;
+  refreshUI();
+}
+function pick(clientX, clientY) {
+  ray.setFromCamera(new THREE.Vector2(clientX / innerWidth * 2 - 1, -(clientY / innerHeight) * 2 + 1), camera);
+  return hitZone();
+}
+function hitZone() { const h = ray.intersectObjects(zoneMeshes, false)[0]; return h ? h.object.userData : null; }
+
+// ---------- HUD ----------
+function refreshUI() {
+  $("#lp0v").textContent = S.lp[0]; $("#lp1v").textContent = S.lp[1];
+  $("#lp0").classList.toggle("active", S.turn === 0); $("#lp1").classList.toggle("active", S.turn === 1);
+  $("#turnLabel").textContent = `${PLAYER[S.turn]}'s turn`;
+  const hand = $("#hand"); hand.innerHTML = "";
+  if (!S.hand[S.turn].length) hand.append(Object.assign(document.createElement("div"), { className: "empty-hand", textContent: `${PLAYER[S.turn]}'s hand is empty. Tap Scan card to add your real cards.` }));
+  S.hand[S.turn].forEach((c, idx) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "hcard " + c.kind });
+    b.setAttribute("aria-pressed", String(ui.pick === idx));
+    b.append(Object.assign(document.createElement("b"), { textContent: c.name }), Object.assign(document.createElement("small"), { textContent: c.kind === "monster" ? `${c.attribute || "?"} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type || c.kind }));
+    b.onclick = () => { ui.pick = idx; ui.sel = null; ui.mode = "choose"; refreshUI(); };
+    hand.append(b);
+  });
+  const panel = $("#panel"); panel.innerHTML = ""; panel.hidden = true;
+  const btn = (label, fn, cls = "") => { const b = Object.assign(document.createElement("button"), { type: "button", className: "btn small " + cls, textContent: label }); b.onclick = fn; return b; };
+  const row = document.createElement("div"); row.className = "row";
+  if ((ui.mode === "choose" || ui.mode === "place") && ui.pick != null) {
+    const c = S.hand[S.turn][ui.pick]; panel.hidden = false;
+    panel.append(Object.assign(document.createElement("h3"), { textContent: c.name }), Object.assign(document.createElement("div"), { className: "meta", textContent: c.type || c.kind }));
+    if (c.summary) panel.append(Object.assign(document.createElement("p"), { textContent: c.summary }));
+    const go = how => () => { ui.how = how; ui.mode = "place"; hint(c.kind === "monster" ? "Tap one of your monster zones (front row)" : "Tap one of your spell/trap zones (back row)"); refreshUI(); };
+    if (c.kind === "monster") row.append(btn("Summon (attack)", go("summon")), btn("Set (face-down defence)", go("set")));
+    else row.append(btn("Activate (face-up)", go("summon")), btn("Set (face-down)", go("set")));
+    row.append(btn("Discard", () => { S.gy[S.turn].push(c); S.hand[S.turn].splice(ui.pick, 1); ui.pick = null; ui.mode = "idle"; hint(""); saveDuel(); refreshUI(); }), btn("Cancel", () => { ui.pick = null; ui.mode = "idle"; hint(""); refreshUI(); }));
+    panel.append(row);
+  } else if (ui.mode === "attack") {
+    panel.hidden = false; panel.append(Object.assign(document.createElement("h3"), { textContent: "Choose a target" }));
+    const oppHas = S.zones[1 - S.turn].m.some(Boolean);
+    if (!oppHas) row.append(btn("Attack directly", () => attack(S.turn, ui.sel.i, 1 - S.turn, null), "primary"));
+    row.append(btn("Cancel", () => { ui.mode = "idle"; hint(""); refreshUI(); })); panel.append(row);
+  } else if (ui.sel) {
+    const { p, row: r, i } = ui.sel, s = S.zones[p][r][i]; if (!s) { ui.sel = null; return refreshUI(); }
+    const mine = p === S.turn, hidden = s.faceDown && !mine;
+    panel.hidden = false;
+    panel.append(Object.assign(document.createElement("h3"), { textContent: hidden ? "Face-down card" : s.card.name }),
+      Object.assign(document.createElement("div"), { className: "meta", textContent: hidden ? PLAYER[p] : `${PLAYER[p]} · ${s.card.type || s.card.kind}${s.card.kind === "monster" ? ` · ${s.pos === "atk" ? "attack" : "defence"} position` : ""}${s.faceDown ? " · face-down" : ""}` }));
+    if (!hidden && s.card.summary) panel.append(Object.assign(document.createElement("p"), { textContent: s.card.summary }));
+    if (mine) {
+      if (r === "m") {
+        const canAttack = s.pos === "atk" && !s.faceDown && !S.attacked.has(i);
+        row.append(btn(S.attacked.has(i) ? "Already attacked" : "Attack", () => { ui.mode = "attack"; hint(S.zones[1 - S.turn].m.some(Boolean) ? "Tap the monster to attack" : "No monsters to block: attack directly"); refreshUI(); }, "primary"));
+        row.lastChild.disabled = !canAttack;
+        row.append(btn(s.pos === "atk" ? "Switch to defence" : "Switch to attack", () => changePos(p, i)));
+        if (s.faceDown) row.append(btn("Flip face-up", () => flip(p, r, i)));
+      } else if (s.faceDown) row.append(btn("Activate", () => flip(p, r, i), "primary"));
+      row.append(btn("Send to graveyard", () => toGrave(p, r, i), "danger"));
+    }
+    row.append(btn("Close", () => { ui.sel = null; refreshUI(); }));
+    panel.append(row);
+  }
+}
+let toastTimer;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2400); }
+function hint(msg) { const h = $("#hint"); h.hidden = !msg; if (msg) h.textContent = msg; }
+// Life points by hand, for card effects
+$("#lpBtn").addEventListener("click", () => {
+  const panel = $("#panel"); panel.innerHTML = ""; panel.hidden = false;
+  panel.append(Object.assign(document.createElement("h3"), { textContent: "Change life points" }), Object.assign(document.createElement("div"), { className: "meta", textContent: "For card effects that gain or lose life points" }));
+  const amount = Object.assign(document.createElement("input"), { type: "number", value: 500, step: 100, min: 0, id: "lpAmount" });
+  const f = document.createElement("label"); f.className = "field"; f.append("Amount", amount); panel.append(f);
+  const row = document.createElement("div"); row.className = "row"; row.style.marginTop = "8px";
+  for (const p of [0, 1]) for (const sign of [-1, 1]) {
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "btn small", textContent: `${PLAYER[p]} ${sign < 0 ? "−" : "+"}` });
+    b.onclick = () => { const n = Math.abs(+amount.value || 0); if (sign < 0) damage(p, n); else { S.lp[p] += n; toast(`${PLAYER[p]} gains ${n}`); } saveDuel(); refreshUI(); };
+    row.append(b);
+  }
+  row.append(Object.assign(document.createElement("button"), { type: "button", className: "btn small", textContent: "Close", onclick: () => refreshUI() }));
+  panel.append(row);
+});
+$("#endBtn").addEventListener("click", endTurn);
+$("#rematch").addEventListener("click", () => { newDuel(); $("#banner").hidden = true; });
+
+// ---------- Saving the duel and the card library on this phone ----------
+function saveDuel() {
+  try { localStorage.setItem("arduel.duel", JSON.stringify({ ...S, attacked: [...S.attacked], zones: S.zones.map(z => ({ m: z.m.map(strip), s: z.s.map(strip) })) })); } catch {}
+}
+const strip = s => s ? { card: s.card, pos: s.pos, faceDown: s.faceDown } : null;
+function loadDuel() {
+  try { const d = JSON.parse(localStorage.getItem("arduel.duel") || "null"); if (!d) return; Object.assign(S, d, { attacked: new Set(d.attacked || []) }); } catch {}
+}
+function newDuel() {
+  for (const p of [0, 1]) for (const row of ["m", "s"]) for (let i = 0; i < 5; i++) clearSlot(p, row, i);
+  Object.assign(S, { lp: [8000, 8000], turn: 0, turnCount: 1, gy: [[], []], attacked: new Set(), over: false });
+  ui.mode = "idle"; ui.sel = null; ui.pick = null; saveDuel(); refreshUI();
+}
+const library = { get() { try { return JSON.parse(localStorage.getItem("arduel.library") || "[]"); } catch { return []; } }, add(c) { const l = library.get().filter(x => x.name !== c.name); l.unshift(c); try { localStorage.setItem("arduel.library", JSON.stringify(l.slice(0, 60))); } catch {} } };
+
+// ---------- Scanning cards ----------
+let camStream = null, returnTo = null;
+async function openScan(back) {
+  returnTo = back;
+  $("#start").hidden = true; $("#scan").hidden = false; $("#overlay").hidden = true;
+  renderLibrary(); renderModels();
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    $("#cam").srcObject = camStream; await $("#cam").play();
+  } catch { $("#scanStatus").textContent = "Camera not available. You can type cards in instead."; }
+}
+function closeScan() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  $("#scan").hidden = true;
+  if (returnTo === "duel") resumeDuel(); else { $("#start").hidden = false; updateStartNote(); }
+}
+function fillForm(c) {
+  $("#cardForm").hidden = false;
+  $("#fName").value = c.name || ""; $("#fKind").value = c.kind || "monster"; $("#fAttr").value = c.attribute || "";
+  $("#fLevel").value = c.level ?? ""; $("#fAtk").value = c.atk ?? ""; $("#fDef").value = c.def ?? ""; $("#fType").value = c.type || ""; $("#fSummary").value = c.summary || "";
+}
+function readForm() {
+  const n = v => v === "" ? null : Math.max(0, Math.round(+v));
+  return { name: $("#fName").value.trim() || "Unnamed card", kind: $("#fKind").value, attribute: $("#fAttr").value, level: n($("#fLevel").value), atk: n($("#fAtk").value), def: n($("#fDef").value), type: $("#fType").value.trim(), summary: $("#fSummary").value.trim() };
+}
+$("#readBtn").addEventListener("click", async () => {
+  const v = $("#cam"), st = $("#scanStatus");
+  if (!v.videoWidth) { st.textContent = "Camera not ready yet."; return; }
+  // crop to the card guide in the middle of the view
+  const vw = v.videoWidth, vh = v.videoHeight, ch = Math.min(vh * 0.95, vw * 0.52 * 86 / 59), cw = ch * 59 / 86;
+  const c = document.createElement("canvas"), s = Math.min(1, 1100 / ch); c.width = Math.round(cw * s); c.height = Math.round(ch * s);
+  c.getContext("2d").drawImage(v, (vw - cw) / 2, (vh - ch) / 2, cw, ch, 0, 0, c.width, c.height);
+  st.textContent = "Reading the card…"; $("#readBtn").disabled = true;
+  try {
+    const r = await fetch("api/card.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: c.toDataURL("image/jpeg", 0.9).split(",")[1] }) });
+    const j = await r.json().catch(() => ({ error: "The server sent an unexpected reply." }));
+    if (!r.ok || j.error) throw new Error(j.error || `Server error ${r.status}`);
+    fillForm(j.card); st.textContent = "Check the details, then add it to a hand.";
+  } catch (e) { st.textContent = (e.message === "Failed to fetch" ? "No internet connection." : e.message) + " You can type it in instead."; }
+  $("#readBtn").disabled = false;
+});
+$("#typeBtn").addEventListener("click", () => fillForm({}));
+for (const p of [0, 1]) $("#toP" + p).addEventListener("click", () => { const c = readForm(); S.hand[p].push(c); library.add(c); saveDuel(); $("#scanStatus").textContent = `${c.name} added to ${PLAYER[p]}'s hand.`; $("#cardForm").hidden = true; renderLibrary(); });
+$("#scanDone").addEventListener("click", closeScan);
+function renderLibrary() {
+  const box = $("#library"); box.innerHTML = "";
+  const list = library.get();
+  if (!list.length) { box.append(Object.assign(document.createElement("p"), { className: "note", textContent: "Cards you scan are kept here so you can reuse them." })); return; }
+  for (const c of list) {
+    const d = document.createElement("div"); d.className = "libcard";
+    d.append(Object.assign(document.createElement("b"), { textContent: c.name }), Object.assign(document.createElement("small"), { textContent: c.kind === "monster" ? `${c.attribute || "?"} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type || c.kind }));
+    const row = document.createElement("div"); row.className = "row";
+    for (const p of [0, 1]) row.append(Object.assign(document.createElement("button"), { type: "button", className: "btn small", textContent: `+ P${p + 1}`, onclick: () => { S.hand[p].push({ ...c }); saveDuel(); $("#scanStatus").textContent = `${c.name} added to ${PLAYER[p]}'s hand.`; } }));
+    d.append(row); box.append(d);
+  }
+}
+
+// ---------- Your own 3D models for card names (IndexedDB) ----------
+const modelDB = (() => {
+  const open = () => new Promise((res, rej) => { const r = indexedDB.open("arduel", 1); r.onupgradeneeded = () => r.result.createObjectStore("models", { keyPath: "key" }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const run = async (mode, fn) => { const d = await open(); return new Promise((res, rej) => { const t = d.transaction("models", mode), q = fn(t.objectStore("models")); t.oncomplete = () => res(q.result); t.onerror = () => rej(t.error); }); };
+  return { all: () => run("readonly", s => s.getAll()), put: m => run("readwrite", s => s.put(m)), del: k => run("readwrite", s => s.delete(k)) };
+})();
+async function loadModels() {
+  let list = []; try { list = await modelDB.all(); } catch {}
+  for (const m of list) if (!customModels.has(m.key)) { try { customModels.set(m.key, (await loader.parseAsync(await m.blob.arrayBuffer(), "")).scene); } catch {} }
+  return list;
+}
+async function renderModels() {
+  const list = await loadModels(), box = $("#modelList"); box.innerHTML = "";
+  for (const m of list) {
+    const d = document.createElement("div"); d.className = "libcard";
+    d.append(Object.assign(document.createElement("b"), { textContent: m.name }), Object.assign(document.createElement("small"), { textContent: m.file }));
+    d.append(Object.assign(document.createElement("button"), { type: "button", className: "btn small", textContent: "Remove", onclick: async () => { await modelDB.del(m.key); customModels.delete(m.key); renderModels(); } }));
+    box.append(d);
+  }
+}
+$("#mFile").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  const name = $("#mName").value.trim(), st = $("#mStatus");
+  if (!name) { st.textContent = "Type the card name first."; return; }
+  try { await loader.parseAsync(await file.arrayBuffer(), ""); await modelDB.put({ key: name.toLowerCase(), name, file: file.name, blob: file }); st.textContent = `${name} will use ${file.name}.`; renderModels(); }
+  catch { st.textContent = "Could not read that file. Use a .glb (glTF Binary) model."; }
+});
+
+// ---------- Modes: on a real table (WebXR) or a 3D preview ----------
+let mode = null, hitSource = null, reticle = null, placed = false;
+async function startXR() {
+  const session = await navigator.xr.requestSession("immersive-ar", { requiredFeatures: ["hit-test"], optionalFeatures: ["dom-overlay"], domOverlay: { root: $("#overlay") } });
+  renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType("local");
+  await renderer.xr.setSession(session);
+  hitSource = await session.requestHitTestSource({ space: await session.requestReferenceSpace("viewer") });
+  placed = false; board.visible = false; scene.background = null;
+  reticle ??= new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.46).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffb547, transparent: true, opacity: 0.25 }));
+  reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
+  const controller = renderer.xr.getController(0); scene.add(controller);
+  controller.addEventListener("select", () => {
+    if (!placed) {
+      if (!reticle.visible) return;
+      // put the board where the outline is, turned to face the player holding the phone
+      const p = new THREE.Vector3().setFromMatrixPosition(reticle.matrix), cam = new THREE.Vector3(); renderer.xr.getCamera().getWorldPosition(cam);
+      board.position.copy(p); board.rotation.set(0, Math.atan2(cam.x - p.x, cam.z - p.z), 0);
+      board.visible = true; placed = true; reticle.visible = false; hint(""); toast("Board placed. Lay your real cards on the zones as you play");
+      return;
+    }
+    const m = new THREE.Matrix4().extractRotation(controller.matrixWorld);
+    ray.ray.origin.setFromMatrixPosition(controller.matrixWorld); ray.ray.direction.set(0, 0, -1).applyMatrix4(m);
+    const z = hitZone(); if (z) onZone(z);
+  });
+  $("#overlay").addEventListener("beforexrselect", ev => { if (ev.target.closest(".ui")) ev.preventDefault(); });
+  session.addEventListener("end", () => { hitSource = null; renderer.xr.enabled = false; if (reticle) reticle.visible = false; if (mode === "xr") { mode = null; board.visible = false; if (!$("#scan").hidden) return; $("#overlay").hidden = true; $("#start").hidden = false; updateStartNote(); } });
+  mode = "xr"; $("#start").hidden = true; $("#overlay").hidden = false;
+  hint("Point at the table and move the phone slowly. Tap when the orange outline sits where you want the board");
+  refreshUI();
+}
+function aimPreview() {
+  // look at the board from the side of the player whose turn it is
+  // far enough back that the whole board (about 62 cm wide) fits a narrow phone screen
+  const s = S.turn === 0 ? 1 : -1, hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+  const dist = Math.max(0.75, 0.36 / Math.tan(hfov / 2)), tilt = THREE.MathUtils.degToRad(55);
+  camera.position.set(0, dist * Math.sin(tilt), dist * Math.cos(tilt) * s); camera.lookAt(0, 0, 0.2 * s); // board sits above the hand and panel
+}
+const table = new THREE.Mesh(new THREE.CircleGeometry(0.6, 48).rotateX(-Math.PI / 2), mat(0x3b2a1e, { roughness: 0.7 }));
+table.position.y = -0.001; table.visible = false; scene.add(table);
+function startPreview() {
+  mode = "preview"; board.position.set(0, 0, 0); board.rotation.set(0, 0, 0); board.visible = true; table.visible = true;
+  scene.background = new THREE.Color(0x10141c); aimPreview();
+  $("#start").hidden = true; $("#overlay").hidden = false; refreshUI();
+}
+canvas.addEventListener("pointerup", e => { if (mode !== "preview") return; const z = pick(e.clientX, e.clientY); if (z) onZone(z); });
+function resumeDuel() {
+  if (lastMode === "xr") { $("#start").hidden = false; $("#status").textContent = "Tap Start on the table to continue your duel."; updateStartNote(); }
+  else startPreview();
+}
+let lastMode = null;
+$("#scanBtn").addEventListener("click", () => {
+  lastMode = mode;
+  const s = renderer.xr.getSession();
+  if (s) { mode = "scanning"; s.end(); }
+  if (mode === "preview") { mode = null; table.visible = false; scene.background = null; board.visible = false; }
+  openScan("duel");
+});
+$("#exitBtn").addEventListener("click", () => {
+  const s = renderer.xr.getSession(); if (s) s.end();
+  mode = null; board.visible = false; table.visible = false; scene.background = null;
+  $("#overlay").hidden = true; $("#start").hidden = false; updateStartNote();
+});
+$("#startXR").addEventListener("click", async () => { try { await startXR(); } catch (e) { $("#status").className = "err"; $("#status").textContent = "Could not start AR: " + (e.message || e); } });
+$("#startPreview").addEventListener("click", startPreview);
+$("#openScan").addEventListener("click", () => openScan("start"));
+if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported("immersive-ar").then(ok => { $("#startXR").hidden = !ok; }).catch(() => {});
+function updateStartNote() {
+  const n = S.hand[0].length + S.hand[1].length, onBoard = S.zones.flatMap(z => [...z.m, ...z.s]).filter(Boolean).length;
+  $("#handNote").textContent = n || onBoard ? `Duel in progress: ${onBoard} cards on the board, ${n} in hands. Life points ${S.lp[0]} / ${S.lp[1]}.` : "Start by scanning a few cards for each player, or play in the 3D preview to try it out.";
+}
+
+// ---------- Main loop ----------
+const clock = new THREE.Clock();
+renderer.setAnimationLoop((time, frame) => {
+  const dt = Math.min(0.05, clock.getDelta()), t = clock.elapsedTime;
+  if (mode === "xr" && frame && hitSource && !placed) {
+    const hits = frame.getHitTestResults(hitSource);
+    if (hits.length) { reticle.visible = true; reticle.matrix.fromArray(hits[0].getPose(renderer.xr.getReferenceSpace()).transform.matrix); }
+  }
+  for (const p of [0, 1]) for (const row of ["m"]) for (const s of S.zones[p][row]) if (s?.obj?.holo) s.obj.holo.userData.model.traverse(o => o.userData.animate?.(t));
+  for (const e of [...effects]) { e.t += dt; const k = Math.min(1, e.t / e.dur); e.step(k, dt); if (k >= 1) { effects.splice(effects.indexOf(e), 1); e.done?.(); } }
+  renderer.render(scene, camera);
+});
+
+buildBoard();
+loadDuel();
+loadModels().then(() => renderAll());
+updateStartNote();
+</script>
+</body>
+</html>

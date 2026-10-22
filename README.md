@@ -32,6 +32,14 @@ Live: https://smarteyes.cck8.my
 
 **Landmark chops**: Petronas Twin Towers, Menara KL, Thean Hou Temple, Kek Lok Si, Khoo Kongsi, Cheng Hoon Teng, Christ Church Melaka, A Famosa, Tua Pek Kong Kuching, Great Cat of Kuching, Timpohon Gate (Kinabalu Park), Sam Poh Tong. Coordinates come from OpenStreetMap and live in the `LANDMARKS` list in `index.html` (`CATCH_R` sets the 60 m catch distance). Phone GPS is usually accurate to 5–20 m and compasses to 10–20°, so the anchored position can be a little off, more so between tall buildings.
 
+## AR Duel (`duel.html`)
+A duel board for your own trading cards, placed on a real table with WebXR (or shown in a 3D preview).
+- **Scan**: hold a card up to the camera; Claude Haiku (`api/card.php`) reads name, kind, attribute, level, ATK, DEF and a short summary. You can correct the details or type a card in. Scanned cards are kept in a library on the phone
+- **Board**: zones are real card size (5 monster and 5 spell/trap zones per player, deck and graveyard), so physical cards can lie on them
+- **Play**: pick a card from your hand, summon or set it on a zone, and an original hologram rises from it (its look depends on the attribute, its size on the level). Battles follow the standard ATK/DEF rules; direct attacks, position changes, flipping, graveyard and life point adjustments for effects are included. Two players share one phone and pass it each turn
+- **Own models**: attach a `.glb` model to any card name and that card shows it
+- It is a fan tool: it does not include official card art or character models
+
 ## Bag, repeats and unlocks
 - Normal items keep appearing; every catch adds one to the **Bag** (e.g. Durian × 7). The Collection records each kind once
 - Items can have rules in `ITEM_LIST` (last column): `needs` makes an item appear only after owning enough of others, `limit` caps how many one person can own. Examples: **Musang King** needs 5 Durian; the **Golden Cat** needs 10 Cats and is one of a kind
