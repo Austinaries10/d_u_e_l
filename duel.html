@@ -61,6 +61,16 @@
   .hcard small { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
   .hcard.monster { border-color: rgba(255,159,28,.55); } .hcard.spell { border-color: rgba(123,216,143,.6); } .hcard.trap { border-color: rgba(240,113,203,.6); }
   .hcard[aria-pressed="true"] { background: rgba(255,181,71,.25); border-color: var(--accent); }
+  .hcard img { display: block; width: 100%; border-radius: 6px; margin-bottom: 6px; aspect-ratio: 59 / 86; object-fit: cover; background: #1c2230; }
+  #panel img.full { float: left; width: 96px; border-radius: 8px; margin: 0 12px 6px 0; }
+  #panel p.long { max-height: 9.5em; overflow-y: auto; }
+  #pass { position: absolute; inset: 0; z-index: 10; background: rgba(8,10,16,.96); display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
+  #pass h2 { margin: 0; font-size: 28px; }
+  .deckcard { display: grid; grid-template-columns: 54px 1fr auto; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 8px; background: rgba(255,255,255,.04); min-width: 0; }
+  .deckcard img { width: 54px; border-radius: 5px; aspect-ratio: 59 / 86; object-fit: cover; background: #1c2230; }
+  .deckcard b { font-size: 13px; display: block; } .deckcard small { font-size: 11px; color: var(--muted); }
+  .decklist, .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+  .tabs .btn[aria-pressed="true"] { background: var(--accent); color: #241703; }
   .empty-hand { font-size: 12px; color: var(--muted); padding: 10px 4px; }
 
   .screen { position: fixed; inset: 0; z-index: 10; overflow-y: auto; background: radial-gradient(120% 80% at 50% 0%, #1f2440 0%, var(--ink) 60%); padding: calc(env(safe-area-inset-top, 0px) + 20px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 24px) max(16px, env(safe-area-inset-left, 0px)); }
@@ -98,6 +108,7 @@
   </div>
   <div id="toast"></div>
   <div id="hint" hidden></div>
+  <div id="pass" class="ui" hidden><h2 id="passTitle"></h2><p class="note" id="passNote"></p><div><button class="btn primary" id="passOk" type="button">Show my hand</button></div></div>
   <div id="banner" class="ui" hidden><h2 id="bannerText"></h2><button class="btn primary" id="rematch" type="button">New duel</button></div>
   <div class="dock ui">
     <div id="panel" hidden></div>
@@ -114,22 +125,38 @@
 <section class="screen" id="start">
   <div class="intro">
     <h1>AR <span>Duel</span></h1>
-    <p>Put a duel board on a real table and battle with your own trading cards. Scan a card with the camera, place it on a zone, and its hologram monster appears on the table.</p>
+    <p>Put a duel board on a real table and battle with virtual decks. Build a deck from the card database, draw, and play cards onto the table: each monster's artwork rises from its zone as a hologram.</p>
     <ul>
-      <li><b>Scan</b>Hold a card up to the camera. The AI reads its name, ATK and DEF</li>
+      <li><b>Deck</b>Search cards and build a deck for each player, or use the quick deck</li>
       <li><b>Place</b>Pick a card from your hand and tap a zone on the table</li>
       <li><b>Battle</b>Tap your monster, then Attack, then the target</li>
       <li><b>Pass</b>Two players share one phone and pass it each turn</li>
     </ul>
     <div class="row">
-      <button class="btn primary" id="startXR" type="button" hidden>Start on the table (AR)</button>
+      <button class="btn" id="openDecks" type="button">1. Decks</button>
+      <button class="btn" id="dealBtn" type="button">2. New duel (shuffle and deal)</button>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="startXR" type="button" hidden>3. Start on the table (AR)</button>
       <button class="btn" id="startPreview" type="button">Play in 3D preview</button>
-      <button class="btn" id="openScan" type="button">Scan cards</button>
+      <button class="btn" id="openScan" type="button">Scan real cards</button>
     </div>
     <div id="status"></div>
     <p class="note" id="handNote"></p>
-    <p class="note">This is a fan tool for your own cards. Monsters appear as original holograms based on their attribute and level, not the official artwork. You can attach your own 3D model (.glb) to any card name under Scan cards.</p>
+    <p class="note">Card data and images come from the YGOPRODeck card database and are cached on this site. You can also scan real cards, or attach your own 3D model (.glb) to any card name under Scan real cards.</p>
     <a class="link" href="index.html">← Back to AR Hunt</a>
+  </div>
+</section>
+
+<section class="screen" id="decks" hidden>
+  <div class="intro">
+    <div class="row" style="justify-content:space-between"><h1 style="font-size:28px">Decks</h1><button class="btn small" id="decksDone" type="button">Done</button></div>
+    <div class="tabs row" id="deckTabs"><button class="btn small" type="button" data-p="0" aria-pressed="true">Player 1</button><button class="btn small" type="button" data-p="1" aria-pressed="false">Player 2</button></div>
+    <div class="row"><b id="deckCount"></b><button class="btn small" id="quickDeck" type="button">Use the quick deck</button><button class="btn small danger" id="clearDeck" type="button">Clear</button><span class="note" id="deckStatus"></span></div>
+    <div class="decklist" id="deckList"></div>
+    <h2 class="section">Add cards</h2>
+    <div class="row"><label class="field" style="flex:1 1 220px">Search by name<input id="searchBox" placeholder="e.g. dark magician" autocomplete="off"></label><button class="btn primary" id="searchBtn" type="button">Search</button></div>
+    <div class="results" id="results"></div>
   </div>
 </section>
 
@@ -208,6 +235,8 @@ function canvasTex(w, h, draw) { const c = document.createElement("canvas"); c.w
 function rrect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
 // ---------- Zones: glowing outlines on the table ----------
+const deckPiles = [];
+function updatePiles() { for (const p of [0, 1]) { const pile = deckPiles[p]; if (!pile) continue; const n = S.deck[p].length; pile.visible = n > 0; pile.scale.y = Math.max(0.1, n / 40); pile.position.y = 0.006 * pile.scale.y + 0.001; } }
 const zoneMeshes = [];
 function zoneTexture(color, label) {
   return canvasTex(128, 184, (g, w, h) => {
@@ -234,7 +263,7 @@ function buildBoard() {
       z.userData.pile = { p, kind: label }; board.add(z); zoneMeshes.push(z);
     }
     // a deck of face-down cards on the deck zone
-    const deck = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, 0.012, CARD_H), [mat(0x222833), mat(0x222833), new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), mat(0x222833), mat(0x222833), mat(0x222833)]);
+    const deck = deckPiles[p] = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, 0.012, CARD_H), [mat(0x222833), mat(0x222833), new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), mat(0x222833), mat(0x222833), mat(0x222833)]);
     deck.position.set(pileX(p), 0.007, zoneZ(p, "s")); board.add(deck);
   }
   // centre line
@@ -242,7 +271,15 @@ function buildBoard() {
   board.add(line);
 }
 
-// ---------- Card faces and backs (original design) ----------
+// ---------- Card images (served and cached by api/ygo.php) ----------
+const imgUrl = (card, size = "") => `api/ygo.php?action=img&id=${card.id}${size ? "&size=" + size : ""}`;
+const texLoader = new THREE.TextureLoader(), texCache = new Map();
+function loadTex(url) {
+  if (!texCache.has(url)) { const t = texLoader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; texCache.set(url, t); }
+  return texCache.get(url);
+}
+
+// ---------- Card faces and backs ----------
 const backTex = canvasTex(256, 372, (g, w, h) => {
   const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, "#14213d"); gr.addColorStop(1, "#0b1226");
   g.fillStyle = gr; g.fillRect(0, 0, w, h);
@@ -272,7 +309,7 @@ function faceTexture(card) {
   });
 }
 function cardMesh(card) {
-  const face = new THREE.MeshStandardMaterial({ map: faceTexture(card), roughness: 0.55 }), back = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), edge = mat(0x1c1f26);
+  const face = new THREE.MeshStandardMaterial({ map: card.id ? loadTex(imgUrl(card)) : faceTexture(card), roughness: 0.55 }), back = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), edge = mat(0x1c1f26);
   const m = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, 0.0015, CARD_H), [edge, edge, face, back, edge, edge]);
   m.userData.face = face; m.userData.back = back;
   return m;
@@ -354,12 +391,25 @@ const HOLO = {
     return g;
   },
 };
+// The card's artwork projected upright above its zone, readable from both sides of the table
+function artPanel(card) {
+  const g = new THREE.Group(), color = ATTR_COLOR[card.attribute] || (card.kind === "spell" ? 0x2ec4b6 : card.kind === "trap" ? 0xf072cb : 0xffffff);
+  const art = loadTex(imgUrl(card, "crop")), panel = new THREE.Group(); panel.position.y = 0.62; g.add(panel);
+  const front = mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: art, transparent: true, opacity: 0.95, side: THREE.FrontSide }));
+  const back = front.clone(); back.rotation.y = Math.PI; panel.add(front, back);
+  const glow = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 });
+  for (const [w, h, x, y] of [[1.08, 0.04, 0, 0.52], [1.08, 0.04, 0, -0.52], [0.04, 1.08, 0.52, 0], [0.04, 1.08, -0.52, 0]]) panel.add(mesh(new THREE.BoxGeometry(w, h, 0.02), glow, x, y));
+  const halo = mesh(new THREE.PlaneGeometry(1.4, 1.4), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), 0, 0, -0.02); panel.add(halo);
+  g.add(mesh(new THREE.CylinderGeometry(0.06, 0.32, 0.12, 24, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), 0, 0.06));
+  g.userData.animate = t => { panel.position.y = 0.62 + Math.sin(t * 1.8) * 0.03; halo.material.opacity = 0.14 + Math.sin(t * 3) * 0.06; };
+  return g;
+}
 const loader = new GLTFLoader();
 const customModels = new Map(); // card name (lower case) -> loaded scene
 function hologram(card) {
   const g = new THREE.Group();
   const custom = customModels.get(card.name.trim().toLowerCase());
-  const model = custom ? custom.clone(true) : (HOLO[card.attribute] || HOLO.NONE)(ATTR_COLOR[card.attribute] || 0x9fb3c8);
+  const model = custom ? custom.clone(true) : card.id ? artPanel(card) : (HOLO[card.attribute] || HOLO.NONE)(ATTR_COLOR[card.attribute] || 0x9fb3c8);
   // the model animates itself; sizing and lifting it onto the zone happen on a wrapper so they do not clash
   const wrap = new THREE.Group(); wrap.add(model);
   const box = new THREE.Box3().setFromObject(wrap), size = box.getSize(new THREE.Vector3());
@@ -390,7 +440,7 @@ function drawLabel(s, slot) {
 }
 
 // ---------- Duel state ----------
-const S = { lp: [8000, 8000], turn: 0, hand: [[], []], gy: [[], []], zones: [{ m: Array(5).fill(null), s: Array(5).fill(null) }, { m: Array(5).fill(null), s: Array(5).fill(null) }], attacked: new Set(), over: false };
+const S = { lp: [8000, 8000], turn: 0, hand: [[], []], deck: [[], []], gy: [[], []], zones: [{ m: Array(5).fill(null), s: Array(5).fill(null) }, { m: Array(5).fill(null), s: Array(5).fill(null) }], attacked: new Set(), over: false };
 const ui = { mode: "idle", pick: null, how: null, sel: null };
 const effects = []; // short animations
 function zonePos(p, row, i) { return new THREE.Vector3(p === 0 ? COLS[i] : -COLS[i], 0, zoneZ(p, row)); }
@@ -491,9 +541,24 @@ function lunge(slot, targetPos, onHit) {
 function changePos(p, i) { const s = S.zones[p].m[i]; s.pos = s.pos === "atk" ? "def" : "atk"; if (s.faceDown) s.faceDown = false; renderSlot(p, "m", i); if (s.obj.holo) summonEffect(s); saveDuel(); refreshUI(); }
 function flip(p, row, i) { const s = S.zones[p][row][i]; s.faceDown = false; renderSlot(p, row, i); if (s.obj.holo) summonEffect(s); toast(`${s.card.name} is revealed`); saveDuel(); refreshUI(); }
 function toGrave(p, row, i) { destroy(p, row, i); ui.sel = null; saveDuel(); refreshUI(); }
+function draw(p, n = 1) {
+  for (let k = 0; k < n; k++) {
+    if (!S.deck[p].length) {
+      if (!S.over) { S.over = true; $("#bannerText").textContent = `${PLAYER[p]} has no cards left to draw. ${PLAYER[1 - p]} wins!`; $("#banner").hidden = false; }
+      return false;
+    }
+    S.hand[p].push(S.deck[p].shift());
+  }
+  updatePiles(); return true;
+}
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+// Hide the hand until the next player has the phone
+function passTo(p) { $("#passTitle").textContent = `${PLAYER[p]}'s turn`; $("#passNote").textContent = `Pass the phone to ${PLAYER[p]}. Their hand stays hidden until they tap below.`; $("#pass").hidden = false; }
+$("#passOk").addEventListener("click", () => { $("#pass").hidden = true; });
 function endTurn() {
   S.turn = 1 - S.turn; S.turnCount = (S.turnCount || 1) + 1; S.attacked.clear(); ui.mode = "idle"; ui.sel = null; ui.pick = null;
-  toast(`${PLAYER[S.turn]}'s turn. Pass the phone`);
+  if (!S.over && draw(S.turn)) toast(`${PLAYER[S.turn]} drew a card`);
+  passTo(S.turn);
   if (mode === "preview") aimPreview();
   saveDuel(); refreshUI();
 }
@@ -502,7 +567,7 @@ function endTurn() {
 const ray = new THREE.Raycaster();
 function onZone(z) {
   if (S.over) return;
-  if (z.pile) { if (z.pile.kind === "GY") { const gy = S.gy[z.pile.p]; toast(gy.length ? `${PLAYER[z.pile.p]}'s graveyard: ${gy.map(c => c.name).join(", ")}` : "The graveyard is empty"); } else toast("Draw a real card, then tap Scan card to add it"); return; }
+  if (z.pile) { if (z.pile.kind === "GY") { const gy = S.gy[z.pile.p]; toast(gy.length ? `${PLAYER[z.pile.p]}'s graveyard: ${gy.map(c => c.name).join(", ")}` : "The graveyard is empty"); } else { ui.sel = null; ui.deckOf = z.pile.p; refreshUI(); } return; }
   const { p, row, i } = z.zone, slot = S.zones[p][row][i];
   if (ui.mode === "place") {
     const card = S.hand[S.turn][ui.pick];
@@ -515,7 +580,7 @@ function onZone(z) {
     if (p === S.turn || row !== "m" || !slot) return toast("Tap one of your opponent's monsters");
     return attack(S.turn, ui.sel.i, p, i);
   }
-  ui.sel = slot ? { p, row, i } : null;
+  ui.sel = slot ? { p, row, i } : null; ui.deckOf = null;
   refreshUI();
 }
 function pick(clientX, clientY) {
@@ -534,22 +599,34 @@ function refreshUI() {
   S.hand[S.turn].forEach((c, idx) => {
     const b = Object.assign(document.createElement("button"), { type: "button", className: "hcard " + c.kind });
     b.setAttribute("aria-pressed", String(ui.pick === idx));
+    if (c.id) b.append(Object.assign(document.createElement("img"), { src: imgUrl(c, "small"), alt: "", loading: "lazy" }));
     b.append(Object.assign(document.createElement("b"), { textContent: c.name }), Object.assign(document.createElement("small"), { textContent: c.kind === "monster" ? `${c.attribute || "?"} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type || c.kind }));
-    b.onclick = () => { ui.pick = idx; ui.sel = null; ui.mode = "choose"; refreshUI(); };
+    b.onclick = () => { ui.pick = idx; ui.sel = null; ui.deckOf = null; ui.mode = "choose"; refreshUI(); };
     hand.append(b);
   });
   const panel = $("#panel"); panel.innerHTML = ""; panel.hidden = true;
   const btn = (label, fn, cls = "") => { const b = Object.assign(document.createElement("button"), { type: "button", className: "btn small " + cls, textContent: label }); b.onclick = fn; return b; };
   const row = document.createElement("div"); row.className = "row";
-  if ((ui.mode === "choose" || ui.mode === "place") && ui.pick != null) {
+  if (ui.mode === "place" && ui.pick != null) {
+    // keep the board clear while choosing a zone: just a slim bar
     const c = S.hand[S.turn][ui.pick]; panel.hidden = false;
-    panel.append(Object.assign(document.createElement("h3"), { textContent: c.name }), Object.assign(document.createElement("div"), { className: "meta", textContent: c.type || c.kind }));
-    if (c.summary) panel.append(Object.assign(document.createElement("p"), { textContent: c.summary }));
+    panel.append(Object.assign(document.createElement("div"), { className: "meta", textContent: `Placing ${c.name}: tap a zone on the board` }));
+    row.append(btn("Cancel", () => { ui.pick = null; ui.mode = "idle"; hint(""); refreshUI(); })); panel.append(row);
+  } else if (ui.mode === "choose" && ui.pick != null) {
+    const c = S.hand[S.turn][ui.pick]; panel.hidden = false;
+    if (c.id) panel.append(Object.assign(document.createElement("img"), { className: "full", src: imgUrl(c), alt: "" }));
+    panel.append(Object.assign(document.createElement("h3"), { textContent: c.name }), Object.assign(document.createElement("div"), { className: "meta", textContent: (c.type || c.kind) + (c.kind === "monster" ? ` · ${c.attribute || "?"} ★${c.level ?? "?"} · ATK ${c.atk ?? "?"} / DEF ${c.def ?? "-"}` : "") }));
+    if (c.summary) panel.append(Object.assign(document.createElement("p"), { className: "long", textContent: c.summary }));
     const go = how => () => { ui.how = how; ui.mode = "place"; hint(c.kind === "monster" ? "Tap one of your monster zones (front row)" : "Tap one of your spell/trap zones (back row)"); refreshUI(); };
     if (c.kind === "monster") row.append(btn("Summon (attack)", go("summon")), btn("Set (face-down defence)", go("set")));
     else row.append(btn("Activate (face-up)", go("summon")), btn("Set (face-down)", go("set")));
     row.append(btn("Discard", () => { S.gy[S.turn].push(c); S.hand[S.turn].splice(ui.pick, 1); ui.pick = null; ui.mode = "idle"; hint(""); saveDuel(); refreshUI(); }), btn("Cancel", () => { ui.pick = null; ui.mode = "idle"; hint(""); refreshUI(); }));
     panel.append(row);
+  } else if (ui.deckOf != null) {
+    const p = ui.deckOf; panel.hidden = false;
+    panel.append(Object.assign(document.createElement("h3"), { textContent: `${PLAYER[p]}'s deck` }), Object.assign(document.createElement("div"), { className: "meta", textContent: `${S.deck[p].length} cards left` }));
+    if (p === S.turn) row.append(btn("Draw a card", () => { if (draw(p)) toast(`${PLAYER[p]} drew a card`); saveDuel(); refreshUI(); }, "primary"), btn("Shuffle", () => { shuffle(S.deck[p]); toast("Deck shuffled"); saveDuel(); }));
+    row.append(btn("Close", () => { ui.deckOf = null; refreshUI(); })); panel.append(row);
   } else if (ui.mode === "attack") {
     panel.hidden = false; panel.append(Object.assign(document.createElement("h3"), { textContent: "Choose a target" }));
     const oppHas = S.zones[1 - S.turn].m.some(Boolean);
@@ -561,7 +638,8 @@ function refreshUI() {
     panel.hidden = false;
     panel.append(Object.assign(document.createElement("h3"), { textContent: hidden ? "Face-down card" : s.card.name }),
       Object.assign(document.createElement("div"), { className: "meta", textContent: hidden ? PLAYER[p] : `${PLAYER[p]} · ${s.card.type || s.card.kind}${s.card.kind === "monster" ? ` · ${s.pos === "atk" ? "attack" : "defence"} position` : ""}${s.faceDown ? " · face-down" : ""}` }));
-    if (!hidden && s.card.summary) panel.append(Object.assign(document.createElement("p"), { textContent: s.card.summary }));
+    if (!hidden && s.card.id) panel.append(Object.assign(document.createElement("img"), { className: "full", src: imgUrl(s.card), alt: "" }));
+    if (!hidden && s.card.summary) panel.append(Object.assign(document.createElement("p"), { className: "long", textContent: s.card.summary }));
     if (mine) {
       if (r === "m") {
         const canAttack = s.pos === "atk" && !s.faceDown && !S.attacked.has(i);
@@ -595,7 +673,7 @@ $("#lpBtn").addEventListener("click", () => {
   panel.append(row);
 });
 $("#endBtn").addEventListener("click", endTurn);
-$("#rematch").addEventListener("click", () => { newDuel(); $("#banner").hidden = true; });
+$("#rematch").addEventListener("click", () => { newDuel(); $("#banner").hidden = true; passTo(0); });
 
 // ---------- Saving the duel and the card library on this phone ----------
 function saveDuel() {
@@ -603,14 +681,92 @@ function saveDuel() {
 }
 const strip = s => s ? { card: s.card, pos: s.pos, faceDown: s.faceDown } : null;
 function loadDuel() {
-  try { const d = JSON.parse(localStorage.getItem("arduel.duel") || "null"); if (!d) return; Object.assign(S, d, { attacked: new Set(d.attacked || []) }); } catch {}
+  try { const d = JSON.parse(localStorage.getItem("arduel.duel") || "null"); if (!d) return; Object.assign(S, d, { attacked: new Set(d.attacked || []), deck: d.deck || [[], []] }); } catch {}
 }
+// Shuffle each player's deck and deal 5 cards each. Player 1 starts and does not draw on the first turn.
 function newDuel() {
   for (const p of [0, 1]) for (const row of ["m", "s"]) for (let i = 0; i < 5; i++) clearSlot(p, row, i);
-  Object.assign(S, { lp: [8000, 8000], turn: 0, turnCount: 1, gy: [[], []], attacked: new Set(), over: false });
-  ui.mode = "idle"; ui.sel = null; ui.pick = null; saveDuel(); refreshUI();
+  const decks = deckStore.get();
+  Object.assign(S, { lp: [8000, 8000], turn: 0, turnCount: 1, hand: [[], []], gy: [[], []], attacked: new Set(), over: false, deck: [shuffle(decks[0].map(c => ({ ...c }))), shuffle(decks[1].map(c => ({ ...c })))] });
+  for (const p of [0, 1]) draw(p, 5);
+  ui.mode = "idle"; ui.sel = null; ui.pick = null; ui.deckOf = null; saveDuel(); updatePiles(); refreshUI(); updateStartNote();
 }
 const library = { get() { try { return JSON.parse(localStorage.getItem("arduel.library") || "[]"); } catch { return []; } }, add(c) { const l = library.get().filter(x => x.name !== c.name); l.unshift(c); try { localStorage.setItem("arduel.library", JSON.stringify(l.slice(0, 60))); } catch {} } };
+
+// ---------- Decks: built from the card database, kept on this phone ----------
+const QUICK_DECK = ["Dark Magician", "Blue-Eyes White Dragon", "Red-Eyes Black Dragon", "Summoned Skull", "Dark Magician Girl", "Gaia The Fierce Knight", "Curse of Dragon",
+  "Celtic Guardian", "Celtic Guardian", "Feral Imp", "Feral Imp", "Mystical Elf", "Mystical Elf", "Beaver Warrior", "Beaver Warrior", "Giant Soldier of Stone", "Giant Soldier of Stone",
+  "Silver Fang", "Silver Fang", "Battle Ox", "Battle Ox", "La Jinn the Mystical Genie of the Lamp", "Kuriboh", "Kuriboh", "Man-Eater Bug", "Winged Dragon, Guardian of the Fortress #1",
+  "Alexandrite Dragon", "Alexandrite Dragon", "Vorse Raider", "Vorse Raider",
+  "Monster Reborn", "Dark Hole", "Raigeki", "Swords of Revealing Light", "Change of Heart", "Mystical Space Typhoon", "Pot of Greed",
+  "Mirror Force", "Trap Hole", "Magic Cylinder", "Waboku", "Negate Attack", "Sakuretsu Armor"];
+const deckStore = {
+  get() { try { const d = JSON.parse(localStorage.getItem("arduel.decks") || "null"); return Array.isArray(d) ? d : [[], []]; } catch { return [[], []]; } },
+  put(d) { try { localStorage.setItem("arduel.decks", JSON.stringify(d)); } catch {} },
+};
+let deckTab = 0;
+async function api(params) {
+  const r = await fetch("api/ygo.php?" + new URLSearchParams(params));
+  const j = await r.json().catch(() => ({ error: "The server sent an unexpected reply." }));
+  if (!r.ok || j.error) throw new Error(j.error || `Server error ${r.status}`);
+  return j.cards;
+}
+function cardRow(c, actions) {
+  const d = document.createElement("div"); d.className = "deckcard";
+  d.append(Object.assign(document.createElement("img"), { src: imgUrl(c, "small"), alt: "", loading: "lazy" }));
+  const info = document.createElement("div"); info.style.minWidth = "0";
+  info.append(Object.assign(document.createElement("b"), { textContent: c.name }), Object.assign(document.createElement("small"), { textContent: c.kind === "monster" ? `${c.attribute} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type }));
+  d.append(info);
+  const row = document.createElement("div"); row.className = "row"; for (const a of actions) row.append(a); d.append(row);
+  return d;
+}
+const smallBtn = (label, fn, cls = "") => Object.assign(document.createElement("button"), { type: "button", className: "btn small " + cls, textContent: label, onclick: fn });
+function renderDeck() {
+  const decks = deckStore.get(), deck = decks[deckTab];
+  for (const b of $("#deckTabs").children) b.setAttribute("aria-pressed", String(+b.dataset.p === deckTab));
+  $("#deckCount").textContent = `${PLAYER[deckTab]}: ${deck.length} cards`;
+  const groups = new Map(); for (const c of deck) { const g = groups.get(c.id) || { c, n: 0 }; g.n++; groups.set(c.id, g); }
+  const list = $("#deckList"); list.innerHTML = "";
+  if (!deck.length) list.append(Object.assign(document.createElement("p"), { className: "note", textContent: "This deck is empty. Use the quick deck or search for cards below (20–60 cards)." }));
+  for (const { c, n } of [...groups.values()].sort((a, b) => a.c.kind.localeCompare(b.c.kind) || a.c.name.localeCompare(b.c.name))) {
+    list.append(cardRow(c, [Object.assign(document.createElement("span"), { className: "note", textContent: `×${n}` }), smallBtn("−", () => { const d = deckStore.get(); d[deckTab].splice(d[deckTab].findIndex(x => x.id === c.id), 1); deckStore.put(d); renderDeck(); })]));
+  }
+}
+function addToDeck(c) {
+  const d = deckStore.get(), deck = d[deckTab];
+  if (deck.filter(x => x.id === c.id).length >= 3) return $("#deckStatus").textContent = "A deck can hold up to 3 copies of a card.";
+  if (deck.length >= 60) return $("#deckStatus").textContent = "A deck can hold up to 60 cards.";
+  deck.push(c); deckStore.put(d); $("#deckStatus").textContent = `${c.name} added.`; renderDeck();
+}
+async function search() {
+  const q = $("#searchBox").value.trim(), box = $("#results");
+  if (q.length < 2) return;
+  box.innerHTML = ""; box.append(Object.assign(document.createElement("p"), { className: "note", textContent: "Searching…" }));
+  try {
+    const cards = await api({ action: "search", q }); box.innerHTML = "";
+    if (!cards.length) box.append(Object.assign(document.createElement("p"), { className: "note", textContent: "No cards found with that name." }));
+    for (const c of cards) box.append(cardRow(c, [smallBtn("+ Add", () => addToDeck(c), "primary")]));
+  } catch (e) { box.innerHTML = ""; box.append(Object.assign(document.createElement("p"), { className: "note", textContent: e.message === "Failed to fetch" ? "No internet connection." : e.message })); }
+}
+$("#searchBtn").addEventListener("click", search);
+$("#searchBox").addEventListener("keydown", e => { if (e.key === "Enter") search(); });
+$("#quickDeck").addEventListener("click", async () => {
+  $("#deckStatus").textContent = "Loading the quick deck…";
+  try {
+    const cards = await api({ action: "names", n: [...new Set(QUICK_DECK)].join("|") }), byName = new Map(cards.map(c => [c.name, c]));
+    const d = deckStore.get(); d[deckTab] = QUICK_DECK.filter(n => byName.has(n)).map(n => ({ ...byName.get(n) })); deckStore.put(d);
+    $("#deckStatus").textContent = `Quick deck ready: ${d[deckTab].length} cards.`; renderDeck();
+  } catch (e) { $("#deckStatus").textContent = e.message === "Failed to fetch" ? "No internet connection." : e.message; }
+});
+$("#clearDeck").addEventListener("click", () => { const d = deckStore.get(); d[deckTab] = []; deckStore.put(d); renderDeck(); });
+for (const b of $("#deckTabs").children) b.addEventListener("click", () => { deckTab = +b.dataset.p; $("#deckStatus").textContent = ""; renderDeck(); });
+$("#openDecks").addEventListener("click", () => { $("#start").hidden = true; $("#decks").hidden = false; renderDeck(); });
+$("#decksDone").addEventListener("click", () => { $("#decks").hidden = true; $("#start").hidden = false; updateStartNote(); });
+$("#dealBtn").addEventListener("click", () => {
+  const d = deckStore.get();
+  if (d[0].length < 5 || d[1].length < 5) { $("#status").className = "err"; $("#status").textContent = "Each player needs a deck first (tap 1. Decks, or use the quick deck)."; return; }
+  newDuel(); $("#status").className = ""; $("#status").textContent = "Cards dealt. Now start on the table or in the 3D preview."; passTo(0);
+});
 
 // ---------- Scanning cards ----------
 let camStream = null, returnTo = null;
@@ -628,6 +784,7 @@ function closeScan() {
   $("#scan").hidden = true;
   if (returnTo === "duel") resumeDuel(); else { $("#start").hidden = false; updateStartNote(); }
 }
+let scanned = null; // the database match for the card just read, which carries its artwork
 function fillForm(c) {
   $("#cardForm").hidden = false;
   $("#fName").value = c.name || ""; $("#fKind").value = c.kind || "monster"; $("#fAttr").value = c.attribute || "";
@@ -650,11 +807,13 @@ $("#readBtn").addEventListener("click", async () => {
     const j = await r.json().catch(() => ({ error: "The server sent an unexpected reply." }));
     if (!r.ok || j.error) throw new Error(j.error || `Server error ${r.status}`);
     fillForm(j.card); st.textContent = "Check the details, then add it to a hand.";
+    // find the card in the database so it shows its artwork
+    try { const m = (await api({ action: "names", n: j.card.name }))[0]; if (m) { scanned = m; fillForm(m); st.textContent = `Found ${m.name} in the card database. Add it to a hand.`; } } catch {}
   } catch (e) { st.textContent = (e.message === "Failed to fetch" ? "No internet connection." : e.message) + " You can type it in instead."; }
   $("#readBtn").disabled = false;
 });
-$("#typeBtn").addEventListener("click", () => fillForm({}));
-for (const p of [0, 1]) $("#toP" + p).addEventListener("click", () => { const c = readForm(); S.hand[p].push(c); library.add(c); saveDuel(); $("#scanStatus").textContent = `${c.name} added to ${PLAYER[p]}'s hand.`; $("#cardForm").hidden = true; renderLibrary(); });
+$("#typeBtn").addEventListener("click", () => { scanned = null; fillForm({}); });
+for (const p of [0, 1]) $("#toP" + p).addEventListener("click", () => { const c = readForm(); if (scanned && scanned.name === c.name) c.id = scanned.id; S.hand[p].push(c); library.add(c); saveDuel(); $("#scanStatus").textContent = `${c.name} added to ${PLAYER[p]}'s hand.`; $("#cardForm").hidden = true; renderLibrary(); });
 $("#scanDone").addEventListener("click", closeScan);
 function renderLibrary() {
   const box = $("#library"); box.innerHTML = "";
@@ -765,7 +924,8 @@ $("#openScan").addEventListener("click", () => openScan("start"));
 if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported("immersive-ar").then(ok => { $("#startXR").hidden = !ok; }).catch(() => {});
 function updateStartNote() {
   const n = S.hand[0].length + S.hand[1].length, onBoard = S.zones.flatMap(z => [...z.m, ...z.s]).filter(Boolean).length;
-  $("#handNote").textContent = n || onBoard ? `Duel in progress: ${onBoard} cards on the board, ${n} in hands. Life points ${S.lp[0]} / ${S.lp[1]}.` : "Start by scanning a few cards for each player, or play in the 3D preview to try it out.";
+  const decks = deckStore.get();
+  $("#handNote").textContent = (n || onBoard ? `Duel in progress: ${onBoard} cards on the board, ${n} in hands, ${S.deck[0].length} / ${S.deck[1].length} left in the decks. Life points ${S.lp[0]} / ${S.lp[1]}. ` : "") + `Decks: Player 1 has ${decks[0].length} cards, Player 2 has ${decks[1].length}.`;
 }
 
 // ---------- Main loop ----------
@@ -784,6 +944,7 @@ renderer.setAnimationLoop((time, frame) => {
 buildBoard();
 loadDuel();
 loadModels().then(() => renderAll());
+updatePiles();
 updateStartNote();
 </script>
 </body>

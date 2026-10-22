@@ -33,12 +33,14 @@ Live: https://smarteyes.cck8.my
 **Landmark chops**: Petronas Twin Towers, Menara KL, Thean Hou Temple, Kek Lok Si, Khoo Kongsi, Cheng Hoon Teng, Christ Church Melaka, A Famosa, Tua Pek Kong Kuching, Great Cat of Kuching, Timpohon Gate (Kinabalu Park), Sam Poh Tong. Coordinates come from OpenStreetMap and live in the `LANDMARKS` list in `index.html` (`CATCH_R` sets the 60 m catch distance). Phone GPS is usually accurate to 5–20 m and compasses to 10–20°, so the anchored position can be a little off, more so between tall buildings.
 
 ## AR Duel (`duel.html`)
-A duel board for your own trading cards, placed on a real table with WebXR (or shown in a 3D preview).
-- **Scan**: hold a card up to the camera; Claude Haiku (`api/card.php`) reads name, kind, attribute, level, ATK, DEF and a short summary. You can correct the details or type a card in. Scanned cards are kept in a library on the phone
-- **Board**: zones are real card size (5 monster and 5 spell/trap zones per player, deck and graveyard), so physical cards can lie on them
-- **Play**: pick a card from your hand, summon or set it on a zone, and an original hologram rises from it (its look depends on the attribute, its size on the level). Battles follow the standard ATK/DEF rules; direct attacks, position changes, flipping, graveyard and life point adjustments for effects are included. Two players share one phone and pass it each turn
+A duel board placed on a real table with WebXR (or shown in a 3D preview), played with virtual decks.
+- **Decks**: search the YGOPRODeck card database and build a deck for each player (20–60 cards, up to 3 copies), or use the quick deck of classic cards. Decks are kept on the phone
+- **Duel**: New duel shuffles both decks and deals 5 cards each; each turn the next player draws one (running out of cards loses). A pass screen hides the hand until the next player taps
+- **Board**: real card-size zones (5 monster and 5 spell/trap per player, deck pile that shrinks as you draw, graveyard). Cards show their real images; a summoned monster's artwork rises above its zone as a glowing hologram
+- **Battles** follow the standard ATK/DEF rules; direct attacks, positions, flipping, graveyard and life point changes for card effects are included
+- **Scan real cards**: Claude Haiku (`api/card.php`) reads a card held up to the camera and it is matched to the database for its artwork
 - **Own models**: attach a `.glb` model to any card name and that card shows it
-- It is a fan tool: it does not include official card art or character models
+- **Card data and images**: `api/ygo.php` fetches them from YGOPRODeck and caches them in `server/cache` (blocked from the web, not in git, not touched by deploys), so each image is downloaded only once
 
 ## Bag, repeats and unlocks
 - Normal items keep appearing; every catch adds one to the **Bag** (e.g. Durian × 7). The Collection records each kind once

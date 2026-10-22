@@ -33,3 +33,4 @@ jobs:
             README.md
             server/config.php
             server/vendor/**
+            server/cache/**
