@@ -3,7 +3,11 @@
 // Everything fetched is cached on this server (server/cache, which is blocked from the web),
 // so each image is downloaded from YGOPRODeck only once, as their guide asks.
 //
-//   ?action=search&q=dark magician   cards whose name contains the text
+//   ?action=search&q=dragon          cards whose name contains the text, 40 at a time
+//        &in=text                     ...or whose card text contains it
+//        &kind=monster|spell|trap &attribute=LIGHT &level=8 &archetype=Blue-Eyes
+//        &sort=name|atk|def|level &offset=40
+//   ?action=archetypes               all archetype names
 //   ?action=names&n=A|B|C            cards with exactly these names
 //   ?action=img&id=46986414          card image  (&size=small or &size=crop for the artwork only)
 
@@ -57,18 +61,24 @@ function trimCard(array $c): array
         'kind' => $kind,
         'attribute' => (string)($c['attribute'] ?? ''),
         'level' => isset($c['level']) ? (int)$c['level'] : (isset($c['linkval']) ? (int)$c['linkval'] : null),
-        'atk' => isset($c['atk']) ? (int)$c['atk'] : null,
-        'def' => isset($c['def']) ? (int)$c['def'] : null,
+        'atk' => isset($c['atk']) && (int)$c['atk'] >= 0 ? (int)$c['atk'] : null, // -1 means "?"
+        'def' => isset($c['def']) && (int)$c['def'] >= 0 ? (int)$c['def'] : null,
         'type' => trim(($kind === 'monster' ? ($c['race'] ?? '') . ' / ' : ($c['race'] ?? '') . ' ') . preg_replace('/ (Monster|Card)$/', '', $type)),
         'summary' => mb_substr(trim((string)($c['desc'] ?? '')), 0, 600),
     ];
 }
 
-function cards(string $query): array
+const MONSTER_TYPES = 'Effect Monster,Flip Effect Monster,Flip Tuner Effect Monster,Gemini Monster,Normal Monster,Normal Tuner Monster,'
+    . 'Pendulum Effect Monster,Pendulum Effect Ritual Monster,Pendulum Flip Effect Monster,Pendulum Normal Monster,Pendulum Tuner Effect Monster,'
+    . 'Ritual Effect Monster,Ritual Monster,Spirit Monster,Toon Monster,Tuner Monster,Union Effect Monster,Fusion Monster,Link Monster,'
+    . 'Pendulum Effect Fusion Monster,Synchro Monster,Synchro Pendulum Effect Monster,Synchro Tuner Monster,XYZ Monster,XYZ Pendulum Effect Monster';
+
+// Fetch (or read from the cache) one API query: the trimmed cards and the total number of matches
+function query(string $query): array
 {
     $file = cacheDir('data') . '/' . md5($query) . '.json';
     if (is_file($file) && filemtime($file) > time() - DATA_TTL) {
-        return json_decode((string)file_get_contents($file), true) ?: [];
+        return json_decode((string)file_get_contents($file), true) ?: ['cards' => [], 'total' => 0];
     }
     $body = fetchUrl(API . '?' . $query);
     if ($body === null) {
@@ -76,9 +86,11 @@ function cards(string $query): array
     }
     $json = json_decode($body, true);
     $list = array_map('trimCard', is_array($json['data'] ?? null) ? $json['data'] : []);
-    @file_put_contents($file, json_encode($list), LOCK_EX);
-    return $list;
+    $result = ['cards' => $list, 'total' => (int)($json['meta']['total_rows'] ?? count($list))];
+    @file_put_contents($file, json_encode($result), LOCK_EX);
+    return $result;
 }
+function cards(string $query): array { return query($query)['cards']; }
 
 $action = (string)($_GET['action'] ?? '');
 
@@ -108,10 +120,56 @@ header('Cache-Control: public, max-age=3600');
 
 if ($action === 'search') {
     $q = trim((string)($_GET['q'] ?? ''));
-    if (mb_strlen($q) < 2 || mb_strlen($q) > 60) {
-        fail(400, 'Type at least 2 letters.');
+    $params = [];
+    if ($q !== '') {
+        if (mb_strlen($q) < 2 || mb_strlen($q) > 60) {
+            fail(400, 'Type at least 2 letters.');
+        }
+        $params[($_GET['in'] ?? '') === 'text' ? 'desc' : 'fname'] = $q;
     }
-    echo json_encode(['cards' => array_slice(cards(http_build_query(['fname' => $q, 'num' => 40, 'offset' => 0])), 0, 40)]);
+    $kind = (string)($_GET['kind'] ?? '');
+    if ($kind !== '') {
+        $params['type'] = ['monster' => MONSTER_TYPES, 'spell' => 'Spell Card', 'trap' => 'Trap Card'][$kind] ?? fail(400, 'Unknown card kind.');
+    }
+    $attribute = strtolower((string)($_GET['attribute'] ?? ''));
+    if ($attribute !== '') {
+        in_array($attribute, ['dark', 'light', 'fire', 'water', 'earth', 'wind', 'divine'], true) || fail(400, 'Unknown attribute.');
+        $params['attribute'] = $attribute;
+    }
+    if (($_GET['level'] ?? '') !== '') {
+        $params['level'] = max(0, min(13, (int)$_GET['level']));
+    }
+    if (($_GET['archetype'] ?? '') !== '') {
+        $params['archetype'] = mb_substr((string)$_GET['archetype'], 0, 60);
+    }
+    if (!$params) {
+        fail(400, 'Type a name or choose a filter.');
+    }
+    $sort = (string)($_GET['sort'] ?? 'name');
+    $params['sort'] = in_array($sort, ['name', 'atk', 'def', 'level'], true) ? $sort : 'name';
+    $offset = max(0, min(20000, (int)($_GET['offset'] ?? 0)));
+    if ($params['sort'] === 'name') {
+        $result = query(http_build_query($params + ['num' => 40, 'offset' => $offset]));
+    } else {
+        // The database sorts numbers lowest first; for strongest first, read the matching page from the end and reverse it
+        $total = query(http_build_query($params + ['num' => 1, 'offset' => 0]))['total'];
+        $num = max(0, min(40, $total - $offset));
+        $result = $num ? query(http_build_query($params + ['num' => $num, 'offset' => $total - $offset - $num])) : ['cards' => []];
+        $result = ['cards' => array_reverse($result['cards']), 'total' => $total];
+    }
+    echo json_encode(['cards' => $result['cards'], 'total' => $result['total'], 'offset' => $offset]);
+    exit;
+}
+
+if ($action === 'archetypes') {
+    $file = cacheDir('data') . '/archetypes.json';
+    if (!is_file($file) || filemtime($file) < time() - DATA_TTL) {
+        $body = fetchUrl('https://db.ygoprodeck.com/api/v7/archetypes.php') ?? fail(502, 'Could not reach the card database. Try again.');
+        $names = array_values(array_filter(array_map(fn($a) => trim((string)($a['archetype_name'] ?? '')), json_decode($body, true) ?: []), fn($n) => $n !== '' && !str_contains($n, '|')));
+        sort($names, SORT_NATURAL | SORT_FLAG_CASE);
+        @file_put_contents($file, json_encode($names), LOCK_EX);
+    }
+    echo json_encode(['archetypes' => json_decode((string)file_get_contents($file), true) ?: []]);
     exit;
 }
 
