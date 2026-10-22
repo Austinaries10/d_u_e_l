@@ -855,26 +855,28 @@ const ITEM_LIST = [
   ["wayang", "Shadow Puppet", "Wayang kulit", "epic", 1.0, "Puppets cut from buffalo hide. UNESCO recognised wayang as a masterpiece of intangible heritage in 2003.", "ID"],
   ["komodo", "Komodo Dragon", "Biawak komodo", "legendary", 0.5, "The world's largest lizard, found only on Komodo and a few nearby islands.", "ID"],
 ];
-// Real places: being within the radius makes the landmark appear, and catching it stamps its chop.
-// Coordinates are approximate; the radius allows for that.
+// Real places, anchored to their real position (coordinates from OpenStreetMap).
+// Within the visible radius a beacon shows the way; within CATCH_R metres the 3D landmark stands at the real spot.
+// [id, name, place, latitude, longitude, visible radius in metres, model, height in metres, fact]
+const CATCH_R = 60;
 const LANDMARKS = [
-  ["lm-klcc", "Petronas Twin Towers", "KLCC, Kuala Lumpur", 3.1579, 101.7116, 500, "petronas", 1.4, "88 floors each, joined by a skybridge on the 41st and 42nd floors."],
-  ["lm-menarakl", "Menara Kuala Lumpur", "Bukit Nanas, Kuala Lumpur", 3.1528, 101.7038, 500, "menaraKL", 1.4, "The tower stands on Bukit Nanas, one of the oldest forest reserves in the country."],
-  ["lm-theanhou", "Thean Hou Temple", "Robson Heights, Kuala Lumpur", 3.1218, 101.6875, 500, "templeThean", 0.9, "A six-tiered temple dedicated to the sea goddess Mazu (Tian Hou), opened in 1989."],
-  ["lm-keklok", "Kek Lok Si Temple", "Air Itam, Penang", 5.3994, 100.2733, 600, "pagoda", 1.3, "One of the largest Buddhist temples in Southeast Asia. Its pagoda mixes Chinese, Thai and Burmese styles."],
-  ["lm-khookongsi", "Khoo Kongsi", "George Town, Penang", 5.4148, 100.3372, 400, "templeKhoo", 0.9, "The ornate clan house of the Khoo clan, inside the George Town UNESCO World Heritage Site."],
-  ["lm-chenghoon", "Cheng Hoon Teng Temple", "Jonker area, Melaka", 2.1966, 102.2471, 400, "templeCheng", 0.9, "Founded in the 1600s, it is the oldest functioning Chinese temple in Malaysia."],
-  ["lm-christchurch", "Christ Church Melaka", "Dutch Square, Melaka", 2.1945, 102.249, 400, "christChurch", 0.9, "Its bright red walls make Dutch Square one of the most photographed places in Malaysia."],
-  ["lm-afamosa", "A Famosa", "Melaka", 2.1916, 102.2504, 400, "aFamosa", 0.8, "The Porta de Santiago gate is all that remains of the Portuguese fortress built in 1511."],
-  ["lm-tuapekkong", "Tua Pek Kong Temple", "Kuching Waterfront, Sarawak", 1.5578, 110.3478, 500, "templeTPK", 0.9, "Believed to be the oldest Chinese temple in Kuching, by the Sarawak River."],
-  ["lm-greatcat", "Great Cat of Kuching", "Kuching, Sarawak", 1.5566, 110.3528, 700, "catStatue", 0.8, "Kuching's cat statues celebrate the city's nickname, Cat City."],
-  ["lm-kinabalu", "Kinabalu Park", "Ranau, Sabah", 6.006, 116.542, 2000, "kinabalu", 1.0, "Malaysia's first UNESCO World Heritage Site, listed in 2000 together with Gunung Mulu."],
-  ["lm-sampohtong", "Sam Poh Tong Temple", "Gunung Rapat, Ipoh", 4.5525, 101.1095, 700, "templeCave", 0.9, "A Buddhist temple built inside a limestone cave."],
+  ["lm-klcc", "Petronas Twin Towers", "KLCC, Kuala Lumpur", 3.157968, 101.711205, 500, "petronas", 4, "88 floors each, joined by a skybridge on the 41st and 42nd floors."],
+  ["lm-menarakl", "Menara Kuala Lumpur", "Bukit Nanas, Kuala Lumpur", 3.152859, 101.703760, 500, "menaraKL", 4, "The tower stands on Bukit Nanas, one of the oldest forest reserves in the country."],
+  ["lm-theanhou", "Thean Hou Temple", "Robson Heights, Kuala Lumpur", 3.121843, 101.687645, 500, "templeThean", 3, "A six-tiered temple dedicated to the sea goddess Mazu (Tian Hou), opened in 1989."],
+  ["lm-keklok", "Kek Lok Si Temple", "Air Itam, Penang", 5.399721, 100.273889, 500, "pagoda", 4, "One of the largest Buddhist temples in Southeast Asia. Its pagoda mixes Chinese, Thai and Burmese styles."],
+  ["lm-khookongsi", "Khoo Kongsi", "George Town, Penang", 5.414265, 100.337592, 400, "templeKhoo", 3, "The ornate clan house of the Khoo clan, inside the George Town UNESCO World Heritage Site."],
+  ["lm-chenghoon", "Cheng Hoon Teng Temple", "Jalan Tokong, Melaka", 2.197729, 102.247298, 400, "templeCheng", 3, "Founded in the 1600s, it is the oldest functioning Chinese temple in Malaysia."],
+  ["lm-christchurch", "Christ Church Melaka", "Dutch Square, Melaka", 2.194536, 102.249149, 400, "christChurch", 3, "Its bright red walls make Dutch Square one of the most photographed places in Malaysia."],
+  ["lm-afamosa", "A Famosa", "Bandar Hilir, Melaka", 2.191880, 102.250238, 400, "aFamosa", 3, "The Porta de Santiago gate is all that remains of the Portuguese fortress built in 1511."],
+  ["lm-tuapekkong", "Tua Pek Kong Temple", "Kuching Waterfront, Sarawak", 1.557132, 110.349022, 500, "templeTPK", 3, "Believed to be the oldest Chinese temple in Kuching, by the Sarawak River."],
+  ["lm-greatcat", "Great Cat of Kuching", "Jalan Padungan, Kuching", 1.553516, 110.358690, 500, "catStatue", 2.2, "Kuching's cat statues celebrate the city's nickname, Cat City."],
+  ["lm-timpohon", "Timpohon Gate", "Kinabalu Park, Sabah", 6.029704, 116.547065, 500, "kinabalu", 3, "The start of the Mount Kinabalu summit trail, in Malaysia's first UNESCO World Heritage Site."],
+  ["lm-sampohtong", "Sam Poh Tong Temple", "Gunung Rapat, Ipoh", 4.563738, 101.115416, 500, "templeCave", 3, "A Buddhist temple built inside a limestone cave."],
 ];
 const ITEMS = {};
 // opts.needs: { itemId: count } owned before it can appear. opts.limit: how many one person can own.
 for (const [id, name, local, rarity, h, fact, where, opts = {}] of ITEM_LIST) ITEMS[id] = { id, name, local, rarity, h, fact, where: where.split(","), needs: opts.needs, limit: opts.limit, build: MODELS[id] };
-for (const [id, name, local, lat, lon, r, model, h, fact] of LANDMARKS) ITEMS[id] = { id, name, local, rarity: "landmark", h, fact, lat, lon, r, where: [], build: MODELS[model] };
+for (const [id, name, local, lat, lon, r, model, h, fact] of LANDMARKS) ITEMS[id] = { id, name, local, rarity: "landmark", h, fact, lat, lon, r, catchR: CATCH_R, where: [], build: MODELS[model] };
 
 // ---------- Partner shops ----------
 // Shared partners come from partners.json (edited in GitHub, deployed with the site).
@@ -884,7 +886,7 @@ function addPartner(p, local = false) {
   if (p.active === false || p.lat == null || p.lon == null) return;
   if (p.validUntil && new Date(p.validUntil + "T23:59:59") < new Date()) return;
   const id = "partner-" + p.id;
-  ITEMS[id] = { id, name: p.name, local: p.address || "Partner shop", rarity: "partner", h: p.height || 1.2, fact: p.about || p.reward || "", reward: p.reward, lat: p.lat, lon: p.lon, r: p.radius || 80, brand: p.brandColor, test: local, where: [],
+  ITEMS[id] = { id, name: p.name, local: p.address || "Partner shop", rarity: "partner", h: p.height || 2.2, fact: p.about || p.reward || "", reward: p.reward, lat: p.lat, lon: p.lon, r: p.radius || 300, catchR: p.catchRadius || 40, brand: p.brandColor, test: local, where: [],
     build: () => partnerTemplates.has(id) ? partnerTemplates.get(id).clone(true) : MODELS.shopSign(p) };
   if (p.glb) new GLTFLoader().loadAsync(p.glb).then(g => partnerTemplates.set(id, g.scene)).catch(() => {});
 }
@@ -1030,7 +1032,7 @@ function throwAt(e) {
   const start = new THREE.Vector3(0, -0.25, -0.35).applyQuaternion(camera.quaternion).add(viewPos);
   const end = e.holder.position.clone().add(new THREE.Vector3(0, e.item.h * 0.5, 0));
   ball.position.copy(start); scene.add(ball);
-  flights.push({ ball, start, end, t: 0, dur: 0.55 + start.distanceTo(end) * 0.05, e });
+  flights.push({ ball, start, end, t: 0, dur: Math.min(1.3, 0.55 + start.distanceTo(end) * 0.05), e });
 }
 function resolveThrow(f) {
   const e = f.e, rar = RARITY[e.item.rarity];
@@ -1052,6 +1054,7 @@ function finishCatch(e) {
   const s = save.get(), first = !s.caught[e.item.id], pts = RARITY[e.item.rarity].points * (first ? 2 : 1);
   s.caught[e.item.id] = (s.caught[e.item.id] || 0) + 1; s.xp += pts;
   const today = new Date().toISOString().slice(0, 10);
+  if (e.item.lat != null) landmarkShown.add(e.item.id);
   if (e.item.rarity === "landmark" && !s.chops[e.item.id]) s.chops[e.item.id] = today;
   let voucher = null;
   if (e.item.rarity === "partner" && e.item.reward && !s.vouchers.some(v => v.partner === e.item.id && v.date === today)) {
@@ -1120,7 +1123,11 @@ function setArea(code, place) {
 async function onPosition(pos) {
   const { latitude: lat, longitude: lon } = pos.coords;
   const moved = geo.geocodedAt ? distKm(lat, lon, geo.geocodedAt[0], geo.geocodedAt[1]) : Infinity;
-  geo.lat = lat; geo.lon = lon;
+  geo.lat = lat; geo.lon = lon; geo.acc = pos.coords.accuracy;
+  // smoothed position for anchoring, so objects do not jump with every GPS reading
+  // (a real move of more than 25 m is taken straight away; only small jitter is smoothed)
+  if (geo.sLat == null || distKm(geo.sLat, geo.sLon, lat, lon) > 0.025) { geo.sLat = lat; geo.sLon = lon; }
+  else { geo.sLat += (lat - geo.sLat) * 0.5; geo.sLon += (lon - geo.sLon) * 0.5; }
   if (!geo.manual && moved > 2) {
     geo.geocodedAt = [lat, lon];
     let code = boxArea(lat, lon), place = "";
@@ -1156,21 +1163,74 @@ function bearing(lat1, lon1, lat2, lon2) { // degrees from north
   return (Math.atan2(y, x) / d + 360) % 360;
 }
 const places = () => Object.values(ITEMS).filter(it => it.lat != null);
-// Standing at a landmark or partner shop makes it appear (once per visit). With a compass it appears in its real direction.
-const landmarkShown = new Set();
-function checkLandmarks() {
-  if (!mode || geo.lat == null || (mode === "xr" && !floorFound)) return;
+// Landmarks and partner shops are anchored to their real position:
+// far away nothing shows; within the visible radius a beacon stands in the real direction;
+// within the catch radius the 3D object stands at the real spot and can be caught (once per visit).
+const landmarkShown = new Set(); // caught on this visit
+const anchors = new Map();       // id -> { entry, beacon }
+const north = { x: 0, y: 0, ok: false };
+// The scene angle (spawn() convention) that points to true north, smoothed. Needs a compass.
+function northYaw() {
+  const h = heading();
+  if (h == null) { north.ok = false; return null; }
+  const a = viewYaw() + THREE.MathUtils.degToRad(h), k = north.ok ? 0.08 : 1;
+  north.x += (Math.cos(a) - north.x) * k; north.y += (Math.sin(a) - north.y) * k; north.ok = true;
+  return Math.atan2(north.y, north.x);
+}
+function makeBeacon(it) {
+  const g = new THREE.Group(), color = new THREE.Color(it.rarity === "partner" ? (it.brand || "#2ec4b6") : 0xe63946);
+  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 40, 16, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  pillar.position.y = 20; g.add(pillar);
+  const c = document.createElement("canvas"); c.width = 512; c.height = 160;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true }));
+  label.scale.set(12, 3.75, 1); label.position.y = 9; label.renderOrder = 10; g.add(label);
+  g.userData = { canvas: c, tex: t, text: "" };
+  scene.add(g);
+  return g;
+}
+function labelBeacon(b, it, d) {
+  const text = `${it.name}|${fmtDist(d / 1000)} away · walk here to catch`;
+  if (b.userData.text === text) return;
+  b.userData.text = text;
+  const c = b.userData.canvas, g = c.getContext("2d");
+  g.clearRect(0, 0, c.width, c.height);
+  g.fillStyle = "rgba(16,22,28,0.82)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, c.width - 8, c.height - 8, 30) : g.rect(4, 4, c.width - 8, c.height - 8); g.fill();
+  g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "700 46px Sora, sans-serif"; g.fillText(text.split("|")[0], c.width / 2, 70, c.width - 40);
+  g.fillStyle = "#ffb547"; g.font = "600 30px Sora, sans-serif"; g.fillText(text.split("|")[1], c.width / 2, 122, c.width - 40);
+  b.userData.tex.needsUpdate = true;
+}
+function updateAnchors() {
+  if (!mode) return;
+  const na = northYaw(), ready = geo.sLat != null && !(mode === "xr" && !floorFound);
   for (const it of places()) {
-    const d = distKm(geo.lat, geo.lon, it.lat, it.lon) * 1000;
-    if (d <= it.r && !landmarkShown.has(it.id)) {
-      landmarkShown.add(it.id);
-      const h = heading();
-      const a = h != null && d > 15 ? viewYaw() - THREE.MathUtils.degToRad(bearing(geo.lat, geo.lon, it.lat, it.lon) - h) : camera.rotation.y;
-      spawn(it, a, mode === "xr" ? 2.2 : 4);
+    const st = anchors.get(it.id) || {}; anchors.set(it.id, st);
+    if (st.entry && !live.includes(st.entry)) st.entry = null; // it was caught
+    const d = ready ? distKm(geo.sLat, geo.sLon, it.lat, it.lon) * 1000 : Infinity;
+    if (d > it.r) landmarkShown.delete(it.id); // left the area, so the next visit counts again
+    const a = na == null || !ready ? null : na - THREE.MathUtils.degToRad(bearing(geo.sLat, geo.sLon, it.lat, it.lon));
+    const near = d <= it.catchR && !landmarkShown.has(it.id);
+    if (near && !st.entry) {
+      // with a compass it stands at its real spot; without one it is placed in front of you
+      st.entry = spawn(it, a ?? viewYaw(), a == null ? 4 : Math.max(2.5, d));
       toast(it.rarity === "partner" ? `You're at ${it.name}! Catch it for a reward` : `You're at ${it.name}! Catch it to collect the chop`);
     }
+    if (st.entry && !near && !st.entry.busy && !st.entry.catching) { removeEntry(st.entry); st.entry = null; }
+    // follow the real spot as you move (very close up the GPS bearing is too noisy to follow)
+    if (st.entry && a != null && d >= 6 && !st.entry.busy && !st.entry.catching) {
+      const p = st.entry.holder.position, tx = viewPos.x - Math.sin(a) * d, tz = viewPos.z - Math.cos(a) * d;
+      p.x += (tx - p.x) * 0.1; p.z += (tz - p.z) * 0.1; p.y = floorY;
+    }
+    if (a != null && d > it.catchR && d <= it.r) {
+      if (!st.beacon) st.beacon = makeBeacon(it);
+      const vd = Math.min(d, 60), p = st.beacon.position, tx = viewPos.x - Math.sin(a) * vd, tz = viewPos.z - Math.cos(a) * vd;
+      if (!st.beacon.userData.placed) { p.set(tx, floorY, tz); st.beacon.userData.placed = true; }
+      p.x += (tx - p.x) * 0.1; p.z += (tz - p.z) * 0.1; p.y = floorY;
+      labelBeacon(st.beacon, it, d);
+    } else if (st.beacon) { scene.remove(st.beacon); st.beacon = null; }
   }
 }
+const checkLandmarks = updateAnchors;
 function fmtDist(km) { return km < 1 ? `${Math.round(km * 1000)} m` : km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`; }
 $("#areaSelect").append(new Option("Use my location", "auto"));
 for (const [code, a] of Object.entries(AREAS)) $("#areaSelect").append(new Option(a.country === "MY" && code !== "MY" ? `Malaysia · ${a.name}` : a.name, code));
@@ -1181,16 +1241,23 @@ $("#areaSelect").addEventListener("change", e => {
 });
 
 // ---------- Looking around (camera mode): phone orientation, or drag on a computer ----------
-const look = { yaw: 0, pitch: 0, gotSensor: false, absolute: false, compass: null, compassAt: 0, yawAt: 0 };
+const look = { yaw: 0, pitch: 0, gotSensor: false, absolute: false, heading: null, headingAt: 0 };
 const zee = new THREE.Vector3(0, 0, 1), q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)), qTmp = new THREE.Quaternion(), eul = new THREE.Euler();
+const qSensor = new THREE.Quaternion(), fwdSensor = new THREE.Vector3();
 function onOrient(e) {
   if (e.alpha == null) return;
   look.gotSensor = true;
   look.absolute = e.absolute === true || e.type === "deviceorientationabsolute";
-  if (e.webkitCompassHeading != null) { look.compass = e.webkitCompassHeading; look.yawAt = viewYaw(); } // iPhone
   const orient = THREE.MathUtils.degToRad(screen.orientation?.angle || 0);
   eul.set(THREE.MathUtils.degToRad(e.beta), THREE.MathUtils.degToRad(e.alpha), -THREE.MathUtils.degToRad(e.gamma), "YXZ");
-  camera.quaternion.setFromEuler(eul).multiply(q1).multiply(qTmp.setFromAxisAngle(zee, -orient));
+  qSensor.setFromEuler(eul).multiply(q1).multiply(qTmp.setFromAxisAngle(zee, -orient));
+  if (mode !== "xr") camera.quaternion.copy(qSensor); // in floor mode WebXR moves the camera
+  // compass heading of the back camera: with absolute orientation the sensor frame's -Z is north
+  fwdSensor.set(0, 0, -1).applyQuaternion(qSensor);
+  if (look.absolute) look.heading = (Math.atan2(fwdSensor.x, -fwdSensor.z) * 180 / Math.PI + 360) % 360;
+  else if (e.webkitCompassHeading != null) look.heading = e.webkitCompassHeading; // iPhone
+  else look.heading = null;
+  look.headingAt = performance.now();
 }
 async function startSensors() {
   try { if (typeof DeviceOrientationEvent !== "undefined" && DeviceOrientationEvent.requestPermission) await DeviceOrientationEvent.requestPermission(); } catch {}
@@ -1201,12 +1268,7 @@ async function startSensors() {
 function viewYaw() { const f = new THREE.Vector3(); camera.getWorldDirection(f); return Math.atan2(-f.x, -f.z); }
 // Compass heading of the camera in degrees (0 = north), or null when the phone gives no compass.
 // With absolute orientation the scene's -Z axis is north.
-function heading() {
-  if (mode === "xr" || !look.gotSensor) return null;
-  if (look.absolute) { const f = new THREE.Vector3(); camera.getWorldDirection(f); return (Math.atan2(f.x, -f.z) * 180 / Math.PI + 360) % 360; }
-  if (look.compass != null) return (look.compass - THREE.MathUtils.radToDeg(viewYaw() - look.yawAt) + 360) % 360;
-  return null;
-}
+function heading() { return look.heading != null && performance.now() - look.headingAt < 2000 ? look.heading : null; }
 let drag = null;
 canvas.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, moved: 0 }; });
 canvas.addEventListener("pointermove", e => {
@@ -1307,6 +1369,8 @@ function enterGame(m) {
   floorY = m === "xr" ? 0 : -EYE; ground.position.y = floorY;
   updateScore();
   watchLocation(true); landmarkShown.clear();
+  for (const st of anchors.values()) if (st.beacon) scene.remove(st.beacon);
+  anchors.clear(); north.ok = false;
   if (m !== "xr") { for (let i = 0; i < MAX_LIVE; i++) spawn(); checkLandmarks(); hint(look.gotSensor || m === "nocam" ? "" : "Turn around with your phone to find things"); setTimeout(() => hint(""), 4000); }
 }
 function endGame() {
@@ -1329,7 +1393,7 @@ $("#startCam").addEventListener("click", async () => {
 });
 $("#startNoCam").addEventListener("click", async () => { await loadCustom(); scene.background = new THREE.Color(0x7aa6c9); enterGame("nocam"); });
 $("#startXR").addEventListener("click", async () => {
-  try { await loadCustom(); await startXR(); }
+  try { await loadCustom(); await startSensors(); await startXR(); }
   catch (e) { status.className = "err"; status.textContent = "Could not start AR: " + (e.message || e); }
 });
 $("#exitBtn").addEventListener("click", () => { const s = renderer.xr.getSession(); if (s) s.end(); else { scene.background = null; endGame(); } });
@@ -1431,7 +1495,7 @@ let nearbyTimer = null;
 function renderNearby() {
   const g = $("#nearbyGrid"), s = save.get(), h = heading(); g.innerHTML = "";
   if (geo.lat == null) { $("#nearbySummary").textContent = "Turn on location to see what's near you."; }
-  else $("#nearbySummary").textContent = h == null ? "Landmarks and partner shops by distance. (No compass on this phone, so arrows point relative to north.)" : "Landmarks and partner shops by distance. Arrows point the way.";
+  else $("#nearbySummary").textContent = `Landmarks and partner shops by distance. ${h == null ? "No compass on this phone, so arrows point relative to north." : "Arrows point the way."}${geo.acc ? ` GPS accuracy about ±${Math.round(geo.acc)} m.` : ""} Within ${CATCH_R} m the landmark stands at its real spot.`;
   const list = places().map(it => ({ it, d: geo.lat == null ? null : distKm(geo.lat, geo.lon, it.lat, it.lon) })).sort((a, b) => (a.d ?? 0) - (b.d ?? 0));
   for (const { it, d } of list) {
     const card = document.createElement("div"); card.className = "card";
@@ -1454,7 +1518,7 @@ $("#nearbyClose").addEventListener("click", () => { $("#nearby").hidden = true; 
 $("#tsCreate").addEventListener("click", () => {
   if (geo.lat == null) { $("#tsStatus").textContent = "Turn on location first."; return; }
   const name = $("#tsName").value.trim() || "Test shop";
-  const p = { id: "test" + Date.now().toString(36), name, address: "Test spot", lat: geo.lat, lon: geo.lon, radius: 60, brandColor: $("#tsColor").value, logoText: name.split(" ")[0], reward: $("#tsReward").value.trim(), about: `A demo of how ${name} could appear in AR Hunt.` };
+  const p = { id: "test" + Date.now().toString(36), name, address: "Test spot", lat: geo.lat, lon: geo.lon, radius: 300, catchRadius: 40, brandColor: $("#tsColor").value, logoText: name.split(" ")[0], reward: $("#tsReward").value.trim(), about: `A demo of how ${name} could appear in AR Hunt.` };
   testSpots.put([...testSpots.get(), p]); addPartner(p, true);
   $("#tsStatus").textContent = `${name} created here.`;
   landmarkShown.delete("partner-" + p.id); checkLandmarks(); renderNearby();
@@ -1537,7 +1601,7 @@ renderer.setAnimationLoop((time, frame) => {
     e.hop = Math.max(0, (e.hop || 0) - dt);
     m.position.y = m.userData.baseY ??= m.position.y;
     m.position.y = m.userData.baseY + Math.sin(t * 2 + e.phase) * 0.03 + Math.sin(Math.min(1, e.hop / 0.6) * Math.PI) * 0.4;
-    e.holder.rotation.y += dt * 0.3;
+    if (e.item.lat == null) e.holder.rotation.y += dt * 0.3; // landmarks stay put like the real thing
     m.traverse(o => o.userData.animate?.(o, t + e.phase));
   }
   for (const f of [...flights]) {
@@ -1552,6 +1616,7 @@ renderer.setAnimationLoop((time, frame) => {
     pos.needsUpdate = true; b.pts.material.opacity = Math.max(0, 1 - b.t / 1.2);
     if (b.t > 1.2) { scene.remove(b.pts); bursts.splice(bursts.indexOf(b), 1); }
   }
+  if (mode) updateAnchors();
   if (mode) { sun.position.set(viewPos.x + 2, floorY + 6, viewPos.z + 3); sun.target.position.set(viewPos.x, floorY, viewPos.z); }
   if (mode && mode !== "xr") { drawRadar(); updateArrow(); } else arrow.hidden = true;
   renderer.render(scene, camera);
