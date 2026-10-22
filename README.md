@@ -30,6 +30,20 @@ Live: https://smarteyes.cck8.my
 
 **Landmark chops**: Petronas Twin Towers, Menara KL, Thean Hou Temple, Kek Lok Si, Khoo Kongsi, Cheng Hoon Teng, Christ Church Melaka, A Famosa, Tua Pek Kong Kuching, Great Cat of Kuching, Kinabalu Park, Sam Poh Tong. Coordinates are approximate (each has a 400 m–2 km radius) and live in the `LANDMARKS` list in `index.html`, so they are easy to correct or extend.
 
+## Bag, repeats and unlocks
+- Normal items keep appearing; every catch adds one to the **Bag** (e.g. Durian × 7). The Collection records each kind once
+- Items can have rules in `ITEM_LIST` (last column): `needs` makes an item appear only after owning enough of others, `limit` caps how many one person can own. Examples: **Musang King** needs 5 Durian; the **Golden Cat** needs 10 Cats and is one of a kind
+
+## Partner shops
+Shops and restaurants can appear in the game with their own branded 3D sign (or their own `.glb` model) and a reward.
+- Edit **`partners.json`** in GitHub: copy the example, fill in name, address, `lat`/`lon` (right-click the shop in Google Maps), `radius` in metres, `brandColor`, `logoText`, `reward`, optional `glb` path and `validUntil`, then set `"active": true`. It goes live with the next deploy
+- Players within the radius see the sign; catching it gives a voucher with a code (one per shop per day), kept in the Bag. Staff tap **Mark as used** to redeem it
+- **Partner demo** (in Nearby): stand in a shop and create a test spot to show the owner. Test spots stay on that phone only
+- Vouchers are checked on the honour system for now (stored on the player's phone). A server-side check is needed before running paid campaigns
+
+## Nearby and the radar
+**Nearby** lists landmarks and partner shops by distance with an arrow pointing the way (using the phone's compass when available). Places within 1.5 km show as diamonds on the radar rim, and when you arrive the object appears in its real direction.
+
 ## Adding things
 - **New item**: add a model function to `MODELS` and a row to `ITEM_LIST` with where it appears (`"*"`, a country code, or state codes such as `"PNG,MLK"`)
 - **New landmark**: add a row to `LANDMARKS` with its latitude, longitude, radius in metres and model

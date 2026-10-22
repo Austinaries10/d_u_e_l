@@ -70,6 +70,14 @@
   .card .local { color: var(--muted); font-size: 12px; }
   .card p { font-size: 12px; line-height: 1.45; color: var(--text); margin: 8px 0 0; }
   .card.locked { opacity: 0.55; }
+  .section { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 10px; }
+  .qty { font-size: 22px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .need { font-size: 12px; color: var(--accent); margin-top: 6px; }
+  .voucher { border: 2px dashed #2ec4b6; border-radius: 14px; padding: 12px; margin: 0 0 14px; display: grid; gap: 6px; text-align: center; }
+  .voucher b { font-size: 15px; } .voucher code { font-size: 20px; letter-spacing: .12em; color: #7ee8de; } .voucher small { color: var(--muted); font-size: 11px; }
+  .card.used { opacity: 0.5; }
+  .dir { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.08); display: grid; place-items: center; float: right; font-size: 20px; color: var(--accent); }
+  .rar-partner { color: #5ee0d3; }
   .rar-landmark { color: #ff8a8a; }
   .chop { width: 104px; height: 104px; border-radius: 50%; border: 4px double #e63946; color: #ff6b6b; display: grid; place-content: center; text-align: center; padding: 10px; transform: rotate(-8deg); margin: 4px auto 10px; }
   .chop b { font-size: 12px; line-height: 1.2; }
@@ -111,11 +119,13 @@
     <h2 id="ccName"></h2>
     <div class="local" id="ccLocal"></div>
     <p id="ccFact"></p>
+    <div class="voucher" id="ccVoucher" hidden><b id="ccReward"></b><code id="ccCode"></code><small>Show this at the counter. It's also kept in your Bag.</small></div>
     <div class="row" style="justify-content:center"><span class="pts" id="ccPts"></span><button class="btn primary" id="ccOk" type="button">Keep hunting</button></div>
   </div>
   <div class="bottom ui">
+    <button class="btn" id="bagBtn" type="button">Bag</button>
     <button class="btn" id="collectionBtn" type="button">Collection</button>
-    <button class="btn" id="mineBtn" type="button">My objects</button>
+    <button class="btn" id="nearbyBtn" type="button">Nearby</button>
     <button class="btn" id="photoBtn" type="button">Photo</button>
     <button class="btn" id="exitBtn" type="button">Exit</button>
   </div>
@@ -126,6 +136,29 @@
   <p class="sub" id="collectionSummary"></p>
   <div class="tabs" id="packTabs"></div>
   <div class="grid" id="collectionGrid"></div>
+</section>
+
+<section class="sheet" id="bag" hidden>
+  <header><h2>Bag</h2><div class="row"><button class="btn small" id="mineBtn" type="button">My objects</button><button class="btn small" id="bagClose" type="button">Close</button></div></header>
+  <p class="sub" id="bagSummary"></p>
+  <h3 class="section">Rewards</h3>
+  <div class="grid" id="voucherGrid"></div>
+  <h3 class="section">Items</h3>
+  <div class="grid" id="bagGrid"></div>
+</section>
+
+<section class="sheet" id="nearby" hidden>
+  <header><h2>Nearby</h2><button class="btn small" id="nearbyClose" type="button">Close</button></header>
+  <p class="sub" id="nearbySummary">Landmarks and partner shops. The arrow points the way when your phone's compass is available.</p>
+  <div class="grid" id="nearbyGrid"></div>
+  <h3 class="section">Partner demo</h3>
+  <p class="sub">Stand inside a shop and create a test spot to show the owner how their brand would appear. Test spots are saved on this phone only.</p>
+  <div class="row">
+    <label class="field">Shop name<input id="tsName" value="My Kopitiam"></label>
+    <label class="field">Reward<input id="tsReward" value="Free teh tarik with any meal"></label>
+    <label class="field">Brand colour<input id="tsColor" type="color" value="#c0392b"></label>
+  </div>
+  <div class="row" style="margin-top:10px"><button class="btn primary" id="tsCreate" type="button">Create a test spot here</button><span class="sub" id="tsStatus" style="margin:0"></span></div>
 </section>
 
 <section class="sheet" id="mine" hidden>
@@ -184,6 +217,7 @@ const RARITY = {
   epic:      { label: "Epic",      chance: 0.45, points: 80,  weight: 11, color: 0xc58cff },
   legendary: { label: "Legendary", chance: 0.30, points: 200, weight: 4,  color: 0xffb547 },
   landmark:  { label: "Landmark",  chance: 1,    points: 300, weight: 0,  color: 0xe63946 },
+  partner:   { label: "Partner",   chance: 1,    points: 150, weight: 0,  color: 0x2ec4b6 },
 };
 
 // ---------- Model helpers ----------
@@ -293,11 +327,11 @@ function butterfly(wingColor, map) {
 
 // ---------- 3D models (built in code; each is sized later to its real-world height) ----------
 const MODELS = {
-  durian() {
+  durian(skin = 0x8c9b3c, spikes = 0x6d7b28, o = {}) {
     const g = new THREE.Group(), c = new THREE.Vector3(0, 0.5, 0);
-    const body = mesh(new THREE.SphereGeometry(0.42, 40, 30), mat(0x8c9b3c, { roughness: 0.85 }), 0, 0.5); body.scale.set(1, 1.15, 1); g.add(body);
+    const body = mesh(new THREE.SphereGeometry(0.42, 40, 30), mat(skin, { roughness: 0.85, ...o }), 0, 0.5); body.scale.set(1, 1.15, 1); g.add(body);
     const spike = new THREE.ConeGeometry(0.04, 0.12, 5); spike.translate(0, 0.05, 0);
-    g.add(bristles(spike, mat(0x6d7b28, { roughness: 0.9 }), sphereDirs(260), new THREE.Vector3(0.42, 0.483, 0.42), c, 0.15));
+    g.add(bristles(spike, mat(spikes, { roughness: 0.9, ...o }), sphereDirs(260), new THREE.Vector3(0.42, 0.483, 0.42), c, 0.15));
     g.add(mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.16, 8), mat(0x6b4a2b, { roughness: 0.9 }), 0, 1.03));
     return g;
   },
@@ -507,8 +541,38 @@ const MODELS = {
     g.userData.animate = (o, t) => { tongue.visible = Math.sin(t * 6) > 0.3; tail.rotation.y = Math.sin(t * 2) * 0.3; };
     return g;
   },
-  cat(fur = 0xe8a15b) {
-    const g = new THREE.Group(), f = mat(fur, { roughness: 0.85 });
+  musangKing() {
+    const g = MODELS.durian(0xc9a227, 0xa8841c, { metalness: 0.5, roughness: 0.45 });
+    const crown = new THREE.Group(); crown.position.y = 1.1; g.add(crown);
+    crown.add(mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 20, 1, true), gold()));
+    for (let i = 0; i < 6; i++) crown.add(mesh(new THREE.ConeGeometry(0.025, 0.07, 6), gold(), Math.cos(i) * 0.12, 0.06, Math.sin(i) * 0.12));
+    return g;
+  },
+  goldenCat() { return MODELS.cat(0xffd34d, true); },
+  shopSign(p) {
+    const g = new THREE.Group(), brand = p.brandColor || "#2ec4b6";
+    const art = tex(512, 640, (c, w, h) => {
+      c.fillStyle = brand; c.fillRect(0, 0, w, h);
+      c.fillStyle = "rgba(255,255,255,0.1)"; for (let x = -h; x < w; x += 60) { c.beginPath(); c.moveTo(x, h); c.lineTo(x + h, 0); c.lineTo(x + h + 25, 0); c.lineTo(x + 25, h); c.fill(); }
+      c.fillStyle = "#fff"; c.textAlign = "center"; c.textBaseline = "middle";
+      c.font = "700 120px Sora, sans-serif"; c.fillText((p.logoText || p.name).slice(0, 6).toUpperCase(), w / 2, 210, w - 40);
+      c.font = "600 46px Sora, sans-serif";
+      const words = p.name.split(" "); let line = "", y = 340; const lines = [];
+      for (const word of words) { const t = line ? line + " " + word : word; if (c.measureText(t).width > w - 60 && line) { lines.push(line); line = word; } else line = t; }
+      lines.push(line); lines.slice(0, 2).forEach((l, i) => c.fillText(l, w / 2, y + i * 56));
+      c.fillStyle = "rgba(0,0,0,0.25)"; c.fillRect(30, 500, w - 60, 100);
+      c.fillStyle = "#fff"; c.font = "600 32px Sora, sans-serif"; c.fillText((p.reward || "").slice(0, 34), w / 2, 550, w - 80);
+    });
+    const face = new THREE.MeshStandardMaterial({ map: art, roughness: 0.5 }), edge = mat(0x222222, { roughness: 0.5 });
+    g.add(mesh(new THREE.BoxGeometry(0.72, 0.9, 0.04), [edge, edge, edge, edge, face, face], 0, 0.75));
+    for (const x of [-0.3, 0.3]) g.add(mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.32, 8), edge, x, 0.16));
+    const stripes = tex(256, 32, (c, w, h) => { for (let x = 0; x < w; x += 32) { c.fillStyle = (x / 32) % 2 ? "#fff" : brand; c.fillRect(x, 0, 32, h); } });
+    const awning = mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.8, 20, 1, true, 0, Math.PI), new THREE.MeshStandardMaterial({ map: stripes, side: THREE.DoubleSide, roughness: 0.6 }), 0, 1.22, 0.04);
+    awning.rotation.z = Math.PI / 2; g.add(awning);
+    return g;
+  },
+  cat(fur = 0xe8a15b, metal = false) {
+    const g = new THREE.Group(), f = metal ? mat(fur, { metalness: 1, roughness: 0.25, envMapIntensity: 1.8, emissive: 0x3d2a00, emissiveIntensity: 0.3 }) : mat(fur, { roughness: 0.85 });
     const body = mesh(new THREE.SphereGeometry(0.22, 20, 14), f, 0, 0.3); body.scale.set(1.5, 1, 1); g.add(body);
     g.add(mesh(new THREE.SphereGeometry(0.16, 20, 14), f, 0.36, 0.5));
     for (const s of [-1, 1]) {
@@ -746,11 +810,13 @@ const ITEM_LIST = [
   ["cat", "Cat", "Kucing", "common", 0.45, "Kuching is nicknamed Cat City, and its name sounds just like 'kucing', the Malay word for cat.", "*"],
   ["dog", "Dog", "Anjing", "common", 0.5, "A loyal friend in every neighbourhood.", "*"],
   ["butterfly", "Butterfly", "Rama-rama", "common", 0.45, "Butterflies taste with their feet.", "*"],
+  ["goldenCat", "Golden Cat", "Kucing Emas", "legendary", 0.5, "A one-of-a-kind cat that only shows itself to people who have befriended many cats.", "*", { needs: { cat: 10 }, limit: 1 }],
   ["coin", "Gold Coin", "Treasure", "common", 0.6, "Treasure can turn up anywhere.", "*"],
   ["gem", "Crystal", "Treasure", "rare", 0.6, "A rare crystal that catches the light.", "*"],
   ["chest", "Treasure Chest", "Treasure", "epic", 0.6, "Someone left this behind. Now it's yours.", "*"],
 
   ["durian", "Durian", "Raja buah, the king of fruits", "common", 0.55, "Famous for its strong smell. Musang King from Pahang and Johor is one of the most prized varieties.", "MY"],
+  ["musangKing", "Musang King", "Durian Musang King", "epic", 0.6, "The most famous durian variety, with golden flesh and a bittersweet taste. Only true durian lovers find it.", "MY", { needs: { durian: 5 } }],
   ["rambutan", "Rambutan", "Rambutan", "common", 0.35, "Its name comes from the Malay word 'rambut', which means hair.", "MY"],
   ["ketupat", "Ketupat", "Ketupat", "common", 0.5, "Rice cooked in a pouch woven from young coconut leaves, served at Hari Raya.", "MY"],
   ["tehTarik", "Teh Tarik", "Teh tarik, 'pulled tea'", "common", 0.45, "Poured back and forth between two cups to cool it and make the froth. Often called Malaysia's national drink.", "MY"],
@@ -806,12 +872,31 @@ const LANDMARKS = [
   ["lm-sampohtong", "Sam Poh Tong Temple", "Gunung Rapat, Ipoh", 4.5525, 101.1095, 700, "templeCave", 0.9, "A Buddhist temple built inside a limestone cave."],
 ];
 const ITEMS = {};
-for (const [id, name, local, rarity, h, fact, where] of ITEM_LIST) ITEMS[id] = { id, name, local, rarity, h, fact, where: where.split(","), build: MODELS[id] };
+// opts.needs: { itemId: count } owned before it can appear. opts.limit: how many one person can own.
+for (const [id, name, local, rarity, h, fact, where, opts = {}] of ITEM_LIST) ITEMS[id] = { id, name, local, rarity, h, fact, where: where.split(","), needs: opts.needs, limit: opts.limit, build: MODELS[id] };
 for (const [id, name, local, lat, lon, r, model, h, fact] of LANDMARKS) ITEMS[id] = { id, name, local, rarity: "landmark", h, fact, lat, lon, r, where: [], build: MODELS[model] };
+
+// ---------- Partner shops ----------
+// Shared partners come from partners.json (edited in GitHub, deployed with the site).
+// Test spots made with the Partner demo button are kept on this phone only.
+const partnerTemplates = new Map();
+function addPartner(p, local = false) {
+  if (p.active === false || p.lat == null || p.lon == null) return;
+  if (p.validUntil && new Date(p.validUntil + "T23:59:59") < new Date()) return;
+  const id = "partner-" + p.id;
+  ITEMS[id] = { id, name: p.name, local: p.address || "Partner shop", rarity: "partner", h: p.height || 1.2, fact: p.about || p.reward || "", reward: p.reward, lat: p.lat, lon: p.lon, r: p.radius || 80, brand: p.brandColor, test: local, where: [],
+    build: () => partnerTemplates.has(id) ? partnerTemplates.get(id).clone(true) : MODELS.shopSign(p) };
+  if (p.glb) new GLTFLoader().loadAsync(p.glb).then(g => partnerTemplates.set(id, g.scene)).catch(() => {});
+}
+const testSpots = { get() { try { return JSON.parse(localStorage.getItem("arhunt.testspots") || "[]"); } catch { return []; } }, put(list) { try { localStorage.setItem("arhunt.testspots", JSON.stringify(list)); } catch {} } };
+async function loadPartners() {
+  try { const r = await fetch("partners.json", { cache: "no-cache" }); if (r.ok) for (const p of (await r.json()).partners || []) addPartner(p); } catch {}
+  for (const p of testSpots.get()) addPartner(p, true);
+}
 
 // ---------- Saved progress ----------
 const save = (() => {
-  let s = { xp: 0, caught: {}, chops: {} };
+  let s = { xp: 0, caught: {}, chops: {}, vouchers: [] };
   try { s = { ...s, ...JSON.parse(localStorage.getItem("arhunt.v1") || "{}") }; } catch {}
   return { get: () => s, put() { try { localStorage.setItem("arhunt.v1", JSON.stringify(s)); } catch {} } };
 })();
@@ -882,10 +967,14 @@ const bursts = [];        // catch sparkles
 const MAX_LIVE = 5;
 const viewPos = new THREE.Vector3();
 
+const owned = id => save.get().caught[id] || 0;
+const unlocked = it => !it.needs || Object.entries(it.needs).every(([id, n]) => owned(id) >= n);
+const available = it => unlocked(it) && (!it.limit || owned(it.id) < it.limit);
 // Things from this state count most, then the country, then the everyday things found everywhere
 function pickItem() {
   const pool = [], country = AREAS[area].country;
   for (const it of Object.values(ITEMS)) {
+    if (!available(it)) continue;
     const w = RARITY[it.rarity].weight;
     if (it.custom) { if (it.hunt) pool.push([it, w]); continue; }
     if (it.where.includes(area)) pool.push([it, w * 2]);
@@ -962,11 +1051,20 @@ function finishCatch(e) {
   scene.remove(e.catching.ball); removeEntry(e);
   const s = save.get(), first = !s.caught[e.item.id], pts = RARITY[e.item.rarity].points * (first ? 2 : 1);
   s.caught[e.item.id] = (s.caught[e.item.id] || 0) + 1; s.xp += pts;
-  if (e.item.rarity === "landmark" && !s.chops[e.item.id]) s.chops[e.item.id] = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  if (e.item.rarity === "landmark" && !s.chops[e.item.id]) s.chops[e.item.id] = today;
+  let voucher = null;
+  if (e.item.rarity === "partner" && e.item.reward && !s.vouchers.some(v => v.partner === e.item.id && v.date === today)) {
+    voucher = { partner: e.item.id, name: e.item.name, reward: e.item.reward, date: today, used: false, code: e.item.id.replace(/^partner-/, "").slice(0, 4).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase() };
+    s.vouchers.push(voucher);
+  }
   save.put(); updateScore();
   if (navigator.vibrate) navigator.vibrate([30, 40, 60]);
-  showCard(e.item, pts, first);
-  if (e.item.rarity !== "landmark") setTimeout(() => { if (mode && live.filter(x => x.item.rarity !== "landmark").length < MAX_LIVE) spawn(); }, 2500);
+  showCard(e.item, pts, first, voucher);
+  // items that just became possible because of this catch
+  const opened = Object.values(ITEMS).filter(it => it.needs && it.needs[e.item.id] && owned(e.item.id) === it.needs[e.item.id] && unlocked(it));
+  if (opened.length) setTimeout(() => toast(`Something rare is now out there…`), 1200);
+  if (!e.item.lat) setTimeout(() => { if (mode && live.filter(x => !x.item.lat).length < MAX_LIVE) spawn(); }, 2500);
 }
 function sparkle(pos, color) {
   const n = 40, geo = new THREE.BufferGeometry(), arr = new Float32Array(n * 3), vel = [];
@@ -977,9 +1075,11 @@ function sparkle(pos, color) {
 }
 
 // ---------- Catch card, toast, hint ----------
-function showCard(item, pts, first) {
+function showCard(item, pts, first, voucher) {
   const rar = RARITY[item.rarity];
-  $("#ccTag").textContent = item.rarity === "landmark" ? (first ? "Chop collected!" : "Landmark") : `${first ? "New! " : ""}${rar.label}`; $("#ccTag").className = "tag rar-" + item.rarity;
+  $("#ccTag").textContent = item.rarity === "landmark" ? (first ? "Chop collected!" : "Landmark") : item.rarity === "partner" ? "Partner" : `${first ? "New! " : ""}${rar.label}`; $("#ccTag").className = "tag rar-" + item.rarity;
+  $("#ccVoucher").hidden = !voucher;
+  if (voucher) { $("#ccReward").textContent = voucher.reward; $("#ccCode").textContent = voucher.code; }
   $("#ccName").textContent = item.name; $("#ccLocal").textContent = item.local;
   $("#ccFact").textContent = item.fact; $("#ccPts").textContent = `+${pts} pts${first ? " (first catch ×2)" : ""}`;
   $("#catchCard").hidden = false;
@@ -1051,19 +1151,27 @@ function watchLocation(on) {
   if (on && watchId == null) watchId = navigator.geolocation.watchPosition(onPosition, () => {}, { enableHighAccuracy: true, maximumAge: 30000 });
   if (!on && watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
 }
-// Standing at a landmark makes it appear (once per visit) so its chop can be collected
+function bearing(lat1, lon1, lat2, lon2) { // degrees from north
+  const d = Math.PI / 180, y = Math.sin((lon2 - lon1) * d) * Math.cos(lat2 * d), x = Math.cos(lat1 * d) * Math.sin(lat2 * d) - Math.sin(lat1 * d) * Math.cos(lat2 * d) * Math.cos((lon2 - lon1) * d);
+  return (Math.atan2(y, x) / d + 360) % 360;
+}
+const places = () => Object.values(ITEMS).filter(it => it.lat != null);
+// Standing at a landmark or partner shop makes it appear (once per visit). With a compass it appears in its real direction.
 const landmarkShown = new Set();
 function checkLandmarks() {
   if (!mode || geo.lat == null || (mode === "xr" && !floorFound)) return;
-  for (const [id] of LANDMARKS) {
-    const it = ITEMS[id], d = distKm(geo.lat, geo.lon, it.lat, it.lon) * 1000;
-    if (d <= it.r && !landmarkShown.has(id)) {
-      landmarkShown.add(id);
-      spawn(it, camera.rotation.y, mode === "xr" ? 2.2 : 4);
-      toast(`You're at ${it.name}! Catch it to collect the chop`);
+  for (const it of places()) {
+    const d = distKm(geo.lat, geo.lon, it.lat, it.lon) * 1000;
+    if (d <= it.r && !landmarkShown.has(it.id)) {
+      landmarkShown.add(it.id);
+      const h = heading();
+      const a = h != null && d > 15 ? viewYaw() - THREE.MathUtils.degToRad(bearing(geo.lat, geo.lon, it.lat, it.lon) - h) : camera.rotation.y;
+      spawn(it, a, mode === "xr" ? 2.2 : 4);
+      toast(it.rarity === "partner" ? `You're at ${it.name}! Catch it for a reward` : `You're at ${it.name}! Catch it to collect the chop`);
     }
   }
 }
+function fmtDist(km) { return km < 1 ? `${Math.round(km * 1000)} m` : km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`; }
 $("#areaSelect").append(new Option("Use my location", "auto"));
 for (const [code, a] of Object.entries(AREAS)) $("#areaSelect").append(new Option(a.country === "MY" && code !== "MY" ? `Malaysia · ${a.name}` : a.name, code));
 $("#areaSelect").addEventListener("change", e => {
@@ -1073,11 +1181,13 @@ $("#areaSelect").addEventListener("change", e => {
 });
 
 // ---------- Looking around (camera mode): phone orientation, or drag on a computer ----------
-const look = { yaw: 0, pitch: 0, gotSensor: false, absolute: false };
+const look = { yaw: 0, pitch: 0, gotSensor: false, absolute: false, compass: null, compassAt: 0, yawAt: 0 };
 const zee = new THREE.Vector3(0, 0, 1), q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)), qTmp = new THREE.Quaternion(), eul = new THREE.Euler();
 function onOrient(e) {
   if (e.alpha == null) return;
   look.gotSensor = true;
+  look.absolute = e.absolute === true || e.type === "deviceorientationabsolute";
+  if (e.webkitCompassHeading != null) { look.compass = e.webkitCompassHeading; look.yawAt = viewYaw(); } // iPhone
   const orient = THREE.MathUtils.degToRad(screen.orientation?.angle || 0);
   eul.set(THREE.MathUtils.degToRad(e.beta), THREE.MathUtils.degToRad(e.alpha), -THREE.MathUtils.degToRad(e.gamma), "YXZ");
   camera.quaternion.setFromEuler(eul).multiply(q1).multiply(qTmp.setFromAxisAngle(zee, -orient));
@@ -1086,6 +1196,16 @@ async function startSensors() {
   try { if (typeof DeviceOrientationEvent !== "undefined" && DeviceOrientationEvent.requestPermission) await DeviceOrientationEvent.requestPermission(); } catch {}
   if ("ondeviceorientationabsolute" in window) addEventListener("deviceorientationabsolute", onOrient);
   else addEventListener("deviceorientation", onOrient);
+}
+// The direction the camera faces, in the same angle convention as spawn(): forward is (-sin a, -cos a)
+function viewYaw() { const f = new THREE.Vector3(); camera.getWorldDirection(f); return Math.atan2(-f.x, -f.z); }
+// Compass heading of the camera in degrees (0 = north), or null when the phone gives no compass.
+// With absolute orientation the scene's -Z axis is north.
+function heading() {
+  if (mode === "xr" || !look.gotSensor) return null;
+  if (look.absolute) { const f = new THREE.Vector3(); camera.getWorldDirection(f); return (Math.atan2(f.x, -f.z) * 180 / Math.PI + 360) % 360; }
+  if (look.compass != null) return (look.compass - THREE.MathUtils.radToDeg(viewYaw() - look.yawAt) + 360) % 360;
+  return null;
 }
 let drag = null;
 canvas.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, moved: 0 }; });
@@ -1124,6 +1244,16 @@ function drawRadar() {
     rctx.beginPath(); rctx.arc(c - Math.sin(rel) * d, c - Math.cos(rel) * d, 7, 0, 7); rctx.fill();
   }
   rctx.fillStyle = "#fff"; rctx.beginPath(); rctx.arc(c, c, 5, 0, 7); rctx.fill();
+  // landmarks and partner shops within 1.5 km, as diamonds on the rim in their real direction
+  const h = heading();
+  if (h == null || geo.lat == null) return;
+  for (const it of places()) {
+    if (live.some(e => e.item === it) || distKm(geo.lat, geo.lon, it.lat, it.lon) > 1.5) continue;
+    const rel = THREE.MathUtils.degToRad(bearing(geo.lat, geo.lon, it.lat, it.lon) - h), x = c + Math.sin(rel) * (R - 4), y = c - Math.cos(rel) * (R - 4);
+    rctx.save(); rctx.translate(x, y); rctx.rotate(Math.PI / 4);
+    rctx.fillStyle = it.rarity === "partner" ? (it.brand || "#2ec4b6") : "#e63946"; rctx.fillRect(-7, -7, 14, 14);
+    rctx.strokeStyle = "#fff"; rctx.lineWidth = 2; rctx.strokeRect(-7, -7, 14, 14); rctx.restore();
+  }
 }
 function updateArrow() {
   let best = null, bestD = Infinity, onScreen = false;
@@ -1224,12 +1354,14 @@ $("#photoBtn").addEventListener("click", async () => {
 });
 
 // ---------- Collection: grouped by where things live, plus the landmark chop passport ----------
-const groupOf = it => it.custom ? "CUSTOM" : it.rarity === "landmark" ? "CHOPS" : it.where[0] === "*" ? "ALL" : it.where[0];
-const GROUP_NAMES = { ALL: "Everywhere", CHOPS: "Landmark chops", CUSTOM: "My objects" };
+const groupOf = it => it.custom ? "CUSTOM" : it.rarity === "landmark" ? "CHOPS" : it.rarity === "partner" ? "PARTNERS" : it.where[0] === "*" ? "ALL" : it.where[0];
+const GROUP_NAMES = { ALL: "Everywhere", CHOPS: "Landmark chops", PARTNERS: "Partner shops", CUSTOM: "My objects" };
+const needText = it => Object.entries(it.needs).map(([id, n]) => `${n} × ${owned(id) ? ITEMS[id].name : "???"} (${Math.min(owned(id), n)}/${n})`).join(", ");
 let tab = "ALL";
 function renderCollection() {
   const s = save.get(), all = Object.values(ITEMS), found = all.filter(i => s.caught[i.id]).length;
-  $("#collectionSummary").textContent = `${found} of ${all.length} found · ${Object.keys(s.chops).length} of ${LANDMARKS.length} chops · Level ${level(s.xp)} · ${s.xp} pts`;
+  const kinds = all.filter(i => i.rarity !== "partner");
+  $("#collectionSummary").textContent = `${kinds.filter(i => s.caught[i.id]).length} of ${kinds.length} found · ${Object.keys(s.chops).length} of ${LANDMARKS.length} chops · Level ${level(s.xp)} · ${s.xp} pts`;
   const groups = []; for (const it of all) { const g = groupOf(it); if (!groups.includes(g)) groups.push(g); }
   const order = ["CHOPS", area, AREAS[area].country, "ALL"]; groups.sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
   const tabs = $("#packTabs"); tabs.innerHTML = "";
@@ -1252,12 +1384,81 @@ function renderCollection() {
     }
     const meta = Object.assign(document.createElement("div"), { className: "meta rar-" + it.rarity, textContent: RARITY[it.rarity].label + (n ? ` · ×${n}` : "") });
     const h = Object.assign(document.createElement("h3"), { textContent: n ? it.name : "???" });
-    const local = Object.assign(document.createElement("div"), { className: "local", textContent: n ? it.local : "Not found yet" });
+    const local = Object.assign(document.createElement("div"), { className: "local", textContent: n ? it.local : it.rarity === "partner" ? it.local : "Not found yet" });
     card.append(meta, h, local);
+    if (it.rarity === "partner") { h.textContent = it.name; if (it.reward) card.append(Object.assign(document.createElement("div"), { className: "need", textContent: `Reward: ${it.reward}` })); }
+    if (!n && it.needs && !unlocked(it)) card.append(Object.assign(document.createElement("div"), { className: "need", textContent: `Appears after ${needText(it)}` }));
+    if (it.limit) card.append(Object.assign(document.createElement("div"), { className: "need", textContent: it.limit === 1 ? "One of a kind" : `Up to ${it.limit} per person` }));
     if (n) card.append(Object.assign(document.createElement("p"), { textContent: it.fact }));
     grid.append(card);
   }
 }
+
+// ---------- Bag: what you own, how many, and rewards ----------
+function renderBag() {
+  const s = save.get(), mine = Object.entries(s.caught).filter(([id]) => ITEMS[id]).sort((a, b) => b[1] - a[1]);
+  $("#bagSummary").textContent = `${mine.reduce((t, [, n]) => t + n, 0)} items · ${mine.length} kinds · ${s.vouchers.filter(v => !v.used).length} rewards to use`;
+  const vg = $("#voucherGrid"); vg.innerHTML = "";
+  if (!s.vouchers.length) vg.append(Object.assign(document.createElement("p"), { className: "sub", textContent: "Catch the sign at a partner shop to earn a reward." }));
+  for (const v of [...s.vouchers].reverse()) {
+    const card = document.createElement("div"); card.className = "card" + (v.used ? " used" : "");
+    card.append(Object.assign(document.createElement("div"), { className: "meta rar-partner", textContent: v.used ? `Used · ${v.used}` : `Earned ${v.date}` }),
+      Object.assign(document.createElement("h3"), { textContent: v.reward }), Object.assign(document.createElement("div"), { className: "local", textContent: v.name }));
+    const code = Object.assign(document.createElement("div"), { className: "voucher" }); code.append(Object.assign(document.createElement("code"), { textContent: v.code })); card.append(code);
+    if (!v.used) {
+      const b = Object.assign(document.createElement("button"), { className: "btn small", type: "button", textContent: "Mark as used (staff)" });
+      b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "Tap again to confirm"; return; } v.used = new Date().toISOString().slice(0, 10); save.put(); renderBag(); };
+      card.append(b);
+    }
+    vg.append(card);
+  }
+  const g = $("#bagGrid"); g.innerHTML = "";
+  if (!mine.length) g.append(Object.assign(document.createElement("p"), { className: "sub", textContent: "Nothing yet. Start hunting!" }));
+  for (const [id, n] of mine) {
+    const it = ITEMS[id], card = document.createElement("div"); card.className = "card";
+    card.append(Object.assign(document.createElement("div"), { className: "meta rar-" + it.rarity, textContent: RARITY[it.rarity].label }),
+      Object.assign(document.createElement("h3"), { textContent: it.name }), Object.assign(document.createElement("div"), { className: "qty", textContent: `× ${n}` }));
+    const next = Object.values(ITEMS).find(x => x.needs && x.needs[id] && !unlocked(x));
+    if (next) card.append(Object.assign(document.createElement("div"), { className: "need", textContent: `${Math.max(0, next.needs[id] - n)} more to unlock something rare` }));
+    g.append(card);
+  }
+}
+$("#bagBtn").addEventListener("click", () => { renderBag(); $("#bag").hidden = false; });
+$("#bagClose").addEventListener("click", () => { $("#bag").hidden = true; });
+
+// ---------- Nearby: landmarks and partner shops, distance and direction ----------
+let nearbyTimer = null;
+function renderNearby() {
+  const g = $("#nearbyGrid"), s = save.get(), h = heading(); g.innerHTML = "";
+  if (geo.lat == null) { $("#nearbySummary").textContent = "Turn on location to see what's near you."; }
+  else $("#nearbySummary").textContent = h == null ? "Landmarks and partner shops by distance. (No compass on this phone, so arrows point relative to north.)" : "Landmarks and partner shops by distance. Arrows point the way.";
+  const list = places().map(it => ({ it, d: geo.lat == null ? null : distKm(geo.lat, geo.lon, it.lat, it.lon) })).sort((a, b) => (a.d ?? 0) - (b.d ?? 0));
+  for (const { it, d } of list) {
+    const card = document.createElement("div"); card.className = "card";
+    if (d != null) { const arrowEl = Object.assign(document.createElement("div"), { className: "dir", textContent: "↑" }); arrowEl.style.transform = `rotate(${bearing(geo.lat, geo.lon, it.lat, it.lon) - (h ?? 0)}deg)`; card.append(arrowEl); }
+    const status = it.rarity === "landmark" ? (s.chops[it.id] ? `Chop collected ${s.chops[it.id]}` : "Chop not collected") : (it.test ? "Test spot (this phone only)" : `Reward: ${it.reward || "—"}`);
+    card.append(Object.assign(document.createElement("div"), { className: "meta rar-" + it.rarity, textContent: RARITY[it.rarity].label }),
+      Object.assign(document.createElement("h3"), { textContent: it.name }),
+      Object.assign(document.createElement("div"), { className: "local", textContent: `${it.local}${d != null ? " · " + fmtDist(d) : ""}${d != null && d * 1000 <= it.r ? " · you're here" : ""}` }),
+      Object.assign(document.createElement("div"), { className: "need", textContent: status }));
+    if (it.test) {
+      const del = Object.assign(document.createElement("button"), { className: "btn small", type: "button", textContent: "Remove test spot" });
+      del.onclick = () => { testSpots.put(testSpots.get().filter(p => "partner-" + p.id !== it.id)); delete ITEMS[it.id]; renderNearby(); };
+      card.append(del);
+    }
+    g.append(card);
+  }
+}
+$("#nearbyBtn").addEventListener("click", () => { renderNearby(); $("#nearby").hidden = false; clearInterval(nearbyTimer); nearbyTimer = setInterval(renderNearby, 1000); });
+$("#nearbyClose").addEventListener("click", () => { $("#nearby").hidden = true; clearInterval(nearbyTimer); });
+$("#tsCreate").addEventListener("click", () => {
+  if (geo.lat == null) { $("#tsStatus").textContent = "Turn on location first."; return; }
+  const name = $("#tsName").value.trim() || "Test shop";
+  const p = { id: "test" + Date.now().toString(36), name, address: "Test spot", lat: geo.lat, lon: geo.lon, radius: 60, brandColor: $("#tsColor").value, logoText: name.split(" ")[0], reward: $("#tsReward").value.trim(), about: `A demo of how ${name} could appear in AR Hunt.` };
+  testSpots.put([...testSpots.get(), p]); addPartner(p, true);
+  $("#tsStatus").textContent = `${name} created here.`;
+  landmarkShown.delete("partner-" + p.id); checkLandmarks(); renderNearby();
+});
 $("#collectionBtn").addEventListener("click", () => { tab = Object.values(ITEMS).some(i => groupOf(i) === area) ? area : "ALL"; renderCollection(); $("#collection").hidden = false; });
 $("#collectionClose").addEventListener("click", () => { $("#collection").hidden = true; });
 
@@ -1356,6 +1557,7 @@ renderer.setAnimationLoop((time, frame) => {
   renderer.render(scene, camera);
 });
 
+loadPartners();
 locate();
 updateScore();
 </script>
