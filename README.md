@@ -1,71 +1,31 @@
-# AR Hunt (SmartEyes)
+# AR Duel (SmartEyes)
 
-A Pokémon Go-style AR collecting game for the phone browser. Things from where you are (the food, animals and landmarks of your state) appear around you in the camera. Tap to throw a sepak takraw ball and collect them. Stand at a real landmark to make it appear and collect its chop.
+A Yu-Gi-Oh! style card duel in AR for the phone browser: the duel board is placed on a real table (or shown in a 3D preview) and played with virtual decks of real cards.
 
 Live: https://smarteyes.cck8.my
 
-## How it plays
-- **Location decides what appears.** GPS gives the country and Malaysian state (reverse-geocoded with BigDataCloud's free client API, with rough state boxes as a fallback). Items from your state count most, then Malaysia-wide items, then everyday things found everywhere (cats, dogs, butterflies, treasure). The area can also be chosen by hand
-- **Two modes**: on phones with WebXR (Android Chrome with ARCore) objects stand on the real floor; elsewhere they appear in the camera view and you turn the phone to look around, with a radar and an arrow pointing to them
-- **Catching**: flick the sepak takraw ball at an object. The flick's speed sets how far it flies, its angle sets left/right, and a curved swipe adds spin; the ball flies under gravity and can miss. A hit near the centre ("Excellent!") gives a better catch chance than a graze ("Nice!"). Rarer objects escape more often; legendary ones move. Every item has a local name and a fact. Points and levels are saved on the phone
-- **Not crowded**: at most 2 wild things at once (3 at a famous spot). A new one appears every 45–90 s (15–30 s at a famous spot) or after walking 150 m. With GPS and a compass each is anchored to a real spot 4–8 m away; it disappears after 3 minutes or when you walk away
-- **Famous spots**: places known for an item make it far more likely there, e.g. char kway teow at Gurney Drive, asam laksa at Air Itam Market, orangutans at Semenggoh and Sepilok, turtles at Rantau Abang. See `HOTSPOTS` in `index.html`
-- **Landmark chops**: real places anchored to their real position. Far away nothing shows. Within the visible radius (about 500 m) a light beacon with the name and distance stands in the real direction. Within 60 m the 3D landmark stands at its real spot (it gets bigger as you walk closer and stays put when you turn) and can be caught, which stamps a dated chop in the passport. Anchoring uses GPS plus the phone's compass; without a compass the landmark is placed in front of you once you are within 60 m
-- **My objects**: import your own `.glb` models; they join the hunt or can be placed in front of you. Stored on the phone (IndexedDB)
-- **Photo** (camera mode) shares or downloads the AR picture
+## Collecting
+- **Starter deck**: a new player gets one of the real starter decks (Yugi, Kaiba, Joey or Pegasus) at random, as their first deck
+- **Packs**: 3 free packs every day (reset at midnight, phone time), and more in the **Shop** for 100 coins each. Each finished duel pays 100 coins; a new player starts with 500
+- **Real packs**: the Shop sells about 140 real booster sets (`PACKS` in `api/ygo.php`). Each card comes at its real rarity in that set. A pack has 9 cards: 7 Commons, a Rare (or Super Rare in newer sets) and a foil slot. Older sets (before 2008) have 8 Commons and one Rare-or-better. All-foil sets (Battles of Legend and similar) have 5 cards. Foil odds (`FOIL_ODDS` in `index.html`): Ultra Rare about 1 in 6, Secret Rare 1 in 12, Quarter Century and Ultimate 1 in 24, Ghost 1 in 144, Starlight and Platinum Secret 1 in 576, otherwise Super Rare
+- Cards, decks and coins are kept on the phone (localStorage). Clearing the browser's site data resets them, and they can be changed by someone who knows how. Accounts on the server are needed before coins can be sold for real money
 
-## What appears where
-| Area | Items |
-|---|---|
-| Everywhere | cat, dog, butterfly, gold coin, crystal, treasure chest |
-| Malaysia | durian, rambutan, ketupat, teh tarik, nasi lemak, bunga raya, Rajah Brooke's birdwing |
-| Kuala Lumpur | Petronas Twin Towers, Menara KL |
-| Penang | char kway teow, asam laksa, trishaw |
-| Melaka | Christ Church, Melaka trishaw |
-| Sarawak | Sarawak laksa, kek lapis, Kenyalang hornbill, orangutan, rafflesia |
-| Sabah | Mount Kinabalu, orangutan, green turtle, rafflesia |
-| Kelantan | wau bulan, nasi kerabu, rafflesia |
-| Terengganu | green turtle |
-| Perak | Ipoh white coffee, rafflesia |
-| Selangor | satay |
-| Thailand, Singapore, Indonesia | their own sets |
+## Decks
+- Up to 10 decks: create, rename, copy, delete
+- A deck uses only cards you own (up to 3 copies, and no more than you own) and needs 20–60 cards to duel. Each player picks a deck on the home screen
+- **Search** your own cards, or all 14,000+ cards in the database, by name or card text. Filter by kind, attribute, type (Dragon, Spellcaster, Quick-Play…), level and archetype. Sort A–Z, by card type (monsters, spells, traps), ATK, DEF or level
 
-**Landmark chops**: Petronas Twin Towers, Menara KL, Thean Hou Temple, Kek Lok Si, Khoo Kongsi, Cheng Hoon Teng, Christ Church Melaka, A Famosa, Tua Pek Kong Kuching, Great Cat of Kuching, Timpohon Gate (Kinabalu Park), Sam Poh Tong. Coordinates come from OpenStreetMap and live in the `LANDMARKS` list in `index.html` (`CATCH_R` sets the 60 m catch distance). Phone GPS is usually accurate to 5–20 m and compasses to 10–20°, so the anchored position can be a little off, more so between tall buildings.
-
-## AR Duel (`duel.html`)
-A duel board placed on a real table with WebXR (or shown in a 3D preview), played with virtual decks.
-- **Decks**: search the YGOPRODeck card database and build a deck for each player (20–60 cards, up to 3 copies), or use the quick deck of classic cards. Decks are kept on the phone
-- **Duel**: New duel shuffles both decks and deals 5 cards each; each turn the next player draws one (running out of cards loses). A pass screen hides the hand until the next player taps
+## Duel
+- New duel shuffles both decks and deals 5 cards each; each turn the next player draws one (running out of cards loses). A pass screen hides the hand until the next player taps
 - **Board**: real card-size zones (5 monster and 5 spell/trap per player, deck pile that shrinks as you draw, graveyard). Cards show their real images; a summoned monster's artwork rises above its zone as a glowing hologram
 - **Battles** follow the standard ATK/DEF rules; direct attacks, positions, flipping, graveyard and life point changes for card effects are included
 - **Scan real cards**: Claude Haiku (`api/card.php`) reads a card held up to the camera and it is matched to the database for its artwork
 - **Own models**: attach a `.glb` model to any card name and that card shows it
-- **Card data and images**: `api/ygo.php` fetches them from YGOPRODeck and caches them in `server/cache` (blocked from the web, not in git, not touched by deploys), so each image is downloaded only once
 
-## Bag, repeats and unlocks
-- Normal items keep appearing; every catch adds one to the **Bag** (e.g. Durian × 7). The Collection records each kind once
-- Items can have rules in `ITEM_LIST` (last column): `needs` makes an item appear only after owning enough of others, `limit` caps how many one person can own. Examples: **Musang King** needs 5 Durian; the **Golden Cat** needs 10 Cats and is one of a kind
-
-## Partner shops
-Shops and restaurants can appear in the game with their own branded 3D sign (or their own `.glb` model) and a reward.
-- Edit **`partners.json`** in GitHub: copy the example, fill in name, address, `lat`/`lon` (right-click the shop in Google Maps), `radius` in metres, `brandColor`, `logoText`, `reward`, optional `glb` path and `validUntil`, then set `"active": true`. It goes live with the next deploy
-- `radius` is how far away players see a beacon pointing to the shop (default 300 m); `catchRadius` is how close they must be for the sign to stand at the shop and be caught (default 40 m). Catching it gives a voucher with a code (one per shop per day), kept in the Bag. Staff tap **Mark as used** to redeem it
-- **Partner demo** (in Nearby): stand in a shop and create a test spot to show the owner. Test spots stay on that phone only
-- Vouchers are checked on the honour system for now (stored on the player's phone). A server-side check is needed before running paid campaigns
-
-## Nearby and the radar
-**Nearby** lists landmarks and partner shops by distance with an arrow pointing the way (using the phone's compass when available). Places within 1.5 km show as diamonds on the radar rim, and when you arrive the object appears in its real direction.
-
-## Adding things
-- **New item**: add a model function to `MODELS` and a row to `ITEM_LIST` with where it appears (`"*"`, a country code, or state codes such as `"PNG,MLK"`)
-- **New famous spot**: add a row to `HOTSPOTS` with name, latitude, longitude, radius in metres and the item ids it is known for
-- **New landmark**: add a row to `LANDMARKS` with its exact latitude and longitude (right-click the spot in Google Maps, or look it up on OpenStreetMap), visible radius in metres, model and height
-
-All 3D models are built in code with Three.js (PBR materials, environment lighting, soft shadows).
+## Card data
+`api/ygo.php` fetches card data, set lists and images from the YGOPRODeck API and caches them in `server/cache` (blocked from the web, not in git, not touched by deploys), so each image is downloaded only once.
 
 ## Deploy
-Every push to `main` uploads the site to the hosting through `.github/workflows/deploy.yml` (FTPS, using the `FTP_SERVER`, `FTP_USERNAME` and `FTP_PASSWORD` repository secrets). Only changed files are sent; files on the server that the repo never uploaded are left alone.
+Every push to `main` uploads the site to the hosting through `.github/workflows/deploy.yml` (FTPS, using the `FTP_SERVER`, `FTP_USERNAME` and `FTP_PASSWORD` repository secrets). Only changed files are sent.
 
-The camera and GPS only work over `https://`.
-
-`server/` holds the PHP setup from the earlier AI features (Claude Haiku). It is unused by the game right now but kept for future AI features such as quizzes; its `.htaccess` blocks web access to it.
+The camera only works over `https://`. `server/` holds the PHP setup for Claude Haiku (the API key lives in `server/config.php` on the hosting only); its `.htaccess` blocks web access to it.
