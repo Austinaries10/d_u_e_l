@@ -1,14 +1,20 @@
 # AR Duel (SmartEyes)
 
-A Yu-Gi-Oh! style card duel in AR for the phone browser: the duel board is placed on a real table (or shown in a 3D preview) and played with virtual decks of real cards, against story duelists, the computer, or a friend online.
+A Yu-Gi-Oh! style card duel in AR for the phone browser: the duel board is placed on a real table (or shown in a 3D preview) and played with virtual decks of real cards, against the characters of the series, the computer, or a friend online.
 
 Live: https://smarteyes.cck8.my
 
 ## Playing
-- **Story**: eight duelists around Malaysia, from Danial in Kampung Baru to the Shadow Duelist at the Petronas Twin Towers, each with a themed deck and an ace card (王牌): Gaia The Fierce Knight, Dark Magician, Cyber Dragon, Levia-Dragon - Daedalus, Infernal Flame Emperor, Red-Eyes Black Dragon, Blue-Eyes White Dragon and Obelisk the Tormentor. The first win gives the ace and coins (150 up to 800) and unlocks the next duelist; rematches pay a third of the coins with a 1 in 4 chance of another copy of the ace. Duelists and decks are in `STORY` and `NPC_DECKS` in `index.html`
-- **Practice**: your deck against the computer, using a story duelist's deck (once you've met them) or one of your own decks. No rewards
-- **Online duel**: one player creates a room and shares the 5-letter code, the other joins. Both phones post their moves to `api/room.php` and poll for the other's once a second; rooms are files in `server/cache/rooms` and expire after a day. Reloading the page rebuilds the duel from the room's moves. The winner gets 100 coins, the loser 30
+The home screen is a small world: **gates** for each Yu-Gi-Oh! series, and the **Shop** (Grandpa Solomon's Kame Game), **Duel Arena** (online), **Decks** and **Training** (practice against the computer). Tap your avatar to change your name and picture.
+- **Gates**: Duel Monsters and GX are open; 5D's and ZEXAL show "opening soon" (their decks need Synchro and Xyz summoning, which come with the rules engine). Every gate is open from the start, so players can begin with any series
+- **Characters arrive over time**: each gate starts with one character (Joey Wheeler, Syrus Truesdale). Others appear after hidden conditions are met (wins against certain characters and total wins at the gate), e.g. Téa after beating Joey, Weevil after 4 wins including Tristan, Kaiba after Bakura. A NEW badge marks a newcomer. The conditions are the `when` functions in `GATES` in `index.html`; players are never told them
+- Duel Monsters: Joey, Téa, Tristan, Weevil (insects), Rex Raptor (dinosaurs), Mako Tsunami (sea), Mai Valentine (Harpies), Bandit Keith (machines), Bakura, Seto Kaiba, Pegasus (Toons), Marik. GX: Syrus, Chumley, Alexis, Bastion, Chazz, Dr. Crowler, Zane, Aster. Each has their own deck (`CHAR_DECKS`) and lines
+- **Rewards** for each win: coins and one random card from that character's deck; their ace card (e.g. Joey's Red-Eyes Black Dragon, Kaiba's Blue-Eyes White Dragon) drops 1 time in 5, and for sure by the 5th win without it
+- Character pictures come from each character's Yugipedia page, fetched once by `api/ygo.php?action=face` and cached. To use your own picture, put `Name_Of_Character.jpg` (or .png/.webp, named like the Yugipedia page) in `server/data/faces/` on the hosting
+- **Training**: your deck against any character you have met, or against one of your own decks. No rewards
+- **Duel Arena**: one player creates a room and shares the 5-letter code, the other joins. Both phones post their moves to `api/room.php` and poll for the other's once a second; rooms are files in `server/cache/rooms` and expire after a day. Reloading the page rebuilds the duel from the room's moves. The winner gets 100 coins, the loser 30
 - **The computer** plays known spells when they help, Normal Summons its best monster (tributing when worth it), sets its traps, attacks only when it wins the battle, and answers your attacks with its traps
+- **Board**: drag to turn the 3D view, pinch or scroll to zoom. In AR, twist two fingers to turn the board on the table. Holograms float above their own zone (higher for higher levels) and never get wider than a zone; your own step aside while you choose an attack target, and **Hide holograms** turns them off. Tapping a hologram works like tapping its card
 
 ## Rules the game applies
 - One Normal Summon or Set per turn; level 5–6 monsters need 1 tribute, level 7+ need 2, the Egyptian gods 3. No attacks on the first turn of the duel
@@ -17,7 +23,7 @@ Live: https://smarteyes.cck8.my
 
 ## Collecting
 - **Starter deck**: a new player gets one of the real starter decks (Yugi, Kaiba, Joey or Pegasus) at random, as their first deck
-- **Packs**: 3 free packs every day (reset at midnight, phone time), and more in the **Shop** for 100 coins each. Coins come from Story and online duels; a new player starts with 500
+- **Packs**: 3 free packs every day (reset at midnight, phone time), and more in the **Shop** for 100 coins each. Coins come from gate and online duels; a new player starts with 500
 - **Real packs**: the Shop sells about 140 real booster sets (`PACKS` in `api/ygo.php`). Each card comes at its real rarity in that set. A pack has 9 cards: 7 Commons, a Rare (or Super Rare in newer sets) and a foil slot. Older sets (before 2008) have 8 Commons and one Rare-or-better. All-foil sets (Battles of Legend and similar) have 5 cards. Foil odds (`FOIL_ODDS` in `index.html`): Ultra Rare about 1 in 6, Secret Rare 1 in 12, Quarter Century and Ultimate 1 in 24, Ghost 1 in 144, Starlight and Platinum Secret 1 in 576, otherwise Super Rare
 - Cards, decks and coins are kept on the phone (localStorage). Clearing the browser's site data resets them, and they can be changed by someone who knows how. Accounts on the server are needed before coins can be sold for real money
 
@@ -33,7 +39,7 @@ Live: https://smarteyes.cck8.my
 
 ## Game master (GM)
 `gm.html` (not linked from the game) is the GM page. Its password is `'gm_password'` in `server/config.php` on the hosting (see `server/config.example.php`). Settings are saved in `server/data/gm.json`, which is blocked from the web and never touched by deploys. Players get changes the next time they open the game or the Shop.
-- **Forbidden & Limited list**: load the latest official TCG list from YGOPRODeck with one button, then add, change or remove cards. Forbidden cards can't go in a deck; Limited allows 1 copy, Semi-Limited 2. A deck that breaks the list can't be used to duel until it is fixed; My decks shows why and has a **Remove banned copies** button. New players' starter decks follow the list. Story duelists' decks are not affected
+- **Forbidden & Limited list**: load the latest official TCG list from YGOPRODeck with one button, then add, change or remove cards. Forbidden cards can't go in a deck; Limited allows 1 copy, Semi-Limited 2. A deck that breaks the list can't be used to duel until it is fixed; My decks shows why and has a **Remove banned copies** button. New players' starter decks follow the list. Characters' decks are not affected
 - **Packs on sale**: take any booster pack off sale (or put it back) at any time
 - **Limited pack events**: a pack sold only between a start and end time, with a name, description, price in coins and an optional limit per player. The pack is either a real set (any set in the database, with its real rarities) or the GM's own card list with a rarity for each card. Switch an event off or press **End now** to stop sales at once; after its end time it disappears from the Shop. The server refuses to hand out the cards of a pack that is not on sale
 

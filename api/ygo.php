@@ -13,6 +13,8 @@
 //   ?action=set&event=ID             the cards of a limited pack event, only while the event is on
 //   ?action=sets                     every set in the database (for the GM page)
 //   ?action=img&set=LOB              a set's pack image
+//   ?action=face&name=Seto_Kaiba     a character portrait: server/data/faces/Seto_Kaiba.(jpg|png|webp) if the GM put one
+//                                    there, otherwise the main image of the character's Yugipedia page (fetched once, cached)
 //   ?action=names&n=A|B|C            cards with exactly these names
 //   ?action=img&id=46986414          card image  (&size=small or &size=crop for the artwork only)
 
@@ -199,6 +201,35 @@ if ($action === 'img') {
     header('Cache-Control: public, max-age=31536000, immutable');
     readfile($file);
     exit;
+}
+
+if ($action === 'face') {
+    $name = (string)($_GET['name'] ?? '');
+    preg_match('/^[\p{L}0-9_.\'-]{2,60}$/u', $name) || fail(400, 'Bad name.');
+    $send = function (string $file, string $type) {
+        header("Content-Type: $type");
+        header('Cache-Control: public, max-age=604800');
+        readfile($file);
+        exit;
+    };
+    foreach (['jpg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'] as $ext => $type) {
+        $own = __DIR__ . "/../server/data/faces/$name.$ext";
+        if (is_file($own)) {
+            $send($own, $type);
+        }
+    }
+    $file = cacheDir('img/faces') . '/' . md5($name);
+    if (!is_file($file)) {
+        $json = json_decode((string)fetchUrl('https://yugipedia.com/api.php?' . http_build_query(['action' => 'query', 'redirects' => 1, 'titles' => str_replace('_', ' ', $name), 'prop' => 'pageimages', 'pithumbsize' => 500, 'format' => 'json'])), true);
+        $page = current($json['query']['pages'] ?? []) ?: [];
+        $src = (string)($page['thumbnail']['source'] ?? '') ?: fail(404, 'No picture for that character.');
+        $body = fetchUrl($src);
+        $type = $body === null ? '' : (new finfo(FILEINFO_MIME_TYPE))->buffer($body);
+        in_array($type, ['image/jpeg', 'image/png', 'image/webp'], true) || fail(404, 'No picture for that character.');
+        @file_put_contents($file, $body, LOCK_EX);
+        @file_put_contents("$file.type", $type, LOCK_EX);
+    }
+    $send($file, (string)@file_get_contents("$file.type") ?: 'image/png');
 }
 
 header('Content-Type: application/json; charset=utf-8');
