@@ -65,7 +65,19 @@
   #panel p { margin: 0 0 10px; font-size: 13px; line-height: 1.45; }
   #hand { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; height: 158px; align-items: stretch; }
   .dock > .row { flex-wrap: nowrap; gap: 6px; } .dock > .row .btn { flex: 1 1 0; min-width: 0; padding: 10px 6px; font-size: 14px; white-space: nowrap; }
-  .dock > .row #holoBtn, .dock > .row #exitBtn { flex: 0 0 auto; padding: 10px 12px; }
+  .dock > .row #holoBtn, .dock > .row #exitBtn, .dock > .row #logBtn { flex: 0 0 auto; padding: 10px 12px; }
+  #reveal, #logView { z-index: 40; }
+  .revealcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; margin: 8px 0 14px; }
+  .revealcards button { background: none; border: 0; padding: 0; color: var(--text); font: inherit; cursor: pointer; display: grid; gap: 4px; text-align: center; }
+  .revealcards img { width: 100%; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 6px; background: #1c2230; } .revealcards small { font-size: 11px; line-height: 1.2; }
+  .logsheet { max-height: calc(100vh - 40px); display: grid; grid-template-rows: auto auto 1fr; }
+  .loglist { overflow-y: auto; display: grid; gap: 2px; font-size: 13px; line-height: 1.4; padding-right: 4px; }
+  .loglist .lt { margin: 10px 0 2px; font-weight: 700; color: var(--accent); font-size: 12px; letter-spacing: .5px; text-transform: uppercase; }
+  .loglist .le { display: grid; grid-template-columns: 6px 1fr; gap: 8px; padding: 3px 0; } .loglist .le::before { content: ""; width: 6px; border-radius: 3px; background: var(--p0); }
+  .loglist .le.opp::before { background: var(--p1); } .loglist .le.sys::before { background: #6b7590; }
+  .loglist a { color: #ffd98a; text-decoration: underline dotted; cursor: pointer; }
+  .pc .ord { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #1b1200; font: 800 13px/22px var(--font); text-align: center; }
+  .pc { position: relative; }
   .hcard { flex: 0 0 auto; width: 88px; border-radius: 12px; padding: 6px; background: rgba(14,18,26,.85); border: 1px solid var(--line); text-align: left; color: var(--text); font: inherit; cursor: pointer; }
   .hcard b { display: block; font-size: 11px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .hcard small { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -444,6 +456,7 @@
     <div class="row">
       <button class="btn primary" id="bpBtn" type="button" hidden>Battle</button>
       <button class="btn primary" id="endBtn" type="button">End turn</button>
+      <button class="btn" id="logBtn" type="button" aria-label="Duel log" title="Duel log">📜</button>
       <button class="btn" id="holoBtn" type="button" aria-label="Hide holograms" title="Hide holograms">👁</button>
       <button class="btn" id="exitBtn" type="button" aria-label="Surrender" title="Surrender">🏳</button>
     </div>
@@ -516,6 +529,22 @@
     <p class="note center" id="setupStatus"></p>
   </div>
 </section>
+
+<div class="modal" id="reveal" hidden>
+  <div class="sheet">
+    <h2 id="revealTitle"></h2>
+    <div class="revealcards" id="revealCards"></div>
+    <div class="row center"><button class="btn primary big" id="revealOk" type="button">OK</button></div>
+  </div>
+</div>
+
+<div class="modal" id="logView" hidden>
+  <div class="sheet logsheet">
+    <button class="round close" id="logClose" type="button" aria-label="Close">×</button>
+    <h2>Duel log</h2>
+    <div class="loglist" id="logList"></div>
+  </div>
+</div>
 
 <div class="modal" id="cardView" hidden>
   <div class="sheet cardview">
@@ -1307,11 +1336,39 @@ function applyField(field) {
   }
   updatePiles();
 }
+// The duel log: what happened, turn by turn (kept with the duel, so it survives a reload)
+function blog(p, text, codes = []) { (S.history ??= []).push({ t: S.turnCount, p, text, codes }); }
+const cname = code => CI.get(code)?.name || "a card";
+function openLog() {
+  const box = $("#logList"); box.innerHTML = ""; let turn = -1;
+  for (const h of S.history || []) {
+    if (h.t !== turn) { turn = h.t; box.append(el("div", { className: "lt", textContent: turn ? `Turn ${turn}` : "Start" })); }
+    const row = el("div", { className: "le" + (h.p === 1 ? " opp" : h.p == null ? " sys" : "") }), span = el("span");
+    // card names in the line can be tapped to read the card
+    let rest = h.text;
+    for (const code of h.codes) { const n = cname(code), i = rest.indexOf(n); if (i < 0) continue; span.append(rest.slice(0, i)); const a = el("a", { textContent: n }); a.onclick = () => openCard(cardOf(code)); span.append(a); rest = rest.slice(i + n.length); }
+    span.append(rest); row.append(span); box.append(row);
+  }
+  if (!box.children.length) box.append(note("Nothing has happened yet."));
+  $("#logView").hidden = false; box.scrollTop = box.scrollHeight;
+}
+$("#logBtn").addEventListener("click", openLog);
+$("#logClose").addEventListener("click", () => { $("#logView").hidden = true; });
+$("#logView").addEventListener("click", e => { if (e.target.id === "logView") $("#logView").hidden = true; });
+// Cards shown to you (revealed or looked at): all of them, big, until you tap OK
+function showCards(title, codes) {
+  return new Promise(resolve => {
+    const box = $("#revealCards"); box.innerHTML = ""; $("#revealTitle").textContent = title;
+    for (const code of codes) { const c = cardOf(code), b = el("button", { type: "button" }); b.append(el("img", { src: c.id ? imgUrl(c, "small") : "", alt: c.name }), el("small", { textContent: c.name })); b.onclick = () => openCard(c); box.append(b); }
+    $("#reveal").hidden = false; $("#revealOk").onclick = () => { $("#reveal").hidden = true; resolve(); };
+  });
+}
+
 async function play(m) {
   switch (m.type) {
-    case MSG.NEW_TURN: S.turn = side(m.player); S.turnCount++; refreshUI(); await announce(S.turn === 0 ? "Your turn" : `${who(1)}'s turn`, 1000); break;
-    case MSG.NEW_PHASE: S.phase = m.phase; refreshUI(); if (m.phase === 8) await announce("Battle Phase", 700); break;
-    case MSG.DRAW: toast(`${who(side(m.player))} drew ${m.drawn?.length || 1} card${(m.drawn?.length || 1) === 1 ? "" : "s"}`); await wait(250); break;
+    case MSG.NEW_TURN: S.turn = side(m.player); S.turnCount++; blog(null, S.turn === 0 ? "Your turn begins." : `${who(1)}'s turn begins.`); S.lastPhase = null; refreshUI(); await announce(S.turn === 0 ? "Your turn" : `${who(1)}'s turn`, 1000); break;
+    case MSG.NEW_PHASE: S.phase = m.phase; { const ph = { "Main 1": "Main Phase 1", Battle: "Battle Phase", "Main 2": "Main Phase 2", End: "End Phase" }[PHASES[m.phase]]; if (ph && ph !== S.lastPhase) blog(null, ph); S.lastPhase = ph; } refreshUI(); if (m.phase === 8) await announce("Battle Phase", 700); break;
+    case MSG.DRAW: blog(side(m.player), side(m.player) === 0 && m.drawn?.length && m.drawn.every(c => c.code) ? `You drew ${m.drawn.map(c => cname(c.code)).join(", ")}.` : `${who(side(m.player))} drew ${m.drawn?.length || 1} card${(m.drawn?.length || 1) === 1 ? "" : "s"}.`, side(m.player) === 0 ? (m.drawn || []).map(c => c.code) : []); toast(`${who(side(m.player))} drew ${m.drawn?.length || 1} card${(m.drawn?.length || 1) === 1 ? "" : "s"}`); await wait(250); break;
     case MSG.MOVE: {
       const f = m.from, t = m.to;
       if ((f.location === LOC.MZONE || f.location === LOC.SZONE) && !(f.location & LOC.OVERLAY)) {
@@ -1328,10 +1385,11 @@ async function play(m) {
     }
     case MSG.SUMMONING: case MSG.SPSUMMONING: case MSG.FLIPSUMMONING: {
       const p = side(m.controller), s = S.zones[p].m[m.sequence], name = CI.get(m.code)?.name || "a monster";
+      blog(p, `${who(p)} ${m.type === MSG.FLIPSUMMONING ? "Flip Summoned" : m.type === MSG.SPSUMMONING ? "Special Summoned" : "Normal Summoned"} ${name}.`, [m.code]);
       toast(`${who(p)} ${m.type === MSG.FLIPSUMMONING ? "flip summoned" : m.type === MSG.SPSUMMONING ? "special summoned" : "summoned"} ${name}`);
       if (s) summonEffect(s); await wait(700); break;
     }
-    case MSG.SET: toast(`${who(side(m.controller))} set a card`); await wait(300); break;
+    case MSG.SET: blog(side(m.controller), `${who(side(m.controller))} Set a card.`); toast(`${who(side(m.controller))} set a card`); await wait(300); break;
     case MSG.POS_CHANGE: {
       const p = side(m.controller), row = m.location === LOC.MZONE ? "m" : "s", cur = S.zones[p][row]?.[m.sequence];
       if (cur) { cur.pos = m.position & 3 ? "atk" : "def"; cur.faceDown = !!(m.position & 10); cur.key = ""; renderSlot(p, row, m.sequence); if (!(m.prev_position & 10) || !cur.faceDown) summonEffect(cur); }
@@ -1339,23 +1397,35 @@ async function play(m) {
     }
     case MSG.CHAINING: {
       S.chain.push(m); const c = cardOf(m.code);
+      blog(side(m.controller), `${who(side(m.controller))} activated ${c.name}${S.chain.length > 1 ? ` (Chain Link ${S.chain.length})` : ""}.`, [m.code]);
       flash(side(m.controller), m.location === LOC.MZONE ? "m" : "s", m.sequence);
       await announce(`${who(side(m.controller)) === "You" ? "You activate" : who(side(m.controller)) + " activates"} ${c.name}${S.chain.length > 1 ? ` · Chain ${S.chain.length}` : ""}`, 1300, c); break;
     }
     case MSG.CHAIN_SOLVED: S.chain.pop(); break;
     case MSG.CHAIN_END: S.chain = []; break;
-    case MSG.CHAIN_NEGATED: case MSG.CHAIN_DISABLED: await announce("Negated!", 800); break;
+    case MSG.CHAIN_NEGATED: case MSG.CHAIN_DISABLED: blog(null, "The effect was negated."); await announce("Negated!", 800); break;
     case MSG.BECOME_TARGET: for (const c of m.cards || []) flash(side(c.controller), c.location === LOC.MZONE ? "m" : "s", c.sequence); await wait(400); break;
     case MSG.ATTACK: {
       const a = m.card, s = S.zones[side(a.controller)].m[a.sequence];
       const target = m.target ? zonePos(side(m.target.controller), "m", m.target.sequence) : zonePos(1 - side(a.controller), "s", 2);
+      const tg = m.target ? S.zones[side(m.target.controller)].m[m.target.sequence] : null;
+      blog(side(a.controller), `${s?.card.name || "A monster"} attacked ${m.target ? (tg && !tg.faceDown ? tg.card.name : "a face-down monster") : "directly"}.`, [s?.card.id, tg && !tg.faceDown ? tg.card.id : 0].filter(Boolean));
       toast(`${s?.card.name || "A monster"} attacks${m.target ? "" : " directly"}!`); lunge(s, target); await wait(800); break;
     }
-    case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
-    case MSG.RECOVER: { const p = side(m.player); setLp(p, S.lp[p] + m.amount); toast(`${who(p)}: +${m.amount} LP`); await wait(450); break; }
+    case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player); blog(p, `${who(p)} ${m.type === MSG.PAY_LPCOST ? "paid" : "took"} ${m.amount} ${m.type === MSG.PAY_LPCOST ? "LP" : "damage"} (${Math.max(0, S.lp[p] - m.amount)} LP left).`); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
+    case MSG.RECOVER: { const p = side(m.player); blog(p, `${who(p)} gained ${m.amount} LP.`); setLp(p, S.lp[p] + m.amount); toast(`${who(p)}: +${m.amount} LP`); await wait(450); break; }
     case MSG.LPUPDATE: setLp(side(m.player), m.lp); break;
-    case MSG.CONFIRM_CARDS: case MSG.CONFIRM_DECKTOP:
-      if (m.cards?.length) await announce(`${m.cards.length === 1 ? "Revealed" : `${m.cards.length} cards revealed`}: ${m.cards.map(c => CI.get(c.code)?.name || "?").join(", ")}`, 1200, cardOf(m.cards[0].code)); break;
+    case MSG.CONFIRM_CARDS: case MSG.CONFIRM_DECKTOP: {
+      // the top of a Deck is revealed to both players; other cards only to the player looking at them
+      const codes = (m.cards || []).map(c => c.code).filter(Boolean), seen = m.type === MSG.CONFIRM_DECKTOP || side(m.player) === 0;
+      if (!codes.length) break;
+      if (!seen) { blog(1, `${who(1)} looked at ${codes.length} card${codes.length === 1 ? "" : "s"}.`); toast(`${who(1)} looked at ${codes.length} card${codes.length === 1 ? "" : "s"}`); break; }
+      const top = m.type === MSG.CONFIRM_DECKTOP || m.cards.every(c => c.location === LOC.DECK), whose = m.cards[0] ? side(m.cards[0].controller) : 0;
+      const title = top ? `Top ${codes.length === 1 ? "card" : codes.length + " cards"} of ${whose === 0 ? "your" : who(1) + "'s"} Deck` : `${codes.length === 1 ? "Card" : codes.length + " cards"} revealed`;
+      blog(side(m.player), `${title}: ${codes.map(cname).join(", ")}.`, codes);
+      if (!quiet) await showCards(title, codes);
+      break;
+    }
     case MSG.TOSS_COIN: await announce(`Coin: ${(m.results || []).map(r => r ? "Heads" : "Tails").join(", ")}`, 900); break;
     case MSG.TOSS_DICE: await announce(`Dice: ${(m.results || []).join(", ")}`, 900); break;
     case MSG.HINT:
@@ -1364,7 +1434,7 @@ async function play(m) {
       else if (m.hint_type === 4 && side(m.player) === 0) toast(`${who(1)} chose: ${descText(m.hint)}`);
       break;
     case MSG.WIN: {
-      const w = side(m.player);
+      const w = side(m.player); blog(null, w === 0 ? "You won the duel!" : `${who(1)} won the duel.`);
       win(w, STR.victory?.[String(m.reason)] || (w === 0 ? "You win." : `${who(1)} wins.`)); break;
     }
   }
@@ -1425,7 +1495,8 @@ function autoAnswer(m) {
     case MSG.SELECT_CHAIN: return !m.selects.length && !m.forced ? { type: 8, index: null } : null;
     case MSG.SELECT_PLACE: { const free = openZones(m); return free.length === 1 && m.count === 1 ? { type: 10, places: free } : null; }
     case MSG.SELECT_DISFIELD: return { type: 9, places: freePlaces(m) };
-    case MSG.SORT_CARD: case MSG.SORT_CHAIN: return { type: 15, order: null };
+    case MSG.SORT_CHAIN: return { type: 15, order: null };
+    case MSG.SORT_CARD: return m.cards.length < 2 ? { type: 15, order: null } : null; // you choose the order of 2 or more
     case MSG.SELECT_COUNTER: return { type: 13, counters: spreadCounters(m) };
     case MSG.SELECT_POSITION: { const ps = [1, 2, 4, 8].filter(x => m.positions & x); return ps.length === 1 ? { type: 11, position: ps[0] } : null; }
     case MSG.SELECT_OPTION: return m.options.length === 1 ? { type: 4, index: 0 } : null;
@@ -1476,7 +1547,7 @@ function resetBoard() {
 // setup: { seed, decks: [engine player 0's deck, player 1's], me: which engine player you are }
 function startEngine(vs, setup, log = []) {
   resetBoard(); newWorker();
-  Object.assign(S, { vs, setup, me: setup.me, log: [] });
+  Object.assign(S, { vs, setup, me: setup.me, log: [], history: [] });
   Q.replay = [...log]; Q.net = [[], []]; S.catchup = log.length > 0;
   if (setup.lp) for (const e of [0, 1]) setLp(side(e), setup.lp[e]);
   worker.postMessage({ t: "start", seed: setup.seed, decks: setup.decks, lp: setup.lp });
@@ -1752,6 +1823,23 @@ function askPanel(panel, m, btn) {
     return grid;
   };
   switch (m.type) {
+    case MSG.SORT_CARD: {
+      // tap the cards in the order you want: the first one you tap goes on top
+      const order = ui.pick, grid = el("div", { className: "pickcards" });
+      m.cards.forEach((c, k) => {
+        const info = cardOf(c.code), b = el("button", { type: "button", className: "pc" + (order.includes(k) ? " on" : "") });
+        b.append(cardImg(info, false), el("small", { textContent: info.name }));
+        if (order.includes(k)) b.append(el("span", { className: "ord", textContent: String(order.indexOf(k) + 1) }));
+        b.onclick = () => { ui.pick = order.includes(k) ? order.filter(x => x !== k) : [...order, k]; refreshUI(); };
+        b.oncontextmenu = e => { e.preventDefault(); openCard(info); };
+        grid.append(b);
+      });
+      panel.append(el("h3", { textContent: "Put these cards in order" }), el("div", { className: "meta", textContent: `Tap them in the order you want: 1 goes on top. ${order.length} of ${m.cards.length} chosen.` }), grid);
+      const ok = btn("OK", () => { const res = m.cards.map((_, k) => order.indexOf(k)); ui.pick = []; answer({ type: 15, order: res }); }, "primary"); ok.disabled = order.length !== m.cards.length;
+      row.append(ok, btn("Keep this order", () => { ui.pick = []; answer({ type: 15, order: null }); }));
+      if (order.length) row.append(btn("Start again", () => { ui.pick = []; refreshUI(); }));
+      break;
+    }
     case MSG.SELECT_PLACE: {
       glowZones(openZones(m));
       panel.classList.add("slim");
@@ -3481,7 +3569,7 @@ $("#installBtn").addEventListener("click", async () => {
 });
 showInstall();
 
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick }; // for testing
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson }; // for testing
 </script>
 </body>
 </html>
