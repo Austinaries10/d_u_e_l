@@ -275,6 +275,8 @@
   .recgen { margin: 18px 0 8px; font-size: 13px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
   .recfaces { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 12px 8px; }
   .recfaces .chip img { width: 64px; height: 64px; } .recfaces .chip:nth-child(3n+2) { margin-top: 0; } .recfaces .chip b { font-size: 11px; max-width: 80px; }
+  .meettier { margin: 0 0 10px; font-size: 13px; text-align: center; line-height: 1.5; } .meettier b { color: var(--accent); }
+  .tier.locked { opacity: .75; } .tier.locked .lv { background: #4a5170 !important; color: #c9cfe6; }
   .rechead { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; } .rechead img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; object-position: center 20%; border: 3px solid #fff; }
   .rechead b { font-size: 20px; display: block; } .rechead small { color: var(--muted); font-size: 13px; }
   .tierlist { display: grid; gap: 10px; }
@@ -489,6 +491,7 @@
     <div class="bubble" id="meetLine"></div>
     <h2 id="meetName"></h2>
     <p class="note center" id="meetWins"></p>
+    <p class="meettier" id="meetTier"></p>
     <div class="rewards"><small>Rewards</small><div id="meetRewards"></div></div>
     <label class="field">Your deck<select id="meetDeck"></select></label>
     <div class="row" style="justify-content:center"><button class="btn primary big" id="meetDuel" type="button">Duel!</button><button class="btn big" id="meetXR" type="button" hidden>On the table (AR)</button></div>
@@ -1901,7 +1904,7 @@ async function renameDeck(i) {
 // ---------- Character decks: ready-made recipes for each character, from a simple starter to a pro build ----------
 // Starter is made from the character's story deck, Story is the deck they duel with, Advanced and Pro come from
 // data/recipes.txt. Each shows which cards you own; with enough copies you can save it as one of your decks.
-const TIERS = [["starter", "Starter", "Their signature monster with simple cards"], ["story", "Story", "The deck they duel with"], ["advanced", "Advanced", "Their archetype, with more support"], ["pro", "Pro", "A competitive build"]];
+const TIERS = [["starter", "Starter", "Their signature monster with simple cards"], ["story", "Story", "Their deck from the story"], ["advanced", "Advanced", "Their archetype, with more support"], ["pro", "Pro", "A competitive build"]];
 const BASIC_POOL = ["Celtic Guardian", "Giant Soldier of Stone", "Mystical Elf", "Beaver Warrior", "Battle Ox", "Gemini Elf", "La Jinn the Mystical Genie of the Lamp", "Kuriboh", "Sangan", "Silver Fang", "Feral Imp", "Hinotama", "Dian Keto the Cure Master", "Mystical Space Typhoon", "Swords of Revealing Light", "Trap Hole", "Waboku", "Sakuretsu Armor", "Magic Cylinder", "Mirror Force"];
 let recipeText = null;
 // "## id", "# advanced|pro Name", "3 Card Name", "--" for the Extra Deck, "@block" to include a "## @block"
@@ -1973,14 +1976,16 @@ async function openCharRecipes(ch) {
   const tl = el("div", { className: "tierlist" });
   TIERS.forEach(([key, label, about], i) => {
     const r = list[key]; if (!r) return;
-    const { have, need } = recipeProgress(r, owned), b = el("button", { type: "button", className: `tier t${i + 1}` + (have >= need ? " ready" : "") });
+    const locked = i >= tiersUnlocked(ch), { have, need } = recipeProgress(r, owned), b = el("button", { type: "button", className: `tier t${i + 1}` + (locked ? " locked" : have >= need ? " ready" : "") });
     const bar = el("div", { className: "bar" }); bar.append(el("i", { style: `width:${Math.round(100 * have / need)}%` }));
-    b.append(el("span", { className: "lv", textContent: String(i + 1) }), el("span", {}, el("b", { textContent: `${label}: ${r.name}` }), el("small", { textContent: `${about} · you have ${have} of ${need} cards` }), bar), el("span", { textContent: have >= need ? "✓" : "›" }));
-    b.onclick = () => openRecipe(ch, label, r); tl.append(b);
+    const left = winsToUnlock(ch, i), status = locked ? `Locked: beat ${ch.name.split(" ")[0]} ${left} more time${left === 1 ? "" : "s"} to unlock` : `${about} · you have ${have} of ${need} cards`;
+    b.append(el("span", { className: "lv", textContent: locked ? "🔒" : String(i + 1) }), el("span", {}, el("b", { textContent: `${label}: ${r.name}` }), el("small", { textContent: status }), bar), el("span", { textContent: !locked && have >= need ? "✓" : "›" }));
+    b.onclick = () => openRecipe(ch, label, r, i); tl.append(b);
   });
   box.append(tl);
+  box.append(note(`Beat ${ch.name} at the gates to unlock their decks one by one: ${TIER_WINS.map((w, i) => `${TIERS[i][1]} at ${w} win${w === 1 ? "" : "s"}`).join(", ")}. You've won ${charWins()[ch.id] || 0} so far.`));
 }
-async function openRecipe(ch, label, r) {
+async function openRecipe(ch, label, r, tier) {
   const box = $("#recBody"); box.innerHTML = ""; box.append(note("Loading cards…"));
   try { await loadRecCards([...r.main, ...r.extra].map(x => x[1])); } catch (e) { box.innerHTML = ""; box.append(note(errText(e))); return; }
   const owned = ownedByName(), { have, need } = recipeProgress(r, owned), missing = [];
@@ -2000,8 +2005,9 @@ async function openRecipe(ch, label, r) {
     }
     box.append(grid);
   }
-  const btn = el("button", { type: "button", className: "btn primary big", textContent: missing.length ? `Missing ${need - have} card${need - have === 1 ? "" : "s"}` : "Build this deck" });
-  btn.disabled = !!missing.length; btn.onclick = () => buildRecipe(ch, label, r); box.append(btn);
+  const locked = tier >= tiersUnlocked(ch), left = winsToUnlock(ch, tier);
+  const btn = el("button", { type: "button", className: "btn primary big", textContent: locked ? `🔒 Beat ${ch.name.split(" ")[0]} ${left} more time${left === 1 ? "" : "s"} to unlock` : missing.length ? `Missing ${need - have} card${need - have === 1 ? "" : "s"}` : "Build this deck" });
+  btn.disabled = locked || !!missing.length; btn.onclick = () => buildRecipe(ch, label, r); box.append(btn);
   if (missing.length) {
     box.append(el("h2", { className: "recgen", textContent: "Cards you still need" }));
     const ul = el("ul", { className: "missing" }); for (const [k, n] of missing) ul.append(el("li", { textContent: `${k}× ${n}` })); box.append(ul);
@@ -2502,14 +2508,21 @@ function available(g) {
   const wins = charWins(), w = id => wins[id] || 0, total = g.chars.reduce((n, c) => n + w(c.id), 0);
   return g.chars.filter(c => c.when(w, total));
 }
-const npcCache = new Map();
+// A character's four decks unlock one by one as you beat them: total wins that unlock Starter, Story, Advanced and Pro.
+// They duel you with the deck you are working towards (the first locked one), or Pro once you have them all.
+const TIER_WINS = [1, 3, 6, 10];
+const tiersUnlocked = ch => TIER_WINS.filter(w => (charWins()[ch.id] || 0) >= w).length;
+const duelTier = ch => Math.min(tiersUnlocked(ch), TIER_WINS.length - 1);
+const winsToUnlock = (ch, t) => Math.max(0, TIER_WINS[t] - (charWins()[ch.id] || 0));
+const npcCache = new Map(), npcTierCache = new Map(); // npcCache: the deck each character last brought to a duel
 async function npcDeck(ch) {
-  if (!npcCache.has(ch.id)) {
-    // a deck is a list of names, or { main, extra } for characters with an Extra Deck
-    const d = CHAR_DECKS[ch.id], list = Array.isArray(d) ? d : [...d.main, ...d.extra], { cards } = await api({ action: "names", n: [...new Set(list)].join("|") });
-    const by = new Map(cards.map(c => [c.name, c]));
-    npcCache.set(ch.id, list.map(n => by.get(n)).filter(Boolean));
+  const t = duelTier(ch), key = `${ch.id}:${t}`;
+  if (!npcTierCache.has(key)) {
+    const all = await charRecipes(ch), r = all[TIERS[t][0]] || all.story, list = [...r.main, ...r.extra].flatMap(([k, n]) => Array(k).fill(n));
+    await loadRecCards(list);
+    npcTierCache.set(key, list.map(n => recCards.get(n)).filter(Boolean));
   }
+  npcCache.set(ch.id, npcTierCache.get(key));
   return npcCache.get(ch.id);
 }
 const profile = store.get("profile", { name: "", face: "Yugi_Muto" });
@@ -2567,6 +2580,9 @@ async function openMeet(ch, story = true) {
   $("#meetFace").src = face(ch.face); $("#meetName").textContent = ch.name; $("#meetLine").textContent = any(ch.hi);
   $("#meetWins").textContent = wins ? `You've beaten ${ch.name} ${wins} time${wins === 1 ? "" : "s"}` : "";
   $("#meetStatus").textContent = ""; deckOptions($("#meetDeck"));
+  const t = duelTier(ch), first = ch.name.split(" ")[0], left = winsToUnlock(ch, t), tierEl = $("#meetTier");
+  tierEl.innerHTML = ""; tierEl.append(`${first}'s deck: `, el("b", { textContent: `${t + 1} · ${TIERS[t][1]}` }), el("br"),
+    tiersUnlocked(ch) >= TIER_WINS.length ? "You've unlocked all 4 of their decks!" : `Win ${left} more time${left === 1 ? "" : "s"} to unlock this deck in Decks → Character decks.`);
   const box = $("#meetRewards"); box.innerHTML = "";
   const rew = (c, ace) => { const d = el("div", { className: "rew" + (ace ? " ace" : "") + (coll[c.id] ? " owned" : "") }); d.append(el("img", { src: imgUrl(c, "small"), alt: c.name, title: c.name })); if (ace) d.append(el("span", { textContent: "ACE" })); return d; };
   box.append(rew(ch.ace, true));
@@ -3042,7 +3058,11 @@ function finishDuel(w, why) {
   if (ch) notes.push(`${ch.name}: “${w === 0 ? ch.win : ch.lose}”`);
   if (ch && vs.story && w === 0) {
     const g = GATES.find(x => x.id === ch.gate), before = available(g).map(c => c.id);
-    const wins = charWins(); wins[ch.id] = (wins[ch.id] || 0) + 1; store.put("charWins", wins);
+    const tiersBefore = tiersUnlocked(ch), wins = charWins(); wins[ch.id] = (wins[ch.id] || 0) + 1; store.put("charWins", wins);
+    if (tiersUnlocked(ch) > tiersBefore) {
+      const t = tiersUnlocked(ch) - 1, next = tiersUnlocked(ch) < TIER_WINS.length ? ` Next time ${ch.name} brings the ${TIERS[t + 1][1]} deck.` : "";
+      notes.push(`NEW DECK UNLOCKED: ${ch.name}'s ${TIERS[t][1]} deck! Build it in Decks → Character decks.${next}`);
+    }
     wallet.coins += ch.coins; notes.push(`+${ch.coins} coins`);
     const deck = npcCache.get(ch.id) || [], noAce = store.get("noAce", {});
     const ace = deck.find(c => c.id === ch.ace.id) || deck.find(c => c.name === ch.ace.name);
