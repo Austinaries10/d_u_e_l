@@ -74,6 +74,13 @@
   .hcard img { display: block; width: 100%; border-radius: 6px; margin-bottom: 4px; aspect-ratio: 59 / 86; object-fit: cover; background: #1c2230; }
   #panel img.full { float: left; width: 96px; border-radius: 8px; margin: 0 12px 6px 0; }
   #panel p.long { max-height: 9.5em; overflow-y: auto; }
+  .cardview { display: grid; gap: 14px; max-height: calc(100vh - 40px); overflow-y: auto; }
+  .cvimg { width: min(260px, 70vw); margin: 0 auto; display: block; border-radius: 12px; aspect-ratio: 59 / 86; object-fit: cover; background: #1c2230; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .cvtext h2 { margin: 0 0 4px; font-size: 20px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .cvmeta { font-size: 13px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; } .cvmeta b { color: var(--text); }
+  .cvdesc { white-space: pre-line; font-size: 14px; line-height: 1.55; margin: 0 0 10px; background: rgba(255,255,255,.05); border-radius: 12px; padding: 12px; }
+  @media (min-width: 720px) { .cardview { grid-template-columns: 260px 1fr; align-items: start; max-width: 720px; } .cvimg { width: 260px; } }
+  .deckcard > img, .deckcard > div:nth-child(2) { cursor: pointer; }
   .deckcard { display: grid; grid-template-columns: 54px 1fr auto; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 8px; background: rgba(255,255,255,.04); min-width: 0; }
   .deckcard img { width: 54px; border-radius: 5px; aspect-ratio: 59 / 86; object-fit: cover; background: #1c2230; }
   .deckcard b { font-size: 13px; display: block; } .deckcard small { font-size: 11px; color: var(--muted); }
@@ -491,6 +498,20 @@
     <p class="note center" id="setupStatus"></p>
   </div>
 </section>
+
+<div class="modal" id="cardView" hidden>
+  <div class="sheet cardview">
+    <button class="round close" id="cardViewClose" type="button" aria-label="Close">×</button>
+    <img class="cvimg" id="cvImg" alt="">
+    <div class="cvtext">
+      <h2 id="cvName"></h2>
+      <div class="cvmeta" id="cvMeta"></div>
+      <p class="cvdesc" id="cvDesc"></p>
+      <p class="note" id="cvOwn"></p>
+      <div class="row" id="cvBtns"></div>
+    </div>
+  </div>
+</div>
 
 <div class="modal" id="meet" hidden>
   <div class="sheet">
@@ -2012,7 +2033,7 @@ async function openRecipe(ch, label, r, tier) {
       const c = recCards.get(n), got = Math.min(k, owned.get(n) || 0); if (got < k) missing.push([k - got, n]);
       const b = el("button", { type: "button", className: "rc " + (got >= k ? "ok" : "miss"), title: n });
       b.append(el("img", { src: c ? imgUrl(c, "small") : "", alt: n, loading: "lazy" }), el("span", { textContent: `${got}/${k}` }));
-      b.onclick = () => gameAlert(`${c?.summary || ""}\n\nYou have ${owned.get(n) || 0} · this deck uses ${k}.`, n); grid.append(b);
+      b.onclick = () => c ? openCard(c) : null; grid.append(b);
     }
     box.append(grid);
   }
@@ -2045,6 +2066,28 @@ $("#newDeck").addEventListener("click", async () => {
 });
 function openEditor(i) { editing = i; show("editor"); $("#deckStatus").textContent = ""; renderDeck(); loadArchetypes(); search(); }
 
+// Tap a card to see it big with its whole text; in the deck editor it can also be added or removed there
+function openCard(c) {
+  const m = $("#cardView"), e = coll[c.id], editingDeck = !$("#editor").hidden && decks[editing];
+  m.hidden = false; $("#cvImg").src = imgUrl(c); $("#cvImg").alt = c.name;
+  const name = $("#cvName"); name.textContent = c.name; if (e?.r) name.append(rarBadge(e.r)); const lim = limitBadge(c); if (lim) name.append(lim);
+  const meta = $("#cvMeta"); meta.innerHTML = "";
+  const line = (k, v) => { if (v == null || v === "") return; meta.append(el("b", { textContent: k + ": " }), String(v), el("br")); };
+  line("Type", c.type); if (c.kind === "monster") { line("Attribute", c.attribute); line(c.type?.includes("Link") ? "Rating" : /XYZ/.test(c.type || "") ? "Rank" : "Level", c.level); line("ATK / DEF", `${c.atk ?? "?"} / ${c.def ?? "-"}`); }
+  line("Archetype", c.archetype);
+  $("#cvDesc").textContent = c.summary || "";
+  const owned = Object.values(coll).filter(x => x.card.name === c.name).reduce((a, x) => a + x.n, 0), inDeck = editingDeck ? editingDeck.ids.filter(id => coll[id]?.card.name === c.name).length : 0;
+  $("#cvOwn").textContent = `You own ${owned}` + (editingDeck ? ` · ${inDeck} in this deck` : "");
+  const btns = $("#cvBtns"); btns.innerHTML = "";
+  if (editingDeck) {
+    if (coll[c.id]) btns.append(smallBtn("+ Add to deck", () => { addToDeck(c); openCard(c); }, "primary"));
+    const id = editingDeck.ids.find(x => coll[x]?.card.name === c.name);
+    if (id != null) btns.append(smallBtn("− Remove one", () => { editingDeck.ids.splice(editingDeck.ids.indexOf(id), 1); saveDecks(); renderDeck(); openCard(c); }));
+  }
+  btns.append(smallBtn("Close", () => { m.hidden = true; }));
+}
+$("#cardViewClose").addEventListener("click", () => { $("#cardView").hidden = true; });
+$("#cardView").addEventListener("click", e => { if (e.target.id === "cardView") $("#cardView").hidden = true; });
 function cardRow(c, actions, rarity) {
   const d = document.createElement("div"); d.className = "deckcard";
   d.append(Object.assign(document.createElement("img"), { src: imgUrl(c, "small"), alt: "", loading: "lazy" }));
@@ -2054,6 +2097,7 @@ function cardRow(c, actions, rarity) {
   info.append(name, Object.assign(document.createElement("small"), { textContent: (c.kind === "monster" ? `${c.attribute} ${c.race || ""} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type) + (c.inText ? " · found in card text" : "") }));
   d.append(info);
   const row = document.createElement("div"); row.className = "row"; for (const a of actions) row.append(a); d.append(row);
+  d.firstChild.onclick = info.onclick = () => openCard(c);
   return d;
 }
 const smallBtn = (label, fn, cls = "") => Object.assign(document.createElement("button"), { type: "button", className: "btn small " + cls, textContent: label, onclick: fn });
