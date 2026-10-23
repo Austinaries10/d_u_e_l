@@ -582,7 +582,7 @@
     <p class="note center" id="acctLine"></p>
     <div class="row center" id="emailRow"></div>
     <label class="field">Name<input id="myName" maxlength="20" placeholder="Duelist" autocomplete="nickname"></label>
-    <label class="field">Card language · 卡片语言 · カードの言語<select id="langSel"><option value="">English</option><option value="zh">简体中文</option><option value="ja">日本語</option></select></label>
+    <label class="field notr">Language · 语言 · 言語<select id="langSel"><option value="">English</option><option value="zh">简体中文</option><option value="ja">日本語</option></select></label>
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
     <div class="row center"><button class="btn small" id="installBtn" type="button" hidden>📲 Install the app</button><button class="btn small danger" id="logoutBtn" type="button">Log out</button></div>
@@ -756,6 +756,63 @@ const canvas = $("#gl");
 const LANG = (() => { try { return localStorage.getItem("arduel.lang") || ""; } catch { return ""; } })();
 const LQ = LANG ? `&lang=${LANG}` : "";
 if (LANG) document.documentElement.lang = LANG === "zh" ? "zh-CN" : "ja";
+
+// ---------- Interface language ----------
+// The interface is written in English. In Chinese or Japanese, every text shown is looked up in i18n/<lang>.json:
+// exact texts, and templates with {0}, {1}… for the parts that change (those parts are looked up too, e.g. names)
+const I18N = { exact: new Map(), pats: [], cache: new Map() };
+if (LANG) {
+  try {
+    const dict = await (await fetch(`i18n/${LANG}.json?v=__BUILD__`)).json();
+    for (const [en, tr] of Object.entries(dict)) {
+      if (!/\{\d\}/.test(en)) { I18N.exact.set(en, tr); continue; }
+      const parts = en.split(/\{(\d)\}/), order = [];
+      let re = "^";
+      parts.forEach((x, k) => { if (k % 2) { order.push(+x); re += "([\\s\\S]*?)"; } else re += x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); });
+      I18N.pats.push({ re: new RegExp(re + "$"), order, tr, weight: parts.filter((_, k) => !(k % 2)).join("").length });
+    }
+    I18N.pats.sort((a, b) => b.weight - a.weight); // the most specific templates first
+  } catch {}
+}
+function T(text, depth = 0) {
+  if (!LANG || !text || depth > 3) return text;
+  if (I18N.cache.has(text)) return I18N.cache.get(text);
+  const [, lead, core, tail] = text.match(/^(\s*)([\s\S]*?)(\s*)$/);
+  let out = core;
+  if (!core || !/[A-Za-z]/.test(core)) out = core;
+  else if (core.includes("\n")) out = core.split("\n").map(l => T(l, depth)).join("\n");
+  else if (I18N.exact.has(core)) out = I18N.exact.get(core);
+  else {
+    let hit = false;
+    for (const p of I18N.pats) {
+      const m = core.match(p.re); if (!m) continue;
+      const vals = []; p.order.forEach((n, k) => { vals[n] = m[k + 1]; });
+      out = p.tr.replace(/\{(\d)\}/g, (_, n) => T(vals[+n] ?? "", depth + 1)); hit = true; break;
+    }
+    // lists like "Warrior / Normal · EARTH": translate the pieces that are known
+    if (!hit && /\s[·/]\s/.test(core)) out = core.split(/(\s[·/]\s)/).map(x => I18N.exact.get(x) ?? x.replace(/^[A-Z]{3,}(?= )/, w => I18N.exact.get(w) ?? w)).join("");
+  }
+  out = lead + out + tail;
+  if (I18N.cache.size < 5000) I18N.cache.set(text, out);
+  return out;
+}
+// translate the page as it is drawn, and whatever the game adds to it later
+if (LANG && I18N.exact.size) {
+  const done = new WeakMap(), ATTRS = ["placeholder", "title", "aria-label"];
+  const skip = n => { const p = n.parentElement; return !p || /^(SCRIPT|STYLE|TEXTAREA|OPTION)$/.test(p.tagName) || p.closest(".notr"); };
+  const trText = n => { const v = n.nodeValue; if (done.get(n) === v || skip(n)) return; const t = T(v); done.set(n, t); if (t !== v) n.nodeValue = t; };
+  const trAttr = (e, a) => { const v = e.getAttribute(a); if (!v) return; const key = "tr:" + a; if (e[key] === v) return; const t = T(v); e[key] = t; if (t !== v) e.setAttribute(a, t); };
+  const trTree = root => {
+    if (root.nodeType === 3) return trText(root);
+    if (root.nodeType !== 1) return;
+    for (const a of ATTRS) if (root.hasAttribute?.(a)) trAttr(root, a);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) { if (n.nodeType === 3) trText(n); else for (const a of ATTRS) if (n.hasAttribute(a)) trAttr(n, a); }
+  };
+  new MutationObserver(list => { for (const m of list) { if (m.type === "childList") m.addedNodes.forEach(trTree); else if (m.type === "characterData") trText(m.target); else trAttr(m.target, m.attributeName); } })
+    .observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  trTree(document.body);
+}
 
 // ---------- Your account: the save lives on the server (api/account.php) ----------
 // These saved settings are copied to the account; everything else stays on this phone only.
@@ -949,7 +1006,7 @@ function zoneTexture(color, label) {
     const c = "#" + color.toString(16).padStart(6, "0");
     g.shadowColor = c; g.shadowBlur = 18; g.strokeStyle = c; g.lineWidth = 5; rrect(g, 10, 10, w - 20, h - 20, 10); g.stroke();
     g.shadowBlur = 0; g.fillStyle = c + "22"; rrect(g, 10, 10, w - 20, h - 20, 10); g.fill();
-    if (label) { g.fillStyle = c; g.font = "700 18px Sora, sans-serif"; g.textAlign = "center"; g.fillText(label, w / 2, h / 2 + 6); }
+    if (label) { label = T(label); g.fillStyle = c; g.font = `700 ${label.length > 6 ? 14 : 18}px Sora, sans-serif`; g.textAlign = "center"; g.fillText(label, w / 2, h / 2 + 6); }
   });
 }
 function buildBoard() {
@@ -1349,8 +1406,8 @@ function openLog() {
   for (const h of S.history || []) {
     if (h.t !== turn) { turn = h.t; box.append(el("div", { className: "lt", textContent: turn ? `Turn ${turn}` : "Start" })); }
     const row = el("div", { className: "le" + (h.p === 1 ? " opp" : h.p == null ? " sys" : "") }), span = el("span");
-    // card names in the line can be tapped to read the card
-    let rest = h.text;
+    // card names in the line can be tapped to read the card (the whole line is translated first, names stay as they are)
+    let rest = T(h.text);
     for (const code of h.codes) { const n = cname(code), i = rest.indexOf(n); if (i < 0) continue; span.append(rest.slice(0, i)); const a = el("a", { textContent: n }); a.onclick = () => openCard(cardOf(code)); span.append(a); rest = rest.slice(i + n.length); }
     span.append(rest); row.append(span); box.append(row);
   }
@@ -1390,8 +1447,8 @@ async function play(m) {
     }
     case MSG.SUMMONING: case MSG.SPSUMMONING: case MSG.FLIPSUMMONING: {
       const p = side(m.controller), s = S.zones[p].m[m.sequence], name = CI.get(m.code)?.name || "a monster";
-      blog(p, `${who(p)} ${m.type === MSG.FLIPSUMMONING ? "Flip Summoned" : m.type === MSG.SPSUMMONING ? "Special Summoned" : "Normal Summoned"} ${name}.`, [m.code]);
-      toast(`${who(p)} ${m.type === MSG.FLIPSUMMONING ? "flip summoned" : m.type === MSG.SPSUMMONING ? "special summoned" : "summoned"} ${name}`);
+      const line = m.type === MSG.FLIPSUMMONING ? `${who(p)} Flip Summoned ${name}.` : m.type === MSG.SPSUMMONING ? `${who(p)} Special Summoned ${name}.` : `${who(p)} Normal Summoned ${name}.`;
+      blog(p, line, [m.code]); toast(line);
       if (s) summonEffect(s); await wait(700); break;
     }
     case MSG.SET: blog(side(m.controller), `${who(side(m.controller))} Set a card.`); toast(`${who(side(m.controller))} set a card`); await wait(300); break;
@@ -1402,9 +1459,9 @@ async function play(m) {
     }
     case MSG.CHAINING: {
       S.chain.push(m); const c = cardOf(m.code);
-      blog(side(m.controller), `${who(side(m.controller))} activated ${c.name}${S.chain.length > 1 ? ` (Chain Link ${S.chain.length})` : ""}.`, [m.code]);
+      blog(side(m.controller), S.chain.length > 1 ? `${who(side(m.controller))} activated ${c.name} (Chain Link ${S.chain.length}).` : `${who(side(m.controller))} activated ${c.name}.`, [m.code]);
       flash(side(m.controller), m.location === LOC.MZONE ? "m" : "s", m.sequence);
-      await announce(`${who(side(m.controller)) === "You" ? "You activate" : who(side(m.controller)) + " activates"} ${c.name}${S.chain.length > 1 ? ` · Chain ${S.chain.length}` : ""}`, 1300, c); break;
+      await announce(side(m.controller) === 0 ? `You activate ${c.name}` : `${who(1)} activates ${c.name}`, 1300, c); break;
     }
     case MSG.CHAIN_SOLVED: S.chain.pop(); break;
     case MSG.CHAIN_END: S.chain = []; break;
@@ -1417,7 +1474,7 @@ async function play(m) {
       blog(side(a.controller), `${s?.card.name || "A monster"} attacked ${m.target ? (tg && !tg.faceDown ? tg.card.name : "a face-down monster") : "directly"}.`, [s?.card.id, tg && !tg.faceDown ? tg.card.id : 0].filter(Boolean));
       toast(`${s?.card.name || "A monster"} attacks${m.target ? "" : " directly"}!`); lunge(s, target); await wait(800); break;
     }
-    case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player); blog(p, `${who(p)} ${m.type === MSG.PAY_LPCOST ? "paid" : "took"} ${m.amount} ${m.type === MSG.PAY_LPCOST ? "LP" : "damage"} (${Math.max(0, S.lp[p] - m.amount)} LP left).`); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
+    case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player); blog(p, m.type === MSG.PAY_LPCOST ? `${who(p)} paid ${m.amount} LP (${Math.max(0, S.lp[p] - m.amount)} LP left).` : `${who(p)} took ${m.amount} damage (${Math.max(0, S.lp[p] - m.amount)} LP left).`); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
     case MSG.RECOVER: { const p = side(m.player); blog(p, `${who(p)} gained ${m.amount} LP.`); setLp(p, S.lp[p] + m.amount); toast(`${who(p)}: +${m.amount} LP`); await wait(450); break; }
     case MSG.LPUPDATE: setLp(side(m.player), m.lp); break;
     case MSG.CONFIRM_CARDS: case MSG.CONFIRM_DECKTOP: {
@@ -1426,7 +1483,8 @@ async function play(m) {
       if (!codes.length) break;
       if (!seen) { blog(1, `${who(1)} looked at ${codes.length} card${codes.length === 1 ? "" : "s"}.`); toast(`${who(1)} looked at ${codes.length} card${codes.length === 1 ? "" : "s"}`); break; }
       const top = m.type === MSG.CONFIRM_DECKTOP || m.cards.every(c => c.location === LOC.DECK), whose = m.cards[0] ? side(m.cards[0].controller) : 0;
-      const title = top ? `Top ${codes.length === 1 ? "card" : codes.length + " cards"} of ${whose === 0 ? "your" : who(1) + "'s"} Deck` : `${codes.length === 1 ? "Card" : codes.length + " cards"} revealed`;
+      const title = top ? (whose === 0 ? (codes.length === 1 ? "Top card of your Deck" : `Top ${codes.length} cards of your Deck`) : codes.length === 1 ? `Top card of ${who(1)}'s Deck` : `Top ${codes.length} cards of ${who(1)}'s Deck`)
+        : codes.length === 1 ? "Card revealed" : `${codes.length} cards revealed`;
       blog(side(m.player), `${title}: ${codes.map(cname).join(", ")}.`, codes);
       if (!quiet) await showCards(title, codes);
       break;
