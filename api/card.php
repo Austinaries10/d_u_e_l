@@ -67,7 +67,7 @@ function apiKey(): string
     }
     $candidates = [
         __DIR__ . '/../server/config.php',
-        dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) . '/smarteyes-config.php',
+        dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? '')) . '/duel-config.php',
     ];
     foreach ($candidates as $file) {
         if (is_file($file)) {
@@ -84,7 +84,7 @@ function apiKey(): string
 function rateLimited(): bool
 {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $file = sys_get_temp_dir() . '/smarteyes_rl_' . md5($ip) . '.json';
+    $file = sys_get_temp_dir() . '/arduel_rl_' . md5($ip) . '.json';
     $now = time();
     $hits = [];
     if (is_file($file)) {

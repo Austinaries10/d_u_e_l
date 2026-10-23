@@ -40,7 +40,7 @@ function fetchUrl(string $url): ?string
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_TIMEOUT => 20,
-        CURLOPT_USERAGENT => 'SmartEyes-ARDuel/1.0 (+https://smarteyes.cck8.my)',
+        CURLOPT_USERAGENT => 'ARDuel/1.0 (+https://duel.cck8.my)',
     ]);
     $body = curl_exec($ch);
     $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);

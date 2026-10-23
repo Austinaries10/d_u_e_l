@@ -1,8 +1,8 @@
-# AR Duel (SmartEyes)
+# AR Duel
 
 A Yu-Gi-Oh! style card duel in AR for the phone browser: the duel board is placed on a real table (or shown in a 3D preview) and played with virtual decks of real cards, against the characters of the series, the computer, or a friend online.
 
-Live: https://smarteyes.cck8.my
+Live: https://duel.cck8.my · Source: https://github.com/Austinaries10/d_u_e_l
 
 ## Accounts
 Players log in with a duelist name and password (`api/account.php`). Their whole save (cards, decks, coins, free packs, character progress, avatar) is stored on the server in `server/data/users/` and copied to the browser, so they can carry on from any phone. Changes are saved a moment after they happen; if the save changed somewhere else (another phone, or the game master), the game reloads the newer save. A new account starts from whatever was on that phone, plus a starter deck.

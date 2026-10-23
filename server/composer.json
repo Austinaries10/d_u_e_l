@@ -1,6 +1,6 @@
 {
-    "name": "austinaries10/smarteyes-server",
-    "description": "Server-side helpers for SmartEyes (AI Lens and Translate)",
+    "name": "austinaries10/d_u_e_l-server",
+    "description": "Server-side helpers for AR Duel (Claude Haiku card reader)",
     "type": "project",
     "require": {
         "php": ">=8.1",

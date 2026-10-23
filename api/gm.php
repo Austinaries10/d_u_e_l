@@ -149,7 +149,7 @@ if ($action === 'save') {
 if ($action === 'official') {
     requireGm($in);
     $ch = curl_init('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg');
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_USERAGENT => 'SmartEyes-ARDuel/1.0 (+https://smarteyes.cck8.my)']);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_USERAGENT => 'ARDuel/1.0 (+https://duel.cck8.my)']);
     $json = json_decode((string)curl_exec($ch), true);
     curl_close($ch);
     is_array($json['data'] ?? null) || fail(502, 'Could not reach the card database. Try again.');
