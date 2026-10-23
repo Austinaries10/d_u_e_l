@@ -1049,7 +1049,7 @@ if (account) {
     if (changed && j.state) { const local = collectSave(); applySave(dirty.length ? mergeSave(j.state, local, dirty) : j.state); account.rev = j.rev; }
     if (j.state && (changed || !localStorage.getItem("arduel.base"))) localStorage.setItem("arduel.base", JSON.stringify(j.state));
     if (dirty.length) setTimeout(() => syncSave(), 2000);
-    dlog("start", { rev: j.rev, wasRev: account.rev, changed, dirty, serverWins: j.state?.charWins ?? null, localWins: winsNow(), standalone: matchMedia("(display-mode: standalone)").matches, storage: Object.keys(localStorage).filter(k => k.startsWith("arduel.")).map(k => `${k.slice(7)}:${localStorage.getItem(k).length}`).join(" "), lang: localStorage.getItem("arduel.lang") || "" });
+    dlog("start", { rev: j.rev, wasRev: account.rev, changed, dirty, serverWins: j.state?.charWins ?? null, localWins: winsNow(), standalone: matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches, storage: Object.keys(localStorage).filter(k => k.startsWith("arduel.")).map(k => `${k.slice(7)}:${localStorage.getItem(k).length}`).join(" "), lang: localStorage.getItem("arduel.lang") || "" });
     account.email = j.email; account.verified = j.verified; keepAccount();
   } catch (e) { if (e.status === 401 || e.status === 404) { account = null; localStorage.removeItem("arduel.account"); } }
 }
@@ -4127,7 +4127,7 @@ $("#viewSel").value = topDown() ? "top" : "";
 $("#viewSel").addEventListener("change", () => { try { localStorage.setItem("arduel.view", $("#viewSel").value); } catch {} if (mode === "preview") aimPreview(); });
 $("#langSel").addEventListener("change", () => { try { localStorage.setItem("arduel.lang", $("#langSel").value); } catch {} location.reload(); });
 let installPrompt = null;
-const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+const standalone = () => matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches || navigator.standalone;
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
 const showInstall = () => { $("#installBtn").hidden = standalone() || !(installPrompt || isIOS); };
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; showInstall(); });
