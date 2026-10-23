@@ -582,6 +582,7 @@
     <p class="note center" id="acctLine"></p>
     <div class="row center" id="emailRow"></div>
     <label class="field">Name<input id="myName" maxlength="20" placeholder="Duelist" autocomplete="nickname"></label>
+    <label class="field">Card language · 卡片语言 · カードの言語<select id="langSel"><option value="">English</option><option value="zh">简体中文</option><option value="ja">日本語</option></select></label>
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
     <div class="row center"><button class="btn small" id="installBtn" type="button" hidden>📲 Install the app</button><button class="btn small danger" id="logoutBtn" type="button">Log out</button></div>
@@ -751,6 +752,10 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const $ = s => document.querySelector(s);
 const canvas = $("#gl");
+// Card language: "" English, "zh" Simplified Chinese, "ja" Japanese (card names, card text and the duel's game texts)
+const LANG = (() => { try { return localStorage.getItem("arduel.lang") || ""; } catch { return ""; } })();
+const LQ = LANG ? `&lang=${LANG}` : "";
+if (LANG) document.documentElement.lang = LANG === "zh" ? "zh-CN" : "ja";
 
 // ---------- Your account: the save lives on the server (api/account.php) ----------
 // These saved settings are copied to the account; everything else stays on this phone only.
@@ -1197,7 +1202,7 @@ const who = p => p === 0 ? "You" : S.vs?.name || "Opponent";
 const side = e => e === S.me ? 0 : 1;            // engine player -> side on this screen
 const CI = new Map();                             // card details from the engine, by passcode
 let STR = { system: {}, victory: {} };
-fetch("api/engine.php?action=strings").then(r => r.json()).then(j => { STR = j; }).catch(() => {});
+fetch("api/engine.php?action=strings" + LQ).then(r => r.json()).then(j => { STR = j; }).catch(() => {});
 const sys = n => STR.system?.[String(n)] || "";
 // Effect descriptions are either a system text or one of the card's own texts (passcode × 16 + index)
 function descText(d) {
@@ -1550,7 +1555,7 @@ function startEngine(vs, setup, log = []) {
   Object.assign(S, { vs, setup, me: setup.me, log: [], history: [] });
   Q.replay = [...log]; Q.net = [[], []]; S.catchup = log.length > 0;
   if (setup.lp) for (const e of [0, 1]) setLp(side(e), setup.lp[e]);
-  worker.postMessage({ t: "start", seed: setup.seed, decks: setup.decks, lp: setup.lp });
+  worker.postMessage({ t: "start", seed: setup.seed, decks: setup.decks, lp: setup.lp, lang: LANG });
   saveDuel(); refreshUI();
 }
 // Against the computer. first: 0 if you go first. The engine doesn't shuffle (the last card added is the top
@@ -2179,7 +2184,7 @@ async function openRecipe(ch, label, r, tier) {
     const grid = el("div", { className: "reccards" });
     for (const [k, n] of rows) {
       const c = recCards.get(n), got = Math.min(k, owned.get(n) || 0); if (got < k) missing.push([k - got, n]);
-      const b = el("button", { type: "button", className: "rc " + (got >= k ? "ok" : "miss"), title: n });
+      const b = el("button", { type: "button", className: "rc " + (got >= k ? "ok" : "miss"), title: c ? cn(c) : n });
       b.append(el("img", { src: c ? imgUrl(c, "small") : "", alt: n, loading: "lazy" }), el("span", { textContent: `${got}/${k}` }));
       b.onclick = () => c ? openCard(c) : null; grid.append(b);
     }
@@ -2190,7 +2195,7 @@ async function openRecipe(ch, label, r, tier) {
   btn.disabled = locked || !!missing.length; btn.onclick = () => buildRecipe(ch, label, r); box.append(btn);
   if (missing.length) {
     box.append(el("h2", { className: "recgen", textContent: "Cards you still need" }));
-    const ul = el("ul", { className: "missing" }); for (const [k, n] of missing) ul.append(el("li", { textContent: `${k}× ${n}` })); box.append(ul);
+    const ul = el("ul", { className: "missing" }); for (const [k, n] of missing) { const li = el("li"), c = recCards.get(n); if (c) tset(li, c, "name", x => `${k}× ${x}`); else li.textContent = `${k}× ${n}`; ul.append(li); } box.append(ul);
     box.append(note("Open packs in the Shop, or win duels at the gates, to collect them."));
   }
 }
@@ -2212,18 +2217,45 @@ $("#newDeck").addEventListener("click", async () => {
   const name = (await gameDialog({ title: "Name your new deck", input: `Deck ${decks.length + 1}`, ok: "Create", cancel: "Cancel" }))?.trim(); if (!name) return;
   decks.push({ name: name.slice(0, 40), ids: [] }); saveDecks(); openEditor(decks.length - 1);
 });
-function openEditor(i) { editing = i; show("editor"); $("#deckStatus").textContent = ""; renderDeck(); loadArchetypes(); search(); }
+function openEditor(i) { editing = i; show("editor"); $("#deckStatus").textContent = ""; renderDeck(); loadArchetypes(); search(); if (LANG) trLoad(Object.keys(coll)); }
 
+// ---------- Card names and texts in the chosen language ----------
+// Cards from the server carry English names; translations are fetched by card id and shown wherever cards are listed.
+// (In a duel the rules engine already has them in the chosen language.)
+const TR = new Map(), trWait = new Map(); let trTimer = null;
+const cn = c => (LANG && (c.tname || TR.get(+c.id)?.name)) || c.name;
+const ct = c => (LANG && (c.tdesc || TR.get(+c.id)?.desc)) || c.summary || "";
+// set a node's text to the card's name (or text), and fix it up once the translation arrives
+function tset(node, c, field = "name", wrap = x => x) {
+  const put = () => { node.textContent = wrap(field === "name" ? cn(c) : ct(c)); };
+  put();
+  if (!LANG || !c?.id || c.tname || TR.has(+c.id)) return;
+  const list = trWait.get(+c.id) || []; list.push(put); trWait.set(+c.id, list);
+  clearTimeout(trTimer); trTimer = setTimeout(trFlush, 40);
+}
+async function trLoad(ids) {
+  ids = [...new Set(ids.map(Number))].filter(id => id && !TR.has(id));
+  for (let i = 0; i < ids.length; i += 300) {
+    const part = ids.slice(i, i + 300);
+    try { const { tr } = await api({ action: "tr", lang: LANG, ids: part.join(",") }); for (const id of part) TR.set(id, tr[id] || null); } catch { return; }
+  }
+}
+async function trFlush() {
+  const waiting = new Map(trWait); trWait.clear();
+  await trLoad([...waiting.keys()]);
+  for (const list of waiting.values()) for (const put of list) put();
+}
 // Tap a card to see it big with its whole text; in the deck editor it can also be added or removed there
 function openCard(c) {
   const m = $("#cardView"), e = coll[c.id], editingDeck = !$("#editor").hidden && decks[editing];
   m.hidden = false; $("#cvImg").src = imgUrl(c); $("#cvImg").alt = c.name;
-  const name = $("#cvName"); name.textContent = c.name; if (e?.r) name.append(rarBadge(e.r)); const lim = limitBadge(c); if (lim) name.append(lim);
+  const name = $("#cvName"), nm = el("span"); name.innerHTML = ""; name.append(nm); tset(nm, c); if (e?.r) name.append(rarBadge(e.r)); const lim = limitBadge(c); if (lim) name.append(lim);
   const meta = $("#cvMeta"); meta.innerHTML = "";
   const line = (k, v) => { if (v == null || v === "") return; meta.append(el("b", { textContent: k + ": " }), String(v), el("br")); };
   line("Type", c.type); if (c.kind === "monster") { line("Attribute", c.attribute); line(c.type?.includes("Link") ? "Rating" : /XYZ/.test(c.type || "") ? "Rank" : "Level", c.level); line("ATK / DEF", `${c.atk ?? "?"} / ${c.def ?? "-"}`); }
   line("Archetype", c.archetype);
-  $("#cvDesc").textContent = c.summary || "";
+  tset($("#cvDesc"), c, "desc");
+  if (LANG && cn(c) !== c.name) meta.prepend(el("b", { textContent: "English: " }), c.name, el("br"));
   const owned = Object.values(coll).filter(x => x.card.name === c.name).reduce((a, x) => a + x.n, 0), inDeck = editingDeck ? editingDeck.ids.filter(id => coll[id]?.card.name === c.name).length : 0;
   $("#cvOwn").textContent = `You own ${owned}` + (editingDeck ? ` · ${inDeck} in this deck` : "");
   const btns = $("#cvBtns"); btns.innerHTML = "";
@@ -2240,7 +2272,7 @@ function cardRow(c, actions, rarity) {
   const d = document.createElement("div"); d.className = "deckcard";
   d.append(Object.assign(document.createElement("img"), { src: imgUrl(c, "small"), alt: "", loading: "lazy" }));
   const info = document.createElement("div"); info.style.minWidth = "0";
-  const name = Object.assign(document.createElement("b"), { textContent: c.name }); if (rarity) name.append(rarBadge(rarity));
+  const name = document.createElement("b"), nm = el("span"); name.append(nm); tset(nm, c); if (rarity) name.append(rarBadge(rarity));
   const lim = limitBadge(c); if (lim) name.append(lim);
   info.append(name, Object.assign(document.createElement("small"), { textContent: (c.kind === "monster" ? `${c.attribute} ${c.race || ""} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type) + (c.inText ? " · found in card text" : "") }));
   d.append(info);
@@ -2311,7 +2343,7 @@ function myCards(f) {
   return Object.values(coll).map(e => e.card).filter(c =>
     (!f.kind || c.kind === f.kind) && (!f.attribute || c.attribute === f.attribute)
     && (!f.race || c.race === f.race) && (!f.level || c.level === +f.level) && (!f.archetype || c.archetype === f.archetype)
-  ).map(c => !q || c.name.toLowerCase().includes(q) ? c : (c.summary || "").toLowerCase().includes(q) ? { ...c, inText: true } : null).filter(Boolean)
+  ).map(c => !q || c.name.toLowerCase().includes(q) || cn(c).toLowerCase().includes(q) ? c : (c.summary || "").toLowerCase().includes(q) || ct(c).toLowerCase().includes(q) ? { ...c, inText: true } : null).filter(Boolean)
     .sort((a, b) => (f.sort === "type" ? KIND_ORDER[a.kind] - KIND_ORDER[b.kind] : f.sort === "name" ? !!a.inText - !!b.inText : by(f.sort, b) - by(f.sort, a)) || a.name.localeCompare(b.name));
 }
 async function search(more = false) {
@@ -2328,7 +2360,7 @@ async function search(more = false) {
   else {
     info.textContent = "Searching…";
     try {
-      const p = { action: "search", ...found.params, offset: found.offset }; for (const k of Object.keys(p)) if (p[k] === "") delete p[k];
+      const p = { action: "search", ...found.params, offset: found.offset, lang: LANG }; for (const k of Object.keys(p)) if (p[k] === "") delete p[k];
       const j = await api(p); cards = j.cards; found.total = j.total;
     } catch (e) { info.textContent = errText(e); return; }
   }
@@ -2485,7 +2517,7 @@ async function openPack(pk, pay) {
     // foils get a rim of light (silver, gold, rainbow) and a shine that sweeps across when they turn over
     face.append(Object.assign(document.createElement("div"), { className: "back" }), Object.assign(document.createElement("img"), { className: "front", src: imgUrl(p.card), alt: p.card.name }));
     if (rank(p.r) >= 2) { b.append(el("span", { className: "rim" })); face.append(el("span", { className: "shine" })); }
-    const cap = Object.assign(document.createElement("small"), { textContent: p.card.name }); cap.prepend(rarBadge(p.r), " ");
+    const cap = document.createElement("small"), nm = el("span"); tset(nm, p.card); cap.append(rarBadge(p.r), " ", nm);
     b.append(face, cap); b.onclick = () => { if (!b.classList.contains("open") && rank(p.r) >= 2) burst(b); b.classList.add("open"); }; box.append(b);
   }
   // the pack shakes and bursts open, then the cards appear face down
@@ -3557,6 +3589,9 @@ if (net.room) net.open(net.room); // back into an online duel after the page rel
 // ---------- Installable app (PWA) ----------
 // Android/desktop Chrome offer an install prompt we can show from a button; on iPhone it's Share → Add to Home Screen
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js?v=__BUILD__").catch(() => {});
+// card language: saved on this phone; the page reloads so the duel engine and texts switch over
+$("#langSel").value = LANG;
+$("#langSel").addEventListener("change", () => { try { localStorage.setItem("arduel.lang", $("#langSel").value); } catch {} location.reload(); });
 let installPrompt = null;
 const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);

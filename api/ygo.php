@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 const API = 'https://db.ygoprodeck.com/api/v7/cardinfo.php';
 const IMG = 'https://images.ygoprodeck.com/images/';
+require __DIR__ . '/lang.php'; // &lang=ja|zh for card names and texts in Japanese or Chinese
 const CACHE = __DIR__ . '/../server/cache';
 const DATA_TTL = 86400; // card data is refreshed after a day
 
@@ -282,9 +283,12 @@ header('Cache-Control: public, max-age=3600');
 
 if ($action === 'search') {
     $q = mb_strtolower(trim((string)($_GET['q'] ?? '')));
-    if ($q !== '' && (mb_strlen($q) < 2 || mb_strlen($q) > 60)) {
+    $lang = langParam();
+    // Chinese and Japanese words can be a single character
+    if ($q !== '' && ((mb_strlen($q) < 2 && !preg_match('/[^\x00-\x7F]/', $q)) || mb_strlen($q) > 60)) {
         fail(400, 'Type at least 2 letters.');
     }
+    $tr = $lang ? langTexts($lang, null) : [];
     $kind = (string)($_GET['kind'] ?? '');
     $attribute = strtoupper((string)($_GET['attribute'] ?? ''));
     $race = (string)($_GET['race'] ?? '');
@@ -300,9 +304,13 @@ if ($action === 'search') {
             || ($level !== '' && $c['level'] !== (int)$level) || ($archetype !== '' && $c['archetype'] !== $archetype)) {
             continue;
         }
-        if ($q === '' || str_contains(mb_strtolower($c['name']), $q)) {
+        $t = $tr[$c['id']] ?? null;
+        if ($t) {
+            $c += ['tname' => $t['name'], 'tdesc' => $t['desc']];
+        }
+        if ($q === '' || str_contains(mb_strtolower($c['name']), $q) || ($t && str_contains(mb_strtolower($t['name']), $q))) {
             $byName[] = $c;
-        } elseif (str_contains(mb_strtolower($c['summary']), $q)) {
+        } elseif (str_contains(mb_strtolower($c['summary']), $q) || ($t && str_contains(mb_strtolower($t['desc']), $q))) {
             $byText[] = $c + ['inText' => true];
         }
     }
@@ -388,6 +396,18 @@ if ($action === 'set') {
         @file_put_contents($file, json_encode(['set' => $set, 'cards' => $cards]), LOCK_EX);
     }
     echo file_get_contents($file);
+    exit;
+}
+
+// card names and texts in another language: ?action=tr&lang=ja&ids=1,2,3 -> {id: {name, desc}}
+if ($action === 'tr') {
+    header('Cache-Control: public, max-age=86400');
+    $ids = array_slice(array_values(array_unique(array_filter(array_map('intval', explode(',', (string)($_GET['ids'] ?? '')))))), 0, 300);
+    $out = [];
+    foreach (langTexts(langParam(), $ids) as $id => $t) {
+        $out[$id] = ['name' => $t['name'], 'desc' => $t['desc']];
+    }
+    echo json_encode(['tr' => (object)$out]);
     exit;
 }
 

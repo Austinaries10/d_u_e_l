@@ -10,6 +10,7 @@
 //   ?action=strings                          system, victory and archetype texts
 
 declare(strict_types=1);
+require __DIR__ . '/lang.php'; // &lang=ja|zh: card names, texts and system texts in Japanese or Chinese
 
 const CACHE = __DIR__ . '/../server/cache';
 const CDB_URL = 'https://raw.githubusercontent.com/ProjectIgnis/BabelCDB/master/cards.cdb';
@@ -191,6 +192,16 @@ if ($action === 'cards') {
             'strings' => array_map(fn($i) => (string)($r["str$i"] ?? ''), range(1, 16)),
         ];
     }
+    // in another language: the translated name, text and effect descriptions where the translation has them
+    foreach (langTexts(langParam(), array_keys($out)) as $id => $t) {
+        $out[$id]['name'] = $t['name'] ?: $out[$id]['name'];
+        $out[$id]['desc'] = $t['desc'] ?: $out[$id]['desc'];
+        foreach ($t['strings'] as $i => $str) {
+            if ($str !== '') {
+                $out[$id]['strings'][$i] = $str;
+            }
+        }
+    }
     echo json_encode(['cards' => (object)$out]);
     exit;
 }
@@ -208,9 +219,10 @@ if ($action === 'script') {
 if ($action === 'strings') {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: public, max-age=86400');
-    $json = dir_('data') . '/strings.json';
+    $lang = langParam();
+    $json = dir_('data') . '/strings' . ($lang ? "-$lang" : '') . '.json';
     if (!is_file($json) || filemtime($json) < time() - WEEK) {
-        $conf = cached(dir_('data') . '/strings.conf', STRINGS_URL, WEEK) ?? fail(502, 'Could not load the game texts. Try again.');
+        $conf = ($lang ? langFile($lang, 'strings.conf') : cached(dir_('data') . '/strings.conf', STRINGS_URL, WEEK)) ?? fail(502, 'Could not load the game texts. Try again.');
         $out = ['system' => [], 'victory' => [], 'counter' => [], 'setname' => []];
         foreach (file($conf, FILE_IGNORE_NEW_LINES) as $line) {
             if (preg_match('/^!(system|victory|counter|setname) (0x[0-9a-fA-F]+|\d+) (.*)$/', $line, $m)) {

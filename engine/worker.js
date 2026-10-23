@@ -7,7 +7,7 @@ import createCore, { OcgProcessResult, OcgDuelMode, OcgLocation, OcgPosition, Oc
 
 const API = new URL("../api/engine.php", import.meta.url).href;
 const cards = new Map(), sent = new Set(), scripts = new Map();
-let lib = null, duel = null;
+let lib = null, duel = null, lang = ""; // lang: card names and texts in "zh" or "ja" (data.lang of the start message)
 
 // Workers may read files synchronously, which is what the engine needs while it runs a card script
 function getSync(url) {
@@ -17,12 +17,12 @@ function getSync(url) {
 async function loadCards(codes) {
   const need = [...new Set(codes)].filter(c => c && !cards.has(c));
   for (let i = 0; i < need.length; i += 300) {
-    const r = await fetch(`${API}?action=cards&codes=${need.slice(i, i + 300).join(",")}`), j = await r.json();
+    const r = await fetch(`${API}?action=cards&codes=${need.slice(i, i + 300).join(",")}${lang ? "&lang=" + lang : ""}`), j = await r.json();
     for (const [k, v] of Object.entries(j.cards || {})) cards.set(+k, v);
   }
 }
 function cardData(code) {
-  if (!cards.has(code)) { try { for (const [k, v] of Object.entries(JSON.parse(getSync(`${API}?action=cards&codes=${code}`)).cards || {})) cards.set(+k, v); } catch {} }
+  if (!cards.has(code)) { try { for (const [k, v] of Object.entries(JSON.parse(getSync(`${API}?action=cards&codes=${code}${lang ? "&lang=" + lang : ""}`)).cards || {})) cards.set(+k, v); } catch {} }
   const c = cards.get(code); if (!c) return null;
   return { code: c.code, alias: c.alias, setcodes: c.setcodes, type: c.type, level: c.level, attribute: c.attribute, race: BigInt(c.race), attack: c.attack, defense: c.defense, lscale: c.lscale, rscale: c.rscale, link_marker: c.link_marker };
 }
@@ -73,6 +73,7 @@ onmessage = async ({ data }) => {
   try {
     if (data.t === "start") {
       lib ??= await createCore({ sync: true });
+      lang = /^(zh|ja)$/.test(data.lang || "") ? data.lang : "";
       if (duel) { lib.destroyDuel(duel); duel = null; }
       // decks[p] = { main: [codes], extra: [codes] } for engine players 0 and 1 (player 0 goes first).
       // The engine doesn't shuffle: the last card of main is the top of the deck.
