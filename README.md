@@ -49,7 +49,7 @@ The home screen is a small world: **gates** for each Yu-Gi-Oh! series, and the *
 - **Search** your own cards, or all 14,000+ cards in the database. The words are matched in card names and in card text (monsters, spells and traps); name matches come first, and text matches are marked "found in card text". Filter by kind, attribute, type (Dragon, Spellcaster, Quick-Play…), level and archetype. Sort A–Z, by card type (monsters, spells, traps), ATK, DEF or level
 
 ## Board
-- **Board**: real card-size zones with the modern layout (5 Main Monster Zones, 2 shared Extra Monster Zones, 5 Spell/Trap Zones and a Field Zone per player; Deck, Extra Deck, GY and banished piles). Cards show their real images; a monster's artwork floats above its zone as a glowing hologram. Drag to turn the 3D view, pinch to zoom; in AR, twist two fingers to turn the board
+- **Board**: real card-size zones with the modern layout (5 Main Monster Zones, 2 shared Extra Monster Zones, 5 Spell/Trap Zones and a Field Zone per player; Deck, Extra Deck, GY and banished piles). Cards show their real images; a monster's artwork floats above its zone as a glowing hologram. The phone shows it from above; in AR (online duels), twist two fingers to turn the board
 - **Scan real cards**: Claude Haiku (`api/card.php`) reads a card held up to the camera and matches it to the database (saved to recent cards; the engine deals the hand in a duel)
 - **Own models**: attach a `.glb` model to any card name and that card shows it
 
