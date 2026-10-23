@@ -92,6 +92,10 @@
       <div class="row"><label class="field" style="flex:1 1 240px">Add a pack<input id="shopAdd" list="setNames" placeholder="Type a set name" autocomplete="off"></label><button class="btn primary" id="shopAddBtn" type="button">Add</button></div>
       <p id="shopCount"></p>
       <div class="list" id="shopList" style="gap:12px"></div>
+      <h2 style="margin-top:24px">Starter decks in the Shop</h2>
+      <p>Players buy these whole (every card in the deck, saved as a ready-to-duel deck). Switch each one on or off and set its price.</p>
+      <div class="row"><button class="btn small" id="startersOn" type="button">All on</button><button class="btn small" id="startersOff" type="button">All off</button><span class="note" id="starterCount"></span></div>
+      <div class="list" id="starterList" style="gap:8px"></div>
     </section>
 
     <section class="card" data-panel="players" hidden style="margin-top:16px">
@@ -157,7 +161,7 @@ async function open() {
     $("#setNames").innerHTML = ""; for (const s of sets) $("#setNames").append(el("option", { value: `${s.name} (${s.code})` }));
     try { sessionStorage.setItem("gmPass", password); } catch {}
     $("#login").hidden = true; $("#gm").hidden = false; $("#bar").hidden = false;
-    renderBan(); renderPacks(); renderEvents();
+    renderBan(); renderPacks(); renderStarters(); renderEvents();
   } catch (e) { $("#loginStatus").textContent = errText(e); $("#loginStatus").className = "note err"; }
 }
 $("#loginBtn").addEventListener("click", open);
@@ -230,6 +234,31 @@ $("#shopAddBtn").addEventListener("click", () => {
   cfg.shop ??= []; if (cfg.shop.some(l => l.code === m[1])) return;
   cfg.shop.unshift({ code: m[1], price: 100, start: "", end: "", enabled: true }); $("#shopAdd").value = ""; changed(); renderPacks();
 });
+
+// ---------- Starter decks in the Shop ----------
+// every real starter deck (Speed Duel ones aside); ones the GM hasn't set are on sale at the default price
+const STARTER_CODES = ["SDY", "SDK", "SDJ", "SDP", "SYE", "SKE", "YSD", "YSDJ", "YSDS", "5DS1", "5DS2", "5DS3", "YS11", "YS12", "YSKR", "YSYR", "YS15", "YS16", "YS17", "YS18"], STARTER_PRICE = 800;
+function starterRow(code) {
+  cfg.starterShop ??= [];
+  let l = cfg.starterShop.find(x => x.code === code);
+  if (!l) { l = { code, price: STARTER_PRICE, enabled: true }; cfg.starterShop.push(l); }
+  return l;
+}
+function renderStarters() {
+  const box = $("#starterList"); box.innerHTML = "";
+  const rows = STARTER_CODES.map(starterRow);
+  $("#starterCount").textContent = `${rows.filter(l => l.enabled).length} of ${rows.length} on sale`;
+  for (const l of rows) {
+    const set = sets.find(x => x.code === l.code);
+    const on = el("input", { type: "checkbox", checked: l.enabled }); on.onchange = () => { l.enabled = on.checked; changed(); renderStarters(); };
+    const price = el("input", { type: "number", min: 0, step: 50, value: l.price, style: "width:110px" }); price.oninput = () => { l.price = Math.max(0, +price.value || 0); changed(); };
+    box.append(el("div", { className: "row", style: "justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 0" },
+      el("label", { className: "check", style: "flex:1 1 200px" }, on, `${set?.name || l.code} (${l.code})${set?.date ? " · " + set.date.slice(0, 4) : ""}`),
+      el("label", { className: "field", style: "flex:0 0 auto" }, "Price", price)));
+  }
+}
+$("#startersOn").addEventListener("click", () => { STARTER_CODES.forEach(c => starterRow(c).enabled = true); changed(); renderStarters(); });
+$("#startersOff").addEventListener("click", () => { STARTER_CODES.forEach(c => starterRow(c).enabled = false); changed(); renderStarters(); });
 
 // ---------- Limited events ----------
 // datetime-local inputs use this phone's time zone; the server stores UTC
@@ -382,7 +411,7 @@ $("#save").addEventListener("click", async () => {
     const j = await call("save", { config: cfg });
     cfg = j.config; cfg.banlist.cards = Array.isArray(cfg.banlist.cards) ? {} : cfg.banlist.cards;
     dirty = false; $("#saveStatus").textContent = "Saved. Players get the changes the next time they open the game or the Shop.";
-    renderBan(); renderPacks(); renderEvents();
+    renderBan(); renderPacks(); renderStarters(); renderEvents();
   } catch (e) { $("#saveStatus").className = "err"; $("#saveStatus").textContent = errText(e); }
 });
 </script>

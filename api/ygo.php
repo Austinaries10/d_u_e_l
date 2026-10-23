@@ -88,6 +88,24 @@ const PACKS = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC', 'DCR', 'I
 // Starter decks without a main character's name, one of which is given to a new player
 const STARTERS = ['YSD', '5DS1', '5DS2', '5DS3', 'YS11', 'YS12', 'YS17', 'YS18']; // all real 40+ card starter decks (YS14 in the card database is a 15-card pack)
 const STARTER_PRICE = 800; // a whole starter deck in the shop (a 9-card pack is 100)
+// Every real starter deck the Shop can sell whole (the GM chooses which are on sale and their prices)
+const SHOP_STARTERS = ['SDY', 'SDK', 'SDJ', 'SDP', 'SYE', 'SKE', 'YSD', 'YSDJ', 'YSDS', '5DS1', '5DS2', '5DS3', 'YS11', 'YS12', 'YSKR', 'YSYR', 'YS15', 'YS16', 'YS17', 'YS18'];
+// The starter decks on sale: the GM's list, or all of them at the default price until the GM sets one
+function starterListings(array $gm): array
+{
+    $byCode = [];
+    foreach ((array)($gm['starterShop'] ?? []) as $l) {
+        $byCode[(string)($l['code'] ?? '')] = $l;
+    }
+    $out = [];
+    foreach (SHOP_STARTERS as $code) {
+        $l = $byCode[$code] ?? ['code' => $code, 'price' => STARTER_PRICE, 'enabled' => true];
+        if (!empty($l['enabled'])) {
+            $out[] = ['code' => $code, 'price' => max(0, (int)($l['price'] ?? STARTER_PRICE))];
+        }
+    }
+    return $out;
+}
 // What the shop sells until the GM chooses: the first booster packs, 100 coins each
 const DEFAULT_SHOP = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC'];
 // The GM's shop listings that are on sale now or coming soon: [{code, price, start, end, enabled}]
@@ -323,7 +341,7 @@ if ($action === 'packs') {
         }
     }
     // the real starter decks are sold whole in the shop, for more than a pack
-    $decks = array_values(array_map(fn($c) => $sets[$c] + ['price' => STARTER_PRICE], array_filter(STARTERS, fn($c) => isset($sets[$c]))));
+    $decks = array_values(array_map(fn($l) => $sets[$l['code']] + ['price' => $l['price']], array_filter(starterListings(gmSettings()), fn($l) => isset($sets[$l['code']]))));
     echo json_encode(['packs' => $packs, 'starters' => STARTERS, 'decks' => $decks, 'suggested' => PACKS, 'now' => gmdate('c')]);
     exit;
 }
@@ -346,8 +364,9 @@ if ($action === 'set') {
         }
         $code = $ev['set'];
     } else {
-        // a starter deck, or a pack the GM has on sale right now
-        in_array($code, STARTERS, true) || in_array($code, array_column(shopListings($gm, true), 'code'), true) || fail(403, 'That pack is not on sale right now.');
+        // a new player's starter deck, a starter deck on sale, or a pack the GM has on sale right now
+        in_array($code, STARTERS, true) || in_array($code, array_column(starterListings($gm), 'code'), true)
+            || in_array($code, array_column(shopListings($gm, true), 'code'), true) || fail(403, 'That pack is not on sale right now.');
     }
     $set = allSets()[$code] ?? fail(404, 'Unknown pack.');
     $file = cacheDir('data') . "/set-$code.json";

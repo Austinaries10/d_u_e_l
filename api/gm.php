@@ -106,8 +106,16 @@ function clean(array $c): array
         }
         $shop[] = ['code' => (string)$l['code'], 'price' => max(0, min(100000, (int)($l['price'] ?? 100))), 'start' => $start ? gmdate('c', $start) : '', 'end' => $end ? gmdate('c', $end) : '', 'enabled' => !empty($l['enabled'])];
     }
+    // starter decks sold whole in the shop: on or off, and their price
+    $starters = [];
+    foreach ((array)($c['starterShop'] ?? []) as $l) {
+        if (preg_match('/^[A-Z0-9]{2,8}$/', (string)($l['code'] ?? ''))) {
+            $starters[] = ['code' => (string)$l['code'], 'price' => max(0, min(100000, (int)($l['price'] ?? 800))), 'enabled' => !empty($l['enabled'])];
+        }
+    }
     return [
         'shop' => $shop,
+        'starterShop' => $starters,
         'banlist' => ['name' => mb_substr(trim((string)($c['banlist']['name'] ?? '')), 0, 60), 'cards' => (object)$cards],
         'disabledPacks' => array_values(array_filter((array)($c['disabledPacks'] ?? []), fn($x) => is_string($x) && preg_match('/^[A-Z0-9]{2,6}$/', $x))),
         'events' => $events,
