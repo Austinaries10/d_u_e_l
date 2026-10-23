@@ -86,7 +86,8 @@ const PACKS = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC', 'DCR', 'I
     'DAMA', 'BROL', 'GRCR', 'BACH', 'DIFO', 'POTE', 'TAMA', 'DABL', 'MAMA', 'BLCR', 'AMDE', 'PHHY', 'MAZE', 'CYAC', 'WISU', 'BLMR', 'DUNE', 'AGOV', 'VASM', 'MZMI',
     'PHNI', 'LEDE', 'BLTR', 'INFO', 'ROTA', 'CRBR', 'SUDA', 'MZTM', 'ALIN', 'JUSH', 'DOOD', 'PHRE', 'BPRO', 'MZMU', 'BLZD', 'CORI', 'MAMO', 'BETB'];
 // Starter decks without a main character's name, one of which is given to a new player
-const STARTERS = ['YSD', '5DS1', '5DS2', '5DS3', 'YS11', 'YS12', 'YS14', 'YS17', 'YS18'];
+const STARTERS = ['YSD', '5DS1', '5DS2', '5DS3', 'YS11', 'YS12', 'YS17', 'YS18']; // all real 40+ card starter decks (YS14 in the card database is a 15-card pack)
+const STARTER_PRICE = 800; // a whole starter deck in the shop (a 9-card pack is 100)
 // What the shop sells until the GM chooses: the first booster packs, 100 coins each
 const DEFAULT_SHOP = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC'];
 // The GM's shop listings that are on sale now or coming soon: [{code, price, start, end, enabled}]
@@ -321,7 +322,9 @@ if ($action === 'packs') {
             $packs[] = $sets[$l['code']] + ['price' => (int)$l['price'], 'start' => (string)($l['start'] ?? ''), 'end' => (string)($l['end'] ?? '')];
         }
     }
-    echo json_encode(['packs' => $packs, 'starters' => STARTERS, 'suggested' => PACKS, 'now' => gmdate('c')]);
+    // the real starter decks are sold whole in the shop, for more than a pack
+    $decks = array_values(array_map(fn($c) => $sets[$c] + ['price' => STARTER_PRICE], array_filter(STARTERS, fn($c) => isset($sets[$c]))));
+    echo json_encode(['packs' => $packs, 'starters' => STARTERS, 'decks' => $decks, 'suggested' => PACKS, 'now' => gmdate('c')]);
     exit;
 }
 

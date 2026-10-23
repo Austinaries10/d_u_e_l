@@ -241,11 +241,17 @@
   .avatars button[aria-pressed="true"] { border-color: var(--accent); }
   .avatars img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; background: #22294a; display: block; }
 
-  #coin { position: fixed; inset: 0; z-index: 45; background: radial-gradient(70% 50% at 50% 40%, #3a2a0a, #070a16); display: grid; place-content: center; justify-items: center; gap: 18px; padding: 20px; text-align: center; }
+  #coin { position: fixed; inset: 0; z-index: 28; background: radial-gradient(70% 50% at 50% 40%, #3a2a0a, #070a16); display: grid; place-content: center; justify-items: center; gap: 18px; padding: 20px; text-align: center; }
   #coin h2 { margin: 0; font-size: 24px; min-height: 1.3em; }
   .coinflip { width: 140px; height: 140px; position: relative; transform-style: preserve-3d; }
   .coinflip span { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; font-size: 60px; color: #7a4a00; backface-visibility: hidden; background: radial-gradient(circle at 35% 35%, #fff3b0, #f2b400 55%, #a86f00); box-shadow: inset 0 0 0 8px #ffe27a, 0 0 40px rgba(255,200,60,.6); }
   .coinflip .t { transform: rotateY(180deg); }
+  .about { margin: 14px 0 0; font-size: 10px; line-height: 1.4; color: var(--muted); text-align: center; }
+  .coinflip span { display: flex; flex-direction: column; } .coinflip span b { font-size: 54px; line-height: 1; } .coinflip span small { font: 800 13px var(--font); letter-spacing: 2px; margin-top: 4px; }
+  .dice { display: flex; gap: 34px; } .die { display: grid; justify-items: center; gap: 10px; font-weight: 700; }
+  .die b { width: 86px; height: 86px; border-radius: 18px; background: #fff; color: #14213d; font: 800 46px/86px var(--font); text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  .die b.roll { animation: dieroll .9s cubic-bezier(.2,.7,.3,1); } .die.win b { box-shadow: 0 0 0 4px var(--accent), 0 0 34px rgba(255,181,71,.75); }
+  @keyframes dieroll { from { transform: rotate(0) scale(.6) translateY(-40px); } to { transform: rotate(720deg) scale(1) translateY(0); } }
   .coinflip.spin { animation: coinspin 1.6s cubic-bezier(.2,.7,.3,1) forwards; }
   .coinflip.spin.tails { animation-name: coinspin2; }
   @keyframes coinspin { from { transform: translateY(0) rotateY(0); } 40% { transform: translateY(-120px) rotateY(1080deg); } to { transform: translateY(0) rotateY(1800deg); } }
@@ -412,7 +418,6 @@
     <button class="spot wide" id="openRewards" type="button"><span class="art rewardart"><span class="chest" aria-hidden="true"></span></span><span class="sign">Rewards</span><span class="badge" id="rewardBadge" hidden>!</span></button>
   </div>
   <div id="status"></div>
-  <p class="foot">Duel rules: EDOPro's ocgcore and Project Ignis card scripts (AGPL-3.0). Card data and images: YGOPRODeck and Project Ignis. Character pictures: Yugipedia. Yu-Gi-Oh! © Kazuki Takahashi / Konami. This game is free software under the AGPL-3.0: <a class="link" href="https://github.com/Austinaries10/d_u_e_l" target="_blank" rel="noopener">source code</a></p>
 </section>
 
 <section class="screen gatescreen" id="gate" hidden>
@@ -476,6 +481,7 @@
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
     <div class="row center"><button class="btn small danger" id="logoutBtn" type="button">Log out</button></div>
+    <p class="about">Duel rules: EDOPro's ocgcore and Project Ignis card scripts (AGPL-3.0). Card data and images: YGOPRODeck and Project Ignis. Character pictures: Yugipedia. Yu-Gi-Oh! © Kazuki Takahashi / Konami. This game is free software under the AGPL-3.0: <a class="link" href="https://github.com/Austinaries10/d_u_e_l" target="_blank" rel="noopener">source code</a></p>
   </div>
 </div>
 
@@ -522,7 +528,8 @@
 </div>
 
 <div id="coin" hidden aria-live="polite">
-  <div class="coinflip" id="coinFace"><span class="h">★</span><span class="t">✦</span></div>
+  <div class="dice" id="diceRow" hidden><div class="die"><b id="die0">?</b><span id="dieName0">You</span></div><div class="die"><b id="die1">?</b><span id="dieName1"></span></div></div>
+  <div class="coinflip" id="coinFace"><span class="h"><b>★</b><small>HEADS</small></span><span class="t"><b>✦</b><small>TAILS</small></span></div>
   <h2 id="coinText"></h2>
   <div class="row center" id="coinBtns"></div>
 </div>
@@ -569,7 +576,7 @@
 <section class="screen npcscreen" id="shop" hidden>
   <header class="gatebar"><button class="round" id="shopDone" type="button" aria-label="Back">‹</button><h1>Shop</h1><div class="cur small"><span class="coin" aria-hidden="true"></span><b id="shopCoins">0</b></div><div class="cur small"><span class="ticket" aria-hidden="true"></span><b id="shopFree">0</b></div></header>
   <div class="host"><img data-face="Solomon_Muto" alt=""><div class="bubble" id="shopLine">Welcome to the Kame Game shop! What are you looking for today?</div></div>
-  <div class="tabs row center" id="shopTabs"><button class="btn small" type="button" data-tab="events" aria-pressed="true">Limited</button><button class="btn small" type="button" data-tab="packs" aria-pressed="false">Booster packs</button></div>
+  <div class="tabs row center" id="shopTabs"><button class="btn small" type="button" data-tab="events" aria-pressed="true">Limited</button><button class="btn small" type="button" data-tab="packs" aria-pressed="false">Booster packs</button><button class="btn small" type="button" data-tab="decks" aria-pressed="false">Starter decks</button></div>
   <input id="packFind" class="find" placeholder="Find a pack" autocomplete="off" aria-label="Find a pack">
   <div class="packs" id="packs"></div>
   <p class="note center">A pack has 9 cards (all-foil sets have 5), each at its real rarity in the set. About 1 in 6 packs has an Ultra Rare, 1 in 12 a Secret Rare. Free packs reset at midnight.</p>
@@ -826,8 +833,13 @@ function buildBoard() {
 // ---------- Card images (served and cached by api/ygo.php) ----------
 const imgUrl = (card, size = "") => `api/ygo.php?action=img&id=${card.id}${size ? "&size=" + size : ""}`;
 const texLoader = new THREE.TextureLoader(), texCache = new Map();
+// A picture as a texture; if it fails to load (a slow connection), it is tried again a few times
 function loadTex(url) {
-  if (!texCache.has(url)) { const t = texLoader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; texCache.set(url, t); }
+  if (!texCache.has(url)) {
+    const t = new THREE.Texture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; texCache.set(url, t);
+    const get = n => texLoader.load(url + (n ? `&try=${n}` : ""), img => { t.image = img.image; t.needsUpdate = true; }, undefined, () => { if (n < 4) setTimeout(() => get(n + 1), 1500 * (n + 1)); });
+    get(0);
+  }
   return texCache.get(url);
 }
 
@@ -861,7 +873,7 @@ function faceTexture(card) {
   });
 }
 function cardMesh(card) {
-  const face = new THREE.MeshStandardMaterial({ map: card.id ? loadTex(imgUrl(card)) : faceTexture(card), roughness: 0.55 }), back = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), edge = mat(0x1c1f26);
+  const face = new THREE.MeshStandardMaterial({ map: card.id ? loadTex(imgUrl(card, "small")) : faceTexture(card), roughness: 0.55 }), back = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), edge = mat(0x1c1f26);
   const m = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, 0.0015, CARD_H), [edge, edge, face, back, edge, edge]);
   m.userData.face = face; m.userData.back = back;
   return m;
@@ -1793,15 +1805,17 @@ async function api(params) {
 const errText = e => e.message === "Failed to fetch" ? "No internet connection." : e.message;
 
 // A new player gets one of the real starter decks, picked at random
+const NOT_STARTERS = ["Space-Time Showdown Power-Up Pack"]; // once handed out as a starter by mistake (only 15 cards)
 async function giveStarter() {
-  if (wallet.starter) return;
+  if (wallet.starter && !NOT_STARTERS.includes(wallet.starter)) return;
   try {
     const { starters } = await api({ action: "packs" }), code = starters[Math.floor(Math.random() * starters.length)];
     const { set, cards } = await api({ action: "set", code });
     for (const c of cards) own(c, c.rarities[0]);
-    if (decks.length < MAX_DECKS) decks.push({ name: set.name, ids: legalize(cards.map(c => c.id)) });
+    const bad = decks.findIndex(d => NOT_STARTERS.includes(d.name)); if (bad >= 0) decks.splice(bad, 1); // its cards stay in the collection
+    if (decks.length < MAX_DECKS) decks.push({ name: "Starter Deck", ids: legalize(cards.map(c => c.id)) });
     wallet.starter = set.name; saveColl(); saveDecks(); saveWallet();
-    toastHome(`Welcome! You got ${set.name} (${cards.length} cards) to start with. Enter a gate to duel!`);
+    toastHome(`Welcome! You got a Starter Deck (${cards.length} cards) to start with. Finish training, then enter a gate to duel!`);
     renderHome();
   } catch { $("#status").className = "err"; $("#status").textContent = "Could not load your starter deck. Check the internet connection and reopen the page."; }
 }
@@ -2011,13 +2025,14 @@ const setCache = new Map();
 let shopTab = null;
 const SHOP_LINES = ["Welcome to the Kame Game shop! What are you looking for today?", "Ah, a fine duelist! I have just the packs for you.", "Back again? Let's see what luck the cards bring you!", "Every pack holds a story. Which one will you open?"];
 const packImg = pk => pk.event ? (pk.event.set ? `api/ygo.php?action=img&set=${pk.event.set}` : pk.event.image ? imgUrl({ id: pk.event.image }) : "") : `api/ygo.php?action=img&set=${pk.code}`;
+let deckList = [];
 async function renderShop() {
   topUp();
   $("#shopCoins").textContent = wallet.coins; $("#shopFree").textContent = wallet.free;
   const box = $("#packs");
   if (!packList) {
     box.innerHTML = ""; box.append(note("Loading packs…"));
-    try { packList = (await api({ action: "packs" })).packs; } catch (e) { box.innerHTML = ""; box.append(note(errText(e))); return; }
+    try { const j = await api({ action: "packs" }); packList = j.packs; deckList = j.decks || []; } catch (e) { box.innerHTML = ""; box.append(note(errText(e))); return; }
   }
   const events = gm.events.filter(e => Date.parse(e.end) > nowMs());
   shopTab ??= events.length ? "events" : "packs";
@@ -2033,6 +2048,13 @@ async function renderShop() {
       tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: soon ? "SOON" : left <= 0 ? "SOLD OUT" : `${fmtLeft(Date.parse(ev.end) - nowMs())} left` }), el("b", { textContent: ev.name }));
       tile.onclick = () => openPackModal(pk); box.append(tile);
     }
+  } else if (shopTab === "decks") {
+    // real starter decks, sold whole: every card in the deck, ready to duel with
+    for (const pk of deckList.filter(p => !q || p.name.toLowerCase().includes(q))) {
+      const tile = el("button", { type: "button", className: "pack" });
+      tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: `${pk.price} coins` }), el("b", { textContent: pk.name }));
+      tile.onclick = () => buyStarter(pk); box.append(tile);
+    }
   } else {
     if (!packList.length) box.append(el("p", { className: "note center", textContent: "No packs on sale right now. Check back soon!" }));
     for (const pk of packList.filter(p => !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase() === q)) {
@@ -2045,6 +2067,16 @@ async function renderShop() {
 }
 for (const b of $("#shopTabs").children) b.addEventListener("click", () => { shopTab = b.dataset.tab; renderShop(); });
 $("#packFind").addEventListener("input", renderShop);
+async function buyStarter(pk) {
+  if (wallet.coins < pk.price) return gameAlert(`A starter deck costs ${pk.price} coins. Win duels, finish daily quests and collect login rewards to earn more.`, "Not enough coins");
+  if (!await gameConfirm(pk.name, `Buy the whole deck (${pk.count || "40+"} cards) for ${pk.price} coins? It's added to your cards and saved as a new deck, ready to duel with.`, `Buy · ${pk.price} coins`)) return;
+  let set, cards; try { ({ set, cards } = await api({ action: "set", code: pk.code })); } catch (e) { return gameAlert(errText(e), "Couldn't buy the deck"); }
+  wallet.coins -= pk.price;
+  for (const c of cards) own(c, c.rarities[0]);
+  const saved = decks.length < MAX_DECKS; if (saved) decks.push({ name: set.name, ids: legalize(cards.map(c => c.id)) });
+  saveColl(); saveDecks(); saveWallet(); renderShop(); renderHome();
+  gameAlert(`${cards.length} cards added to your collection.${saved ? ` The deck "${set.name}" is in Decks, ready to duel.` : ` You already have ${MAX_DECKS} decks, so it wasn't saved as a deck: build one in Decks.`}`, "Deck bought!");
+}
 function openPackModal(pk) {
   const ev = pk.event, m = $("#packModal"); m.hidden = false;
   $("#packImg").src = packImg(pk); $("#packName").textContent = pk.name;
@@ -2416,7 +2448,7 @@ function playVs(oppFace, oppName) {
 function coinToss(iWin, oppName, wait = false) {
   return new Promise(resolve => {
     const c = $("#coin"), f = $("#coinFace"), box = $("#coinBtns");
-    box.innerHTML = ""; $("#coinText").textContent = "Coin toss!"; c.hidden = false;
+    box.innerHTML = ""; $("#coinText").textContent = "Coin toss!"; c.hidden = false; $("#diceRow").hidden = true; f.hidden = false;
     f.className = "coinflip"; void f.offsetWidth; f.className = "coinflip spin" + (iWin ? "" : " tails");
     setTimeout(() => {
       if (iWin) {
@@ -2429,6 +2461,42 @@ function coinToss(iWin, oppName, wait = false) {
   });
 }
 const hideCoin = () => { $("#coin").hidden = true; };
+
+// ---------- Online: dice decide who calls the coin; the coin decides who chooses to go first or second ----------
+// Every roll and the coin come from the host's seed, so both phones show the same; only the call and the choice travel.
+function tossPlan() {
+  let a = Number(BigInt(net.hello[0].seed[0]) & 0xffffffffn) || 1;
+  const r = () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const rolls = [];
+  for (let k = 0; k < 20; k++) { const x = 1 + Math.floor(r() * 6), y = 1 + Math.floor(r() * 6); rolls.push([x, y]); if (x !== y) break; } // rolls[k] = [host, guest]
+  const [x, y] = rolls.at(-1);
+  return { rolls, caller: x >= y ? 0 : 1, heads: r() < 0.5 };
+}
+const tossText = t => { $("#coinText").textContent = t; };
+const tossButtons = list => { const box = $("#coinBtns"); box.innerHTML = ""; for (const [label, fn, cls] of list) box.append(el("button", { type: "button", className: "btn big " + (cls || ""), textContent: label, onclick: () => { box.innerHTML = ""; fn(); } })); };
+const pause = ms => new Promise(r => setTimeout(r, ms));
+async function rollDice(plan, me, them) {
+  const c = $("#coin"); c.hidden = false; $("#coinFace").hidden = true; $("#diceRow").hidden = false; $("#coinBtns").innerHTML = "";
+  $("#dieName0").textContent = "You"; $("#dieName1").textContent = them;
+  const dice = [$("#die0"), $("#die1")]; dice.forEach(d => d.parentElement.classList.remove("win"));
+  for (const [k, pair] of plan.rolls.entries()) {
+    tossText(k ? "A tie! Roll again…" : "Roll the dice! The higher number calls the coin.");
+    const mine = pair[me], theirs = pair[1 - me];
+    dice.forEach(d => { d.classList.remove("roll"); void d.offsetWidth; d.classList.add("roll"); });
+    const spin = setInterval(() => dice.forEach(d => { d.textContent = 1 + Math.floor(Math.random() * 6); }), 70);
+    await pause(900); clearInterval(spin);
+    dice[0].textContent = mine; dice[1].textContent = theirs;
+    await pause(k < plan.rolls.length - 1 ? 1100 : 500);
+  }
+  dice[plan.caller === me ? 0 : 1].parentElement.classList.add("win");
+}
+async function flipCoin(plan, me, them, call) {
+  $("#coin").hidden = false; $("#diceRow").hidden = true; $("#coinBtns").innerHTML = "";
+  const f = $("#coinFace"); f.hidden = false;
+  tossText(`${plan.caller === me ? "You" : them} called ${call ? "heads" : "tails"}.`);
+  f.className = "coinflip"; void f.offsetWidth; f.className = "coinflip spin" + (plan.heads ? "" : " tails");
+  await pause(1800);
+}
 
 // ---------- Starting a duel against the computer ----------
 function deckOptions(sel) {
@@ -2615,7 +2683,7 @@ const net = {
   // join a room (new, or after the page reloads): every move is read again from the start and replayed
   open(room) {
     this.room = room; store.put("room", room);
-    Object.assign(this, { after: 0, queue: [], hello: [null, null], replay: true, error: "", order: null, tossing: false });
+    Object.assign(this, { after: 0, queue: [], hello: [null, null], replay: true, error: "", order: null, coinCall: null, stage: null });
     if (!this.polling) this.loop();
   },
   close() { this.room = null; store.put("room", null); },
@@ -2636,6 +2704,7 @@ const net = {
   receive(m) {
     const mine = m.seat === this.room.seat, msg = m.msg;
     if (msg.t === "hello") { this.hello[m.seat] = msg; return maybeStart(); }
+    if (msg.t === "call") { if (this.coinCall == null) this.coinCall = msg.heads; return maybeStart(); }
     if (msg.t === "order") { this.order = msg.first; return maybeStart(); }
     if (mine && !this.replay) return; // already applied when it was sent
     if (S.vs?.room !== this.room.code) return;
@@ -2652,19 +2721,31 @@ function maybeStart() {
   const room = net.room, mine = net.hello[room.seat], theirs = net.hello[1 - room.seat];
   if (!mine || !theirs || S.vs?.room === room.code) return;
   if (net.order != null) return startOnline(net.order);
-  if (net.replay || net.tossing) return; // a choice made before a reload is still to come from the room
-  net.tossing = true;
-  const iWin = net.hello[0].coin === room.seat;
-  coinToss(iWin, theirs.name, true).then(choice => {
-    if (!iWin || net.order != null) return;
-    const first = choice === "first" ? room.seat : 1 - room.seat;
-    net.order = first; net.send({ t: "order", first }); startOnline(first);
+  if (net.replay) return; // a call or choice made before a reload is still to come from the room
+  const stage = net.coinCall == null ? "dice" : "coin";
+  if (net.stage === stage) return;
+  net.stage = stage;
+  const plan = tossPlan(), me = room.seat, them = theirs.name;
+  if (stage === "dice") return rollDice(plan, me, them).then(() => {
+    if (net.stage !== "dice") return;
+    if (plan.caller !== me) return tossText(`${them} rolled higher and is calling heads or tails…`);
+    tossText("You rolled higher! Call the coin:");
+    const call = heads => { if (net.coinCall != null) return; net.coinCall = heads; net.send({ t: "call", heads }); maybeStart(); };
+    tossButtons([["Heads", () => call(true), "primary"], ["Tails", () => call(false), "primary"]]);
+  });
+  flipCoin(plan, me, them, net.coinCall).then(() => {
+    if (net.order != null || S.vs?.room === room.code) return;
+    const winner = net.coinCall === plan.heads ? plan.caller : 1 - plan.caller, side_ = plan.heads ? "Heads" : "Tails";
+    if (winner !== me) return tossText(`${side_}! ${them} wins the toss and is choosing who goes first…`);
+    tossText(`${side_}! You win the toss. Go first or second?`);
+    const pick = first => { if (net.order != null) return; net.order = first; net.send({ t: "order", first }); startOnline(first); };
+    tossButtons([["Go first", () => pick(me), "primary"], ["Go second", () => pick(1 - me)]]);
   });
 }
 // the engine's player 0 goes first; both phones run the same engine with the host's seed
 function startOnline(first) {
   const room = net.room, me = room.seat === first ? 0 : 1, theirs = net.hello[1 - room.seat];
-  hideCoin(); net.tossing = false;
+  hideCoin(); net.stage = null;
   startEngine({ kind: "online", name: theirs.name, face: face(theirs.face || "Yugi_Muto"), room: room.code }, { seed: net.hello[0].seed, decks: [net.hello[first].deck, net.hello[1 - first].deck], me });
   S.catchup = net.replay; if (!$("#start").hidden) renderHome(); else renderRoom();
 }
@@ -2676,13 +2757,13 @@ function renderRoom() {
   $("#roomCode").textContent = r.code;
   const ready = S.vs?.room === r.code;
   $("#startRow").hidden = !ready; $("#roomSpin").hidden = ready;
-  st.textContent = net.error || (ready ? (S.over ? "This duel is over." : `${S.vs.name} is here. ${S.me === 0 ? "You go first." : `${S.vs.name} goes first.`} Start the duel:`) : net.hello[0] && net.hello[1] ? "Coin toss…" : r.seat === 0 ? "Waiting for your friend to join with this code…" : "Joining…");
+  st.textContent = net.error || (ready ? (S.over ? "This duel is over." : `${S.vs.name} is here. ${S.me === 0 ? "You go first." : `${S.vs.name} goes first.`} Start the duel:`) : net.hello[0] && net.hello[1] ? "Dice and coin toss…" : r.seat === 0 ? "Waiting for your friend to join with this code…" : "Joining…");
 }
 function myHello(first) {
   const deck = chosenDeck($("#myDeck"), $("#setupStatus")); if (!deck) return null;
   const name = profile.name || "Duelist";
-  // the host also tosses the coin (coin: the seat that won) and picks the seed both engines use
-  return { t: "hello", name, face: profile.face, deck: splitDeck(deck), coin: first, seed: first == null ? null : randSeed() };
+  // the host picks the seed both engines use; the dice and the coin before the duel come from it too
+  return { t: "hello", name, face: profile.face, deck: splitDeck(deck), seed: first == null ? null : randSeed() };
 }
 $("#roomCreate").addEventListener("click", async () => {
   const hello = myHello(Math.random() < 0.5 ? 0 : 1); if (!hello) return;
