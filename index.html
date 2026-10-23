@@ -2443,21 +2443,25 @@ function playVs(oppFace, oppName) {
 }
 
 // ---------- The coin toss: the winner chooses to go first or second ----------
-// coinToss(true) lets you choose and resolves to "first" or "second"; coinToss(false, name) shows the opponent won
-// (with wait: true it stays up until hideCoin(), while the other phone chooses).
-function coinToss(iWin, oppName, wait = false) {
+// Against the computer: you call heads or tails, the coin is flipped, and if you win you choose to go first or second
+// (the computer goes first when it wins). Resolves to 0 if you go first, 1 if the computer does.
+function coinToss(oppName) {
   return new Promise(resolve => {
-    const c = $("#coin"), f = $("#coinFace"), box = $("#coinBtns");
-    box.innerHTML = ""; $("#coinText").textContent = "Coin toss!"; c.hidden = false; $("#diceRow").hidden = true; f.hidden = false;
-    f.className = "coinflip"; void f.offsetWidth; f.className = "coinflip spin" + (iWin ? "" : " tails");
-    setTimeout(() => {
-      if (iWin) {
-        $("#coinText").textContent = "You won the toss! Go first or second?";
-        const pick = v => () => { c.hidden = true; resolve(v); };
-        box.append(el("button", { type: "button", className: "btn primary big", textContent: "Go first", onclick: pick("first") }), el("button", { type: "button", className: "btn big", textContent: "Go second", onclick: pick("second") }));
-      } else if (wait) $("#coinText").textContent = `${oppName} won the toss and is choosing…`;
-      else { $("#coinText").textContent = `${oppName} won the toss and goes first.`; setTimeout(() => { c.hidden = true; resolve(null); }, 1400); }
-    }, 1700);
+    const c = $("#coin"), f = $("#coinFace"), box = $("#coinBtns"), done = first => { c.hidden = true; resolve(first); };
+    c.hidden = false; $("#diceRow").hidden = true; f.hidden = false; f.className = "coinflip";
+    $("#coinText").textContent = "Coin toss! Call it:"; box.innerHTML = "";
+    const call = heads => {
+      box.innerHTML = ""; const isHeads = Math.random() < 0.5, win = heads === isHeads;
+      $("#coinText").textContent = `You called ${heads ? "heads" : "tails"}.`;
+      void f.offsetWidth; f.className = "coinflip spin" + (isHeads ? "" : " tails");
+      setTimeout(() => {
+        const side_ = isHeads ? "Heads" : "Tails";
+        if (!win) { $("#coinText").textContent = `${side_}! ${oppName} wins the toss and goes first.`; setTimeout(() => done(1), 1600); return; }
+        $("#coinText").textContent = `${side_}! You win the toss. Go first or second?`;
+        box.append(el("button", { type: "button", className: "btn primary big", textContent: "Go first", onclick: () => done(0) }), el("button", { type: "button", className: "btn big", textContent: "Go second", onclick: () => done(1) }));
+      }, 1800);
+    };
+    box.append(el("button", { type: "button", className: "btn primary big", textContent: "Heads", onclick: () => call(true) }), el("button", { type: "button", className: "btn primary big", textContent: "Tails", onclick: () => call(false) }));
   });
 }
 const hideCoin = () => { $("#coin").hidden = true; };
@@ -2528,7 +2532,7 @@ async function beginDuel(view, opp, sel, status) {
   toast(first === 0 ? "You go first" : `${vs.name} goes first`);
 }
 // against the computer: if it wins the toss it chooses to go first
-async function tossForFirst(name) { const win = Math.random() < 0.5, choice = await coinToss(win, name); return win ? (choice === "first" ? 0 : 1) : 1; }
+const tossForFirst = name => coinToss(name);
 async function enterView(view) {
   if (!duelLive() && saved) resumeSaved(); // a duel saved before the page reloaded
   if (view === "xr") { try { await startXR(); } catch (e) { toastHome("Could not start AR: " + (e.message || e)); show("start"); return; } }
