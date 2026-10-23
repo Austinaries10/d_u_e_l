@@ -7,12 +7,17 @@
 //   POST ?action=load     {password}       everything, for the GM page
 //   POST ?action=save     {password, config}
 //   POST ?action=official {password}       the current official TCG Forbidden & Limited list from YGOPRODeck
+//   POST ?action=players  {password, q}    players (name, coins, cards, last seen), newest activity first
+//   POST ?action=player   {password, name} one player's account and save
+//   POST ?action=updatePlayer {password, name, state?, banned?, newPassword?}
+//                                          change a player's save; their game reloads it the next time it syncs
 
 declare(strict_types=1);
 
 const DATA = __DIR__ . '/../server/data';
 const GM_FILE = DATA . '/gm.json';
 const STATUS = ['Forbidden' => 0, 'Limited' => 1, 'Semi-Limited' => 2];
+const USERS = __DIR__ . '/../server/data/users';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -88,7 +93,21 @@ function clean(array $c): array
             'cards' => $set ? [] : $list,
         ];
     }
+    // the shop: which packs are sold, at what price, between which times (blank start/end = always)
+    $shop = [];
+    foreach ((array)($c['shop'] ?? []) as $l) {
+        if (!preg_match('/^[A-Z0-9-]{2,8}$/', (string)($l['code'] ?? ''))) {
+            continue;
+        }
+        $start = ($l['start'] ?? '') !== '' ? (strtotime((string)$l['start']) ?: fail(400, 'A shop pack has a bad start time.')) : null;
+        $end = ($l['end'] ?? '') !== '' ? (strtotime((string)$l['end']) ?: fail(400, 'A shop pack has a bad end time.')) : null;
+        if ($start && $end && $end <= $start) {
+            fail(400, "The pack {$l['code']} must end after it starts.");
+        }
+        $shop[] = ['code' => (string)$l['code'], 'price' => max(0, min(100000, (int)($l['price'] ?? 100))), 'start' => $start ? gmdate('c', $start) : '', 'end' => $end ? gmdate('c', $end) : '', 'enabled' => !empty($l['enabled'])];
+    }
     return [
+        'shop' => $shop,
         'banlist' => ['name' => mb_substr(trim((string)($c['banlist']['name'] ?? '')), 0, 60), 'cards' => (object)$cards],
         'disabledPacks' => array_values(array_filter((array)($c['disabledPacks'] ?? []), fn($x) => is_string($x) && preg_match('/^[A-Z0-9]{2,6}$/', $x))),
         'events' => $events,
@@ -110,7 +129,10 @@ if ($action === 'config') {
 
 if ($action === 'load') {
     requireGm($in);
-    echo json_encode(gmConfig() + ['now' => gmdate('c')]);
+    $c = gmConfig();
+    // until the GM saves a shop of their own, show the default lineup the game is selling
+    $c['shop'] ??= array_map(fn($code) => ['code' => $code, 'price' => 100, 'start' => '', 'end' => '', 'enabled' => true], ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC']);
+    echo json_encode($c + ['now' => gmdate('c')]);
     exit;
 }
 
@@ -139,6 +161,77 @@ if ($action === 'official') {
         }
     }
     echo json_encode(['cards' => $cards]);
+    exit;
+}
+
+if ($action === 'players') {
+    requireGm($in);
+    $q = strtolower(trim((string)($in['q'] ?? '')));
+    $out = [];
+    foreach (glob(USERS . '/*.json') ?: [] as $f) {
+        if ($q !== '' && !str_contains(basename($f, '.json'), $q)) {
+            continue;
+        }
+        $u = json_decode((string)file_get_contents($f), true) ?: [];
+        $cards = $u['state']['cards'] ?? [];
+        $out[] = ['name' => $u['name'] ?? basename($f, '.json'), 'created' => $u['created'] ?? 0, 'seen' => $u['seen'] ?? 0, 'banned' => !empty($u['banned']),
+            'coins' => $u['state']['wallet']['coins'] ?? 0, 'unique' => is_array($cards) ? count($cards) : 0,
+            'total' => is_array($cards) ? array_sum(array_map(fn($e) => (int)($e['n'] ?? 0), $cards)) : 0,
+            'wins' => array_sum(array_map('intval', (array)($u['state']['charWins'] ?? [])))];
+    }
+    usort($out, fn($a, $b) => $b['seen'] <=> $a['seen']);
+    echo json_encode(['players' => array_slice($out, 0, 300), 'count' => count($out)]);
+    exit;
+}
+
+// Lock a player's file, let $fn change it, write it back
+function editPlayer(string $name, callable $fn): array
+{
+    preg_match('/^[A-Za-z0-9_]{3,20}$/', $name) || fail(400, 'Bad player name.');
+    $file = USERS . '/' . strtolower($name) . '.json';
+    is_file($file) || fail(404, 'No player with that name.');
+    $h = fopen($file, 'c+');
+    flock($h, LOCK_EX);
+    $u = json_decode((string)stream_get_contents($h), true) ?: fail(500, 'The account file is damaged.');
+    $u = $fn($u);
+    ftruncate($h, 0);
+    rewind($h);
+    fwrite($h, json_encode($u));
+    fflush($h);
+    flock($h, LOCK_UN);
+    fclose($h);
+    return $u;
+}
+
+if ($action === 'player') {
+    requireGm($in);
+    $u = editPlayer((string)($in['name'] ?? ''), fn($u) => $u);
+    echo json_encode(['name' => $u['name'], 'created' => $u['created'] ?? 0, 'seen' => $u['seen'] ?? 0, 'banned' => !empty($u['banned']), 'rev' => $u['rev'] ?? 0, 'state' => $u['state'] ?? null]);
+    exit;
+}
+
+if ($action === 'updatePlayer') {
+    requireGm($in);
+    $u = editPlayer((string)($in['name'] ?? ''), function (array $u) use ($in) {
+        if (isset($in['state']) && is_array($in['state'])) {
+            strlen(json_encode($in['state'])) <= 3000000 || fail(413, 'That save is too large.');
+            $u['state'] = $in['state'];
+            $u['rev'] = (int)($u['rev'] ?? 0) + 1; // the player's game sees a newer save and reloads it
+        }
+        if (isset($in['banned'])) {
+            $u['banned'] = (bool)$in['banned'];
+            if ($u['banned']) {
+                $u['tokens'] = [];
+            }
+        }
+        if (($in['newPassword'] ?? '') !== '') {
+            strlen((string)$in['newPassword']) >= 6 || fail(400, 'Use a password of at least 6 characters.');
+            $u['hash'] = password_hash((string)$in['newPassword'], PASSWORD_DEFAULT);
+            $u['tokens'] = [];
+        }
+        return $u;
+    });
+    echo json_encode(['ok' => true, 'rev' => $u['rev'] ?? 0]);
     exit;
 }
 

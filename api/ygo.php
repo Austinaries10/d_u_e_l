@@ -8,7 +8,7 @@
 //        &kind=monster|spell|trap &attribute=LIGHT &race=Dragon &level=8 &archetype=Blue-Eyes
 //        &sort=name|atk|def|level|type &offset=40
 //   ?action=archetypes               all archetype names
-//   ?action=packs                    the booster packs sold in the shop
+//   ?action=packs                    the packs on sale in the shop right now (chosen by the GM), and the starter decks
 //   ?action=set&code=LOB             every card in a set, with its rarities in that set
 //   ?action=set&event=ID             the cards of a limited pack event, only while the event is on
 //   ?action=sets                     every set in the database (for the GM page)
@@ -77,7 +77,7 @@ function trimCard(array $c): array
     ];
 }
 
-// Real booster sets sold in the shop, by set code
+// Booster sets suggested to the GM for the shop (the GM can list any set; see gm.html)
 const PACKS = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC', 'DCR', 'IOC', 'AST', 'SOD', 'RDS', 'FET', 'TLM', 'CRV', 'EEN', 'SOI', 'EOJ', 'POTD', 'CDIP',
     'STON', 'FOTB', 'TAEV', 'GLAS', 'PTDN', 'LODT', 'TDGS', 'CSOC', 'DLG1', 'CRMS', 'RGBT', 'ANPR', 'SOVR', 'ABPF', 'TSHD', 'DREV', 'STBL', 'STOR', 'EXVC', 'GENF',
     'PHSW', 'ORCS', 'GAOV', 'REDU', 'ABYR', 'CBLZ', 'LTGY', 'NUMH', 'JOTL', 'SHSP', 'LVAL', 'PRIO', 'DUEA', 'NECH', 'SECE', 'THSF', 'CROS', 'CORE', 'HSRD', 'DOCS',
@@ -85,8 +85,23 @@ const PACKS = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC', 'DCR', 'I
     'HISU', 'SAST', 'DANE', 'BLHR', 'RIRA', 'FIGA', 'CHIM', 'MYFI', 'IGAS', 'DUOV', 'SESL', 'ETCO', 'BLAR', 'ROTD', 'PHRA', 'GEIM', 'BLVO', 'ANGU', 'LIOV', 'KICO',
     'DAMA', 'BROL', 'GRCR', 'BACH', 'DIFO', 'POTE', 'TAMA', 'DABL', 'MAMA', 'BLCR', 'AMDE', 'PHHY', 'MAZE', 'CYAC', 'WISU', 'BLMR', 'DUNE', 'AGOV', 'VASM', 'MZMI',
     'PHNI', 'LEDE', 'BLTR', 'INFO', 'ROTA', 'CRBR', 'SUDA', 'MZTM', 'ALIN', 'JUSH', 'DOOD', 'PHRE', 'BPRO', 'MZMU', 'BLZD', 'CORI', 'MAMO', 'BETB'];
-// Starter decks, one of which is given to a new player
-const STARTERS = ['SDY', 'SDK', 'SDJ', 'SDP'];
+// Starter decks without a main character's name, one of which is given to a new player
+const STARTERS = ['YSD', '5DS1', '5DS2', '5DS3', 'YS11', 'YS12', 'YS14', 'YS17', 'YS18'];
+// What the shop sells until the GM chooses: the first booster packs, 100 coins each
+const DEFAULT_SHOP = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC'];
+// The GM's shop listings that are on sale now or coming soon: [{code, price, start, end, enabled}]
+function shopListings(array $gm, bool $onlyNow): array
+{
+    $list = isset($gm['shop']) && is_array($gm['shop']) ? $gm['shop'] : array_map(fn($c) => ['code' => $c, 'price' => 100, 'start' => '', 'end' => '', 'enabled' => true], DEFAULT_SHOP);
+    $now = time();
+    return array_values(array_filter($list, fn($l) => !empty($l['enabled']) && (($l['end'] ?? '') === '' || strtotime($l['end']) > $now)
+        && (!$onlyNow || ($l['start'] ?? '') === '' || strtotime($l['start']) <= $now)));
+}
+function gmSettings(): array
+{
+    $f = __DIR__ . '/../server/data/gm.json';
+    return is_file($f) ? (json_decode((string)file_get_contents($f), true) ?: []) : [];
+}
 
 // All sets in the database (name, code, date), cached for a day
 function allSets(): array
@@ -189,15 +204,26 @@ if ($action === 'img') {
         preg_match('/^[A-Z0-9]{2,5}$/', (string)$_GET['set']) || fail(400, 'Bad set code.');
         [$folder, $id] = ['sets', (string)$_GET['set']];
     }
-    $file = cacheDir('img/' . $folder) . "/$id.jpg";
+    $file = cacheDir('img/' . $folder) . "/$id" . ($folder === 'sets' ? '-v2' : '') . '.jpg'; // v2: pack art may come from Yugipedia
     if (!is_file($file)) {
         $body = fetchUrl(IMG . "$folder/$id.jpg");
-        if ($body === null || strlen($body) < 1000 || substr($body, 0, 2) !== "\xFF\xD8") {
+        if ($folder === 'sets') {
+            // pack art: keep Yugipedia's picture of the pack instead when it is larger (older packs especially)
+            $name = allSets()[$id]['name'] ?? null;
+            $json = $name ? json_decode((string)fetchUrl('https://yugipedia.com/api.php?' . http_build_query(['action' => 'query', 'redirects' => 1, 'titles' => $name, 'prop' => 'pageimages', 'pithumbsize' => 1000, 'format' => 'json'])), true) : null;
+            $src = (string)(current($json['query']['pages'] ?? []) ?: [])['thumbnail']['source'] ?? '';
+            $alt = $src !== '' ? fetchUrl($src) : null;
+            $width = fn($b) => $b !== null && ($i = @getimagesizefromstring($b)) ? $i[0] : 0;
+            if ($alt !== null && $width($alt) > $width($body)) {
+                $body = $alt;
+            }
+        }
+        if ($body === null || strlen($body) < 1000 || !@getimagesizefromstring($body)) {
             fail(404, 'No image for that card.');
         }
         @file_put_contents($file, $body, LOCK_EX);
     }
-    header('Content-Type: image/jpeg');
+    header('Content-Type: ' . ((@getimagesize($file)['mime'] ?? '') ?: 'image/jpeg'));
     header('Cache-Control: public, max-age=31536000, immutable');
     readfile($file);
     exit;
@@ -287,10 +313,15 @@ if ($action === 'archetypes') {
 }
 
 if ($action === 'packs') {
+    header('Cache-Control: no-store');
     $sets = allSets();
-    $packs = array_values(array_filter(array_map(fn($c) => $sets[$c] ?? null, PACKS)));
-    usort($packs, fn($a, $b) => strcmp($b['date'], $a['date']));
-    echo json_encode(['packs' => $packs, 'starters' => STARTERS]);
+    $packs = [];
+    foreach (shopListings(gmSettings(), false) as $l) {
+        if (isset($sets[$l['code']])) {
+            $packs[] = $sets[$l['code']] + ['price' => (int)$l['price'], 'start' => (string)($l['start'] ?? ''), 'end' => (string)($l['end'] ?? '')];
+        }
+    }
+    echo json_encode(['packs' => $packs, 'starters' => STARTERS, 'suggested' => PACKS, 'now' => gmdate('c')]);
     exit;
 }
 
@@ -300,7 +331,7 @@ if ($action === 'sets') {
 }
 
 if ($action === 'set') {
-    $gm = is_file(__DIR__ . '/../server/data/gm.json') ? (json_decode((string)file_get_contents(__DIR__ . '/../server/data/gm.json'), true) ?: []) : [];
+    $gm = gmSettings();
     $code = (string)($_GET['code'] ?? '');
     if (isset($_GET['event'])) {
         // a limited pack: only while the GM has it switched on and inside its time frame
@@ -312,8 +343,8 @@ if ($action === 'set') {
         }
         $code = $ev['set'];
     } else {
-        in_array($code, PACKS, true) || in_array($code, STARTERS, true) || fail(400, 'Unknown pack.');
-        in_array($code, $gm['disabledPacks'] ?? [], true) && fail(403, 'That pack is not on sale right now.');
+        // a starter deck, or a pack the GM has on sale right now
+        in_array($code, STARTERS, true) || in_array($code, array_column(shopListings($gm, true), 'code'), true) || fail(403, 'That pack is not on sale right now.');
     }
     $set = allSets()[$code] ?? fail(404, 'Unknown pack.');
     $file = cacheDir('data') . "/set-$code.json";

@@ -51,6 +51,8 @@
   .bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 12px); background: rgba(13,17,23,.94); border-top: 1px solid var(--line); }
   .bar .row { max-width: 860px; margin: 0 auto; }
   #saveStatus { font-size: 13px; color: var(--muted); } #saveStatus.err, .err { color: var(--danger); }
+  .dlg { position: fixed; inset: 0; z-index: 50; background: rgba(4,6,14,.72); display: grid; place-items: center; padding: 16px; }
+  .dlg .card { max-width: 400px; width: 100%; text-align: center; background: linear-gradient(180deg, #1f2752, #121733); }
   .check { display: flex; gap: 8px; align-items: center; font-size: 14px; } .check input { width: auto; }
 </style>
 </head>
@@ -66,8 +68,9 @@
   <div id="gm" hidden>
     <div class="tabs row" id="tabs">
       <button class="btn small" type="button" data-tab="ban" aria-pressed="true">Forbidden &amp; Limited</button>
-      <button class="btn small" type="button" data-tab="packs" aria-pressed="false">Packs on sale</button>
+      <button class="btn small" type="button" data-tab="packs" aria-pressed="false">Shop</button>
       <button class="btn small" type="button" data-tab="events" aria-pressed="false">Limited events</button>
+      <button class="btn small" type="button" data-tab="players" aria-pressed="false">Players</button>
     </div>
 
     <section class="card" data-panel="ban" style="margin-top:16px">
@@ -84,11 +87,20 @@
     </section>
 
     <section class="card" data-panel="packs" hidden style="margin-top:16px">
-      <h2>Booster packs on sale</h2>
-      <p>Untick a pack to take it off sale in the Shop straight away (after you save). Starter decks given to new players are not affected.</p>
-      <div class="row"><label class="field" style="flex:1 1 220px">Find<input id="packFilter" placeholder="Pack name or code" autocomplete="off"></label><button class="btn small" id="allOn" type="button">All on sale</button><button class="btn small" id="allOff" type="button">None on sale</button></div>
-      <p id="packCount"></p>
-      <div class="packs" id="packList"></div>
+      <h2>Packs in the Shop</h2>
+      <p>Only the packs listed here are sold. Give each a price in coins and, if you like, a start and end time (leave them empty to sell it all the time). Daily free packs can be used on these. Limited events have their own tab.</p>
+      <div class="row"><label class="field" style="flex:1 1 240px">Add a pack<input id="shopAdd" list="setNames" placeholder="Type a set name" autocomplete="off"></label><button class="btn primary" id="shopAddBtn" type="button">Add</button></div>
+      <p id="shopCount"></p>
+      <div class="list" id="shopList" style="gap:12px"></div>
+    </section>
+
+    <section class="card" data-panel="players" hidden style="margin-top:16px">
+      <h2>Players</h2>
+      <p>Look up a player to change their coins, free packs, cards and progress, reset their password or suspend the account. Changes are saved straight away (no need for Save changes below); the player's game picks them up the next time it opens or syncs.</p>
+      <div class="row"><label class="field" style="flex:1 1 220px">Find a player<input id="playerFind" placeholder="Name" autocomplete="off"></label><button class="btn" id="playerFindBtn" type="button">Search</button></div>
+      <p id="playerCount"></p>
+      <div class="list" id="playerList"></div>
+      <div id="playerEdit" hidden></div>
     </section>
 
     <section class="card" data-panel="events" hidden style="margin-top:16px">
@@ -101,13 +113,14 @@
 </main>
 <div class="bar" id="bar" hidden><div class="row"><button class="btn primary" id="save" type="button">Save changes</button><span id="saveStatus"></span></div></div>
 <datalist id="setNames"></datalist>
+<div class="dlg" id="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="dlgTitle"><div class="card"><h2 id="dlgTitle"></h2><p id="dlgText"></p><div class="row" id="dlgBtns" style="justify-content:center"></div></div></div>
 
 <script>
 const $ = s => document.querySelector(s);
 const el = (tag, props = {}, ...kids) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e; };
 const LIMITS = ["Forbidden", "Limited", "Semi-Limited"];
 const RARITIES = ["Common", "Rare", "Super Rare", "Ultra Rare", "Secret Rare", "Ultimate Rare", "Quarter Century Secret Rare", "Collector's Rare", "Ghost Rare", "Starlight Rare"];
-let password = "", cfg = null, packs = [], sets = [], dirty = false;
+let password = "", cfg = null, sets = [], dirty = false;
 
 async function call(action, body) {
   const r = await fetch("api/gm.php?action=" + action, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password, ...body }) });
@@ -120,6 +133,16 @@ async function ygo(params) {
   if (!r.ok || j.error) throw new Error(j.error || `Server error ${r.status}`);
   return j;
 }
+// A styled confirmation box instead of the browser's own
+function ask(title, text, ok, danger) {
+  return new Promise(resolve => {
+    $("#dlgTitle").textContent = title; $("#dlgText").textContent = text;
+    const box = $("#dlgBtns"); box.innerHTML = "";
+    const done = v => { $("#dialog").hidden = true; resolve(v); };
+    box.append(el("button", { type: "button", className: "btn", textContent: "Cancel", onclick: () => done(false) }), el("button", { type: "button", className: "btn " + (danger ? "danger" : "primary"), textContent: ok, onclick: () => done(true) }));
+    $("#dialog").hidden = false;
+  });
+}
 const errText = e => e.message === "Failed to fetch" ? "No internet connection." : e.message;
 function changed() { dirty = true; $("#saveStatus").className = ""; $("#saveStatus").textContent = "Unsaved changes"; }
 addEventListener("beforeunload", e => { if (dirty) e.preventDefault(); });
@@ -130,7 +153,7 @@ async function open() {
   try {
     cfg = await call("load");
     cfg.banlist.cards = Array.isArray(cfg.banlist.cards) ? {} : cfg.banlist.cards;
-    [packs, sets] = await Promise.all([ygo({ action: "packs" }).then(j => j.packs), ygo({ action: "sets" }).then(j => j.sets)]);
+    sets = (await ygo({ action: "sets" })).sets;
     $("#setNames").innerHTML = ""; for (const s of sets) $("#setNames").append(el("option", { value: `${s.name} (${s.code})` }));
     try { sessionStorage.setItem("gmPass", password); } catch {}
     $("#login").hidden = true; $("#gm").hidden = false; $("#bar").hidden = false;
@@ -161,7 +184,7 @@ function renderBan() {
 $("#banName").addEventListener("input", () => { cfg.banlist.name = $("#banName").value; changed(); });
 $("#banFilter").addEventListener("input", renderBan);
 $("#official").addEventListener("click", async () => {
-  if (Object.keys(cfg.banlist.cards).length && !confirm("Replace the current list with the latest official TCG list?")) return;
+  if (Object.keys(cfg.banlist.cards).length && !await ask("Replace the list?", "The current list will be replaced with the latest official TCG list.", "Replace")) return;
   $("#banStatus").textContent = "Loading…";
   try {
     const { cards } = await call("official");
@@ -169,7 +192,7 @@ $("#official").addEventListener("click", async () => {
     $("#banStatus").textContent = `Loaded ${Object.keys(cards).length} cards. Press Save to put it in force.`; changed(); renderBan();
   } catch (e) { $("#banStatus").textContent = errText(e); }
 });
-$("#banClear").addEventListener("click", () => { if (!confirm("Remove every card from the list?")) return; cfg.banlist.cards = {}; changed(); renderBan(); });
+$("#banClear").addEventListener("click", async () => { if (!await ask("Clear the list?", "Every card will be removed from the Forbidden & Limited list.", "Clear", true)) return; cfg.banlist.cards = {}; changed(); renderBan(); });
 async function findCards(q, box, actions) {
   box.innerHTML = ""; if (q.length < 2) return;
   try {
@@ -182,19 +205,31 @@ const banSearch = () => findCards($("#banFind").value.trim(), $("#banResults"), 
 $("#banFindBtn").addEventListener("click", banSearch);
 $("#banFind").addEventListener("keydown", e => { if (e.key === "Enter") banSearch(); });
 
-// ---------- Packs on sale ----------
+// ---------- Packs in the Shop ----------
 function renderPacks() {
-  const q = $("#packFilter").value.trim().toLowerCase(), box = $("#packList"); box.innerHTML = "";
-  $("#packCount").textContent = `${packs.length - cfg.disabledPacks.length} of ${packs.length} packs on sale`;
-  for (const p of packs.filter(p => !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase() === q)) {
-    const cb = el("input", { type: "checkbox", checked: !cfg.disabledPacks.includes(p.code) });
-    cb.onchange = () => { cfg.disabledPacks = cfg.disabledPacks.filter(c => c !== p.code); if (!cb.checked) cfg.disabledPacks.push(p.code); changed(); renderPacks(); };
-    box.append(el("label", {}, cb, el("span", { textContent: `${p.name} (${p.code}, ${p.date.slice(0, 4)})` })));
-  }
+  const box = $("#shopList"); box.innerHTML = "";
+  cfg.shop ??= [];
+  const now = Date.now();
+  $("#shopCount").textContent = `${cfg.shop.filter(l => l.enabled && (!l.end || Date.parse(l.end) > now) && (!l.start || Date.parse(l.start) <= now)).length} on sale now · ${cfg.shop.length} listed`;
+  cfg.shop.forEach((l, k) => {
+    const set = sets.find(x => x.code === l.code), status = !l.enabled ? ["off", "Off"] : l.end && Date.parse(l.end) <= now ? ["off", "Ended"] : l.start && Date.parse(l.start) > now ? ["soon", "Starts " + new Date(l.start).toLocaleString()] : ["on", "On sale"];
+    const price = el("input", { type: "number", min: 0, step: 10, value: l.price }), start = el("input", { type: "datetime-local", value: l.start ? toLocal(l.start) : "" }), end = el("input", { type: "datetime-local", value: l.end ? toLocal(l.end) : "" });
+    price.oninput = () => { l.price = Math.max(0, +price.value || 0); changed(); };
+    start.onchange = () => { l.start = fromLocal(start.value); changed(); renderPacks(); }; end.onchange = () => { l.end = fromLocal(end.value); changed(); renderPacks(); };
+    const on = el("input", { type: "checkbox", checked: l.enabled }); on.onchange = () => { l.enabled = on.checked; changed(); renderPacks(); };
+    box.append(el("div", { className: "card" },
+      el("div", { className: "row", style: "justify-content:space-between" }, el("b", { textContent: `${set?.name || l.code} (${l.code})` }), el("span", { className: "pill " + status[0], textContent: status[1] })),
+      el("div", { className: "form" }, el("label", { className: "field" }, "Price (coins)", price), el("label", { className: "field" }, "Starts (optional)", start), el("label", { className: "field" }, "Ends (optional)", end)),
+      el("div", { className: "row" }, el("label", { className: "check" }, on, "On sale"),
+        el("button", { type: "button", className: "btn small", textContent: "End now", onclick: () => { l.end = new Date().toISOString(); if (l.start && Date.parse(l.start) >= Date.parse(l.end)) l.start = ""; changed(); renderPacks(); } }),
+        el("button", { type: "button", className: "btn small danger", textContent: "Remove", onclick: () => { cfg.shop.splice(k, 1); changed(); renderPacks(); } }))));
+  });
 }
-$("#packFilter").addEventListener("input", renderPacks);
-$("#allOn").addEventListener("click", () => { cfg.disabledPacks = []; changed(); renderPacks(); });
-$("#allOff").addEventListener("click", () => { if (!confirm("Take every booster pack off sale?")) return; cfg.disabledPacks = packs.map(p => p.code); changed(); renderPacks(); });
+$("#shopAddBtn").addEventListener("click", () => {
+  const m = $("#shopAdd").value.match(/\(([A-Z0-9-]+)\)\s*$/); if (!m) return;
+  cfg.shop ??= []; if (cfg.shop.some(l => l.code === m[1])) return;
+  cfg.shop.unshift({ code: m[1], price: 100, start: "", end: "", enabled: true }); $("#shopAdd").value = ""; changed(); renderPacks();
+});
 
 // ---------- Limited events ----------
 // datetime-local inputs use this phone's time zone; the server stores UTC
@@ -257,7 +292,7 @@ function eventCard(ev, k) {
   }
   card.append(el("div", { className: "row" },
     el("button", { type: "button", className: "btn small", textContent: "End now", onclick: () => { ev.end = new Date().toISOString(); if (Date.parse(ev.start) >= Date.parse(ev.end)) ev.start = new Date(Date.now() - 60000).toISOString(); changed(); renderEvents(); } }),
-    el("button", { type: "button", className: "btn small danger", textContent: "Delete event", onclick: () => { if (confirm(`Delete "${ev.name || "this event"}"?`)) { cfg.events.splice(k, 1); changed(); renderEvents(); } } })));
+    el("button", { type: "button", className: "btn small danger", textContent: "Delete event", onclick: async () => { if (await ask(`Delete "${ev.name || "this event"}"?`, "The event and its pack are removed.", "Delete", true)) { cfg.events.splice(k, 1); changed(); renderEvents(); } } })));
   return card;
 }
 $("#newEvent").addEventListener("click", () => {
@@ -266,6 +301,79 @@ $("#newEvent").addEventListener("click", () => {
   cfg.events.unshift({ name: "", about: "", start: start.toISOString(), end: end.toISOString(), enabled: true, price: 200, limit: 0, set: null, image: null, cards: [] });
   changed(); renderEvents();
 });
+
+// ---------- Players ----------
+const RARITY_LIST = ["Common", "Rare", "Super Rare", "Ultra Rare", "Secret Rare", "Ultimate Rare", "Quarter Century Secret Rare", "Ghost Rare", "Starlight Rare"];
+const ago = t => { if (!t) return "never"; const m = Math.round((Date.now() / 1000 - t) / 60); return m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; };
+async function findPlayers() {
+  const box = $("#playerList"); box.innerHTML = ""; $("#playerEdit").hidden = true;
+  try {
+    const j = await call("players", { q: $("#playerFind").value.trim() });
+    $("#playerCount").textContent = `${j.count} player${j.count === 1 ? "" : "s"}`;
+    for (const u of j.players) box.append(el("div", { className: "item" }, el("b", { textContent: `${u.name}${u.banned ? " (suspended)" : ""}` }),
+      el("span", { className: "note", textContent: `${u.coins} coins · ${u.total} cards · ${u.wins} wins · seen ${ago(u.seen)}` }),
+      el("button", { type: "button", className: "btn small primary", textContent: "Open", onclick: () => openPlayer(u.name) })));
+  } catch (e) { $("#playerCount").textContent = errText(e); }
+}
+$("#playerFindBtn").addEventListener("click", findPlayers);
+$("#playerFind").addEventListener("keydown", e => { if (e.key === "Enter") findPlayers(); });
+async function openPlayer(name) {
+  const box = $("#playerEdit"); box.hidden = false; box.innerHTML = ""; box.append(el("p", { textContent: "Loading…" }));
+  let u; try { u = await call("player", { name }); } catch (e) { box.innerHTML = ""; box.append(el("p", { className: "err", textContent: errText(e) })); return; }
+  const st = u.state || {}; st.wallet ??= { coins: 0, free: 0 }; st.cards ??= {}; st.charWins ??= {};
+  const save = async (extra = {}) => {
+    const msg = box.querySelector(".pmsg"); msg.textContent = "Saving…";
+    try { await call("updatePlayer", { name: u.name, state: st, ...extra }); msg.textContent = "Saved. The player's game will load it the next time it opens or syncs."; }
+    catch (e) { msg.textContent = errText(e); }
+  };
+  const render = () => {
+    box.innerHTML = "";
+    const card = el("div", { className: "card" });
+    card.append(el("div", { className: "row", style: "justify-content:space-between" }, el("h2", { textContent: u.name }), el("span", { className: "pill " + (u.banned ? "off" : "on"), textContent: u.banned ? "Suspended" : "Active" })),
+      el("p", { textContent: `Joined ${new Date(u.created * 1000).toLocaleDateString()} · last seen ${ago(u.seen)} · ${(st.decklist || []).length} decks` }));
+    const coins = el("input", { type: "number", min: 0, value: st.wallet.coins || 0 }), free = el("input", { type: "number", min: 0, max: 99, value: st.wallet.free || 0 });
+    coins.oninput = () => { st.wallet.coins = Math.max(0, +coins.value || 0); }; free.oninput = () => { st.wallet.free = Math.max(0, +free.value || 0); };
+    card.append(el("div", { className: "form" }, el("label", { className: "field" }, "Coins", coins), el("label", { className: "field" }, "Free packs left today", free)));
+    // cards
+    const ids = Object.keys(st.cards), total = ids.reduce((n, id) => n + (st.cards[id].n || 0), 0);
+    card.append(el("h2", { textContent: `Cards (${ids.length} different, ${total} in all)` }));
+    const find = el("input", { placeholder: "Search a card to give", autocomplete: "off" }), res = el("div", { className: "results" }), rar = el("select");
+    for (const r of RARITY_LIST) rar.append(new Option(r, r));
+    const give = c => { const { inText, ...cc } = c; const e = st.cards[c.id] ??= { card: cc, n: 0, r: "" }; e.n++; if (RARITY_LIST.indexOf(rar.value) > RARITY_LIST.indexOf(e.r)) e.r = rar.value; render(); };
+    const go = () => findCards(find.value.trim(), res, c => [el("button", { type: "button", className: "btn small primary", textContent: "Give 1", onclick: () => give(c) })]);
+    find.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+    card.append(el("div", { className: "row" }, el("label", { className: "field", style: "flex:1 1 200px" }, "Give a card", find), el("label", { className: "field" }, "Rarity", rar), el("button", { type: "button", className: "btn", textContent: "Search", onclick: go })), res);
+    const list = el("div", { className: "list" });
+    for (const id of ids.sort((a, b) => (st.cards[a].card?.name || "").localeCompare(st.cards[b].card?.name || ""))) {
+      const e = st.cards[id];
+      list.append(el("div", { className: "item" }, el("b", { textContent: `${e.card?.name || id} ×${e.n}` }), el("span", { className: "note", textContent: e.r || "" }),
+        el("div", { className: "row" }, el("button", { type: "button", className: "btn small", textContent: "+1", onclick: () => { e.n++; render(); } }),
+          el("button", { type: "button", className: "btn small", textContent: "−1", onclick: () => { e.n--; if (e.n <= 0) delete st.cards[id]; render(); } }))));
+    }
+    card.append(list);
+    // character progress
+    const wins = Object.entries(st.charWins);
+    card.append(el("h2", { textContent: "Character progress (wins)" }));
+    if (!wins.length) card.append(el("p", { textContent: "No character duels won yet." }));
+    const wl = el("div", { className: "list" });
+    for (const [id, n] of wins) {
+      const inp = el("input", { type: "number", min: 0, value: n, style: "width:90px" }); inp.oninput = () => { st.charWins[id] = Math.max(0, +inp.value || 0); };
+      wl.append(el("div", { className: "item" }, el("b", { textContent: id }), inp));
+    }
+    card.append(wl, el("div", { className: "row" }, el("button", { type: "button", className: "btn small danger", textContent: "Reset all character progress", onclick: async () => { if (await ask("Reset progress?", `All of ${u.name}'s character wins are cleared, so the characters arrive again from the start.`, "Reset", true)) { st.charWins = {}; st.seenChars = []; st.noAce = {}; render(); } } })));
+    // account
+    const pw = el("input", { type: "text", placeholder: "New password (6+ characters)", autocomplete: "off" });
+    card.append(el("h2", { textContent: "Account" }), el("div", { className: "row" }, el("label", { className: "field", style: "flex:1 1 200px" }, "Reset password", pw),
+      el("button", { type: "button", className: "btn", textContent: "Set password", onclick: async () => { if (pw.value.length < 6) return; await save({ newPassword: pw.value }); pw.value = ""; } })),
+      el("div", { className: "row" }, el("button", { type: "button", className: "btn small " + (u.banned ? "" : "danger"), textContent: u.banned ? "Lift suspension" : "Suspend account", onclick: async () => {
+        if (!u.banned && !await ask(`Suspend ${u.name}?`, "They are logged out and can't log in until you lift it.", "Suspend", true)) return;
+        u.banned = !u.banned; await save({ banned: u.banned }); render();
+      } })));
+    card.append(el("div", { className: "row" }, el("button", { type: "button", className: "btn primary", textContent: "Save player", onclick: () => save() }), el("button", { type: "button", className: "btn", textContent: "Close", onclick: () => { box.hidden = true; } })), el("p", { className: "pmsg" }));
+    box.append(card);
+  };
+  render();
+}
 
 // ---------- Saving ----------
 $("#save").addEventListener("click", async () => {
