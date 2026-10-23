@@ -3,9 +3,17 @@
 // is kept on the server, so they can carry on from any browser after logging in.
 // Accounts are files in server/data/users (blocked from the web, never touched by deploys).
 //
-//   POST ?action=register {name, password}       -> {token, name, rev: 0, state: null}
+// Names and emails are unique (ignoring capital letters). A new player confirms their email with a link,
+// and a confirmed email lets them reset a forgotten password.
+//
+//   POST ?action=register {name, password, email} -> {token, name, rev: 0, state: null}   (sends the confirmation link)
 //   POST ?action=login    {name, password}       -> {token, name, rev, state}
-//   POST ?action=load     {token}                -> {name, rev, state}
+//   POST ?action=load     {token}                -> {name, rev, state, email, verified}
+//   GET  ?action=verify&u=NAME&c=CODE            the link in the confirmation email
+//   POST ?action=setEmail {token, email}         add or change the email (sends a new link)
+//   POST ?action=resend   {token}                send the confirmation link again
+//   POST ?action=forgot   {who}                  name or email: sends a password reset link to a confirmed email
+//   POST ?action=reset    {name, code, password} set a new password from that link
 //   POST ?action=save     {token, rev, state}    -> {rev}   (409 with the server's save if it changed elsewhere)
 //   POST ?action=logout   {token}
 
@@ -23,6 +31,50 @@ function fail(int $status, string $message, array $extra = []): never
     echo json_encode(['error' => $message] + $extra);
     exit;
 }
+const EMAILS = USERS . '/_emails.json'; // email (lower case) -> player name
+
+function baseUrl(): string
+{
+    $host = preg_replace('/[^A-Za-z0-9.:-]/', '', (string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
+    return ((($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' ? 'https' : 'http') . "://$host" . rtrim(dirname(dirname((string)$_SERVER['SCRIPT_NAME'])), '/') . '/';
+}
+function sendMail(string $to, string $subject, string $text): bool
+{
+    $host = preg_replace('/^www\./', '', preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? 'localhost')));
+    $headers = "From: AR Duel <noreply@$host>\r\nContent-Type: text/plain; charset=utf-8\r\n";
+    return @mail($to, $subject, $text, $headers);
+}
+function sendConfirmation(array $u): bool
+{
+    $link = baseUrl() . 'api/account.php?action=verify&u=' . rawurlencode($u['name']) . '&c=' . $u['vcode'];
+    return sendMail($u['email'], 'Confirm your AR Duel email', "Hi {$u['name']},\n\nTap this link to confirm your email for AR Duel:\n$link\n\nWith a confirmed email you can reset your password if you forget it.\nIf you didn't create this account, ignore this email.\n");
+}
+// Claim an email for a player, or fail if another player has it. Returns the normalised email.
+function claimEmail(string $email, string $name, string $old = ''): string
+{
+    $email = strtolower(trim($email));
+    filter_var($email, FILTER_VALIDATE_EMAIL) && strlen($email) <= 120 || fail(400, 'Enter a valid email address.');
+    is_dir(USERS) || @mkdir(USERS, 0755, true);
+    $h = fopen(EMAILS, 'c+');
+    flock($h, LOCK_EX);
+    $map = json_decode((string)stream_get_contents($h), true) ?: [];
+    if (isset($map[$email]) && strtolower($map[$email]) !== strtolower($name)) {
+        flock($h, LOCK_UN);
+        fclose($h);
+        fail(409, 'That email is already used by another duelist.');
+    }
+    if ($old !== '' && $old !== $email && strtolower($map[$old] ?? '') === strtolower($name)) {
+        unset($map[$old]);
+    }
+    $map[$email] = $name;
+    ftruncate($h, 0);
+    rewind($h);
+    fwrite($h, json_encode($map));
+    flock($h, LOCK_UN);
+    fclose($h);
+    return $email;
+}
+
 function userFile(string $name): string
 {
     return USERS . '/' . strtolower($name) . '.json';
@@ -79,13 +131,66 @@ if ($action === 'register') {
     preg_match('/^[A-Za-z0-9_]{3,20}$/', $name) || fail(400, 'Use 3–20 letters, numbers or _ for your name.');
     strlen($password) >= 6 || fail(400, 'Use a password of at least 6 characters.');
     is_dir(USERS) || @mkdir(USERS, 0755, true);
-    $u = ['name' => $name, 'hash' => password_hash($password, PASSWORD_DEFAULT), 'created' => time(), 'seen' => time(), 'rev' => 0, 'state' => null, 'tokens' => []];
+    // names are unique ignoring capital letters: the file name is the lower-case name
+    is_file(userFile($name)) && fail(409, 'That name is taken. Try another.');
+    $email = claimEmail((string)($in['email'] ?? ''), $name);
+    $u = ['name' => $name, 'hash' => password_hash($password, PASSWORD_DEFAULT), 'created' => time(), 'seen' => time(), 'rev' => 0, 'state' => null, 'tokens' => [],
+        'email' => $email, 'verified' => false, 'vcode' => bin2hex(random_bytes(16))];
     $token = newToken($u);
-    // x mode: fails if the name is already taken
+    // x mode: fails if someone took the name at the same moment
     $h = @fopen(userFile($name), 'x') ?: fail(409, 'That name is taken. Try another.');
     fwrite($h, json_encode($u));
     fclose($h);
-    echo json_encode(['token' => $token, 'name' => $name, 'rev' => 0, 'state' => null]);
+    $sent = sendConfirmation($u);
+    echo json_encode(['token' => $token, 'name' => $name, 'rev' => 0, 'state' => null, 'mailed' => $sent]);
+    exit;
+}
+
+if ($action === 'verify') {
+    $n = (string)($_GET['u'] ?? '');
+    $ok = preg_match('/^[A-Za-z0-9_]{3,20}$/', $n) && is_file(userFile($n)) && withUser($n, function (array $u) {
+        if (!empty($u['vcode']) && hash_equals($u['vcode'], (string)($_GET['c'] ?? ''))) {
+            $u['verified'] = true;
+            unset($u['vcode']);
+            return ['save' => $u, 'reply' => [true]];
+        }
+        return ['reply' => [!empty($u['verified'])]];
+    })[0];
+    header('Location: ' . baseUrl() . '?verified=' . ($ok ? '1' : '0'), true, 302);
+    exit;
+}
+
+if ($action === 'forgot') {
+    // the same answer either way, so nobody can find out which names or emails exist
+    $who = strtolower(trim((string)($in['who'] ?? '')));
+    $map = is_file(EMAILS) ? (json_decode((string)file_get_contents(EMAILS), true) ?: []) : [];
+    $n = $map[$who] ?? $who;
+    if (preg_match('/^[A-Za-z0-9_]{3,20}$/', $n) && is_file(userFile($n))) {
+        withUser($n, function (array $u) {
+            if (empty($u['email']) || empty($u['verified']) || !empty($u['banned'])) {
+                return ['reply' => []];
+            }
+            $code = bin2hex(random_bytes(16));
+            $u['reset'] = ['h' => hash('sha256', $code), 'until' => time() + 3600];
+            sendMail($u['email'], 'Reset your AR Duel password', "Hi {$u['name']},\n\nTap this link within an hour to choose a new password:\n" . baseUrl() . '?reset=' . rawurlencode($u['name']) . ':' . $code . "\n\nIf you didn't ask for this, ignore this email; your password stays the same.\n");
+            return ['save' => $u, 'reply' => []];
+        });
+    }
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+if ($action === 'reset') {
+    strlen($password) >= 6 || fail(400, 'Use a password of at least 6 characters.');
+    preg_match('/^[A-Za-z0-9_]{3,20}$/', $name) && is_file(userFile($name)) || fail(400, 'This reset link is not valid. Ask for a new one.');
+    echo json_encode(withUser($name, function (array $u) use ($in, $password) {
+        $r = $u['reset'] ?? null;
+        ($r && $r['until'] > time() && hash_equals($r['h'], hash('sha256', (string)($in['code'] ?? '')))) || fail(400, 'This reset link is not valid or has expired. Ask for a new one.');
+        $u['hash'] = password_hash($password, PASSWORD_DEFAULT);
+        unset($u['reset']);
+        $u['tokens'] = []; // logged out everywhere
+        return ['save' => $u, 'reply' => ['ok' => true, 'name' => $u['name']]];
+    }));
     exit;
 }
 
@@ -112,7 +217,31 @@ if ($action === 'load') {
     echo json_encode(withUser($name, function (array $u) use ($hash) {
         checkToken($u, $hash);
         $u['seen'] = time();
-        return ['save' => $u, 'reply' => ['name' => $u['name'], 'rev' => $u['rev'], 'state' => $u['state']]];
+        return ['save' => $u, 'reply' => ['name' => $u['name'], 'rev' => $u['rev'], 'state' => $u['state'], 'email' => $u['email'] ?? '', 'verified' => !empty($u['verified'])]];
+    }));
+    exit;
+}
+
+if ($action === 'setEmail') {
+    echo json_encode(withUser($name, function (array $u) use ($hash, $in) {
+        checkToken($u, $hash);
+        $u['email'] = claimEmail((string)($in['email'] ?? ''), $u['name'], (string)($u['email'] ?? ''));
+        $u['verified'] = false;
+        $u['vcode'] = bin2hex(random_bytes(16));
+        $sent = sendConfirmation($u);
+        return ['save' => $u, 'reply' => ['email' => $u['email'], 'verified' => false, 'mailed' => $sent]];
+    }));
+    exit;
+}
+
+if ($action === 'resend') {
+    echo json_encode(withUser($name, function (array $u) use ($hash) {
+        checkToken($u, $hash);
+        !empty($u['email']) || fail(400, 'Add an email first.');
+        !empty($u['verified']) && fail(400, 'Your email is already confirmed.');
+        $u['vcode'] ??= bin2hex(random_bytes(16));
+        $sent = sendConfirmation($u);
+        return ['save' => $u, 'reply' => ['mailed' => $sent]];
     }));
     exit;
 }

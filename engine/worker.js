@@ -69,11 +69,13 @@ onmessage = async ({ data }) => {
     if (data.t === "start") {
       lib ??= await createCore({ sync: true });
       if (duel) { lib.destroyDuel(duel); duel = null; }
-      // decks[p] = { main: [codes], extra: [codes] } for engine players 0 and 1 (player 0 goes first)
+      // decks[p] = { main: [codes], extra: [codes] } for engine players 0 and 1 (player 0 goes first).
+      // The engine doesn't shuffle: the last card of main is the top of the deck.
       await loadCards(data.decks.flatMap(d => [...d.main, ...d.extra]));
       duel = lib.createDuel({
         flags: OcgDuelMode.MODE_MR5, seed: data.seed.map(BigInt),
-        team1: { startingLP: 8000, startingDrawCount: 5, drawCountPerTurn: 1 }, team2: { startingLP: 8000, startingDrawCount: 5, drawCountPerTurn: 1 },
+        // lp: starting life points of engine players 0 and 1 (training lessons give the opponent less)
+        team1: { startingLP: data.lp?.[0] ?? 8000, startingDrawCount: 5, drawCountPerTurn: 1 }, team2: { startingLP: data.lp?.[1] ?? 8000, startingDrawCount: 5, drawCountPerTurn: 1 },
         cardReader: cardData, scriptReader: script, errorHandler: (type, text) => postMessage({ t: "log", type, text }),
       });
       lib.loadScript(duel, "constant.lua", script("constant.lua"));

@@ -168,7 +168,8 @@
   .cur { display: flex; align-items: center; gap: 6px; background: rgba(10,14,28,.7); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 6px 12px 6px 6px; font-variant-numeric: tabular-nums; flex: 0 0 auto; }
   .cur b { font-size: 15px; } .cur.small { padding: 4px 10px 4px 4px; } .cur.small b { font-size: 13px; }
   .coin { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff3b0, #f2b400 55%, #a86f00); box-shadow: inset 0 0 0 2px #ffe27a; }
-  .ticket { width: 24px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #7fd6ff, #3a7bff); box-shadow: inset 0 0 0 2px #c9eeff; }
+  .ticket { width: 20px; height: 26px; border-radius: 3px; background: linear-gradient(160deg, #7fd6ff, #3a7bff 60%, #1d3d99); box-shadow: inset 0 0 0 2px #c9eeff; display: grid; place-items: center; font: 800 6.5px/1 var(--font); color: #fff; letter-spacing: .2px; writing-mode: vertical-rl; transform: rotate(180deg); }
+  button.cur { color: var(--text); font: inherit; cursor: pointer; }
   .worldtitle { text-align: center; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: #c9d3ff; margin: 6px 0 10px; text-shadow: 0 0 12px #6b7dff; }
   .gates { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 16px 14px; margin: 0 -16px; scrollbar-width: none; }
   .gates::-webkit-scrollbar { display: none; }
@@ -211,6 +212,11 @@
   .chip .new { position: absolute; top: -4px; right: 6px; font-size: 10px; font-weight: 700; background: #ff3d6e; border-radius: 999px; padding: 2px 7px; animation: pulse 1.2s infinite; }
   .chip.arrive img { animation: arrive .9s ease-out; }
   @keyframes arrive { from { transform: scale(0) rotate(-30deg); opacity: 0; } 70% { transform: scale(1.15); } }
+  .chip.locked img { filter: grayscale(1) brightness(.2) contrast(1.6) blur(.6px); border-color: #2a2f4a; box-shadow: 0 6px 16px rgba(0,0,0,.5); }
+  .chip.locked::after { content: "?"; position: absolute; top: 26px; left: 50%; transform: translateX(-50%); font-size: 34px; font-weight: 700; color: rgba(255,255,255,.55); text-shadow: 0 0 10px #000; pointer-events: none; }
+  .chip.locked b { color: #8e98b8; }
+  .gatecount { text-align: center; color: #d7defa; font-size: 13px; margin: 18px auto 0; }
+  .portal .gen { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 700; letter-spacing: .1em; background: rgba(0,0,0,.55); border-radius: 999px; padding: 4px 10px; }
   .gatehint { text-align: center; color: #b8c2e6; font-size: 13px; margin: 26px auto 0; max-width: 360px; font-style: italic; }
 
   .modal { position: fixed; inset: 0; z-index: 30; background: rgba(4,6,14,.72); display: grid; place-items: end center; padding: 16px; overflow-y: auto; }
@@ -233,6 +239,15 @@
   .avatars button[aria-pressed="true"] { border-color: var(--accent); }
   .avatars img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; background: #22294a; display: block; }
 
+  #coin { position: fixed; inset: 0; z-index: 45; background: radial-gradient(70% 50% at 50% 40%, #3a2a0a, #070a16); display: grid; place-content: center; justify-items: center; gap: 18px; padding: 20px; text-align: center; }
+  #coin h2 { margin: 0; font-size: 24px; min-height: 1.3em; }
+  .coinflip { width: 140px; height: 140px; position: relative; transform-style: preserve-3d; }
+  .coinflip span { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; font-size: 60px; color: #7a4a00; backface-visibility: hidden; background: radial-gradient(circle at 35% 35%, #fff3b0, #f2b400 55%, #a86f00); box-shadow: inset 0 0 0 8px #ffe27a, 0 0 40px rgba(255,200,60,.6); }
+  .coinflip .t { transform: rotateY(180deg); }
+  .coinflip.spin { animation: coinspin 1.6s cubic-bezier(.2,.7,.3,1) forwards; }
+  .coinflip.spin.tails { animation-name: coinspin2; }
+  @keyframes coinspin { from { transform: translateY(0) rotateY(0); } 40% { transform: translateY(-120px) rotateY(1080deg); } to { transform: translateY(0) rotateY(1800deg); } }
+  @keyframes coinspin2 { from { transform: translateY(0) rotateY(0); } 40% { transform: translateY(-120px) rotateY(1080deg); } to { transform: translateY(0) rotateY(1980deg); } }
   #vs { position: fixed; inset: 0; z-index: 40; overflow: hidden; background: linear-gradient(115deg, #3a0d16 0 50%, #0d1f45 50% 100%); }
   .vsside { position: absolute; top: 0; bottom: 0; width: 60%; display: grid; place-items: center; align-content: center; gap: 10px; }
   .vsside img { width: min(52vw, 230px); height: min(52vw, 230px); border-radius: 50%; object-fit: cover; object-position: center 20%; border: 5px solid #fff; background: #22294a; }
@@ -309,6 +324,7 @@
   .login .logo { margin: 0; text-align: center; font-size: 44px; } .login .logo span { color: var(--accent); }
   .login input { font: 600 17px var(--font); color: var(--text); background: rgba(0,0,0,.35); border: 2px solid rgba(255,255,255,.25); border-radius: 14px; padding: 13px; }
   #loginMsg.err { color: var(--danger); }
+  .linkbtn { background: none; border: 0; color: #c9d3ff; font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; justify-self: center; }
   .dialog .sheet { margin-top: 0; text-align: center; border-color: rgba(255,211,107,.5); box-shadow: 0 0 40px rgba(255,181,71,.25); }
   .dlgtext { margin: 0; color: #d7defa; line-height: 1.5; font-size: 15px; white-space: pre-line; } .dlgtext:empty { display: none; }
   #dlgInput { font: 600 17px var(--font); color: var(--text); background: rgba(0,0,0,.35); border: 2px solid rgba(255,255,255,.25); border-radius: 14px; padding: 12px; text-align: center; }
@@ -327,6 +343,13 @@
   #panel.slim { padding: 8px 12px; } #panel.slim .meta { margin: 0 0 6px; font-size: 13px; color: #c8ffd4; }
   .cinfo { display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: start; margin-bottom: 8px; } .cinfo img { width: 54px; border-radius: 5px; } .cinfo h3 { font-size: 15px; }
   .clamp { margin: 0; font-size: 12px; line-height: 1.4; color: #c8d0e6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; } .clamp.open { -webkit-line-clamp: unset; max-height: 30vh; overflow-y: auto; }
+  .coach { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: start; } .coach img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; object-position: center 20%; border: 2px solid #fff; }
+  .coach b { font-size: 14px; color: var(--accent); } .coach p { margin: 2px 0 0; font-size: 12px; line-height: 1.35; } .coach small { display: block; margin-top: 3px; font-size: 11px; color: var(--muted); }
+  .lessons { display: grid; gap: 8px; margin-bottom: 14px; }
+  .lesson { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; border: 2px solid rgba(255,255,255,.14); border-radius: 16px; padding: 10px; background: rgba(255,255,255,.05); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+  .lesson .num { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: #2e3a7a; }
+  .lesson.done .num { background: var(--good); color: #0b2412; } .lesson.next { border-color: var(--accent); box-shadow: 0 0 16px rgba(255,181,71,.35); }
+  .lesson:disabled { opacity: .45; cursor: default; } .lesson b { font-size: 14px; display: block; } .lesson small { font-size: 12px; color: var(--muted); }
   .hcard.can { box-shadow: 0 0 0 2px rgba(123,216,143,.9), 0 0 14px rgba(123,216,143,.6); }
   #panel .row .btn { max-width: 100%; white-space: normal; text-align: left; }
 
@@ -358,7 +381,7 @@
       <button class="btn primary" id="bpBtn" type="button" hidden>Battle</button>
       <button class="btn primary" id="endBtn" type="button">End turn</button>
       <button class="btn" id="holoBtn" type="button">Hide holograms</button>
-      <button class="btn" id="exitBtn" type="button">Exit</button>
+      <button class="btn" id="exitBtn" type="button">Surrender</button>
     </div>
   </div>
 </div>
@@ -370,7 +393,7 @@
   <header class="topbar">
     <button class="me" id="profileBtn" type="button" aria-label="Your profile"><img id="meFace" alt=""><span><b id="meName">Duelist</b><small id="meCards"></small></span></button>
     <div class="cur" title="Coins"><span class="coin" aria-hidden="true"></span><b id="coinCount">0</b><button class="plus" id="topupBtn" type="button" aria-label="Top up coins">+</button></div>
-    <div class="cur" title="Free packs today"><span class="ticket" aria-hidden="true"></span><b id="freeCount">0</b></div>
+    <button class="cur" id="freeBtn" type="button" title="Free packs left today" aria-label="Free packs left today, open the shop"><span class="ticket" aria-hidden="true">FREE</span><b id="freeCount">0</b></button>
   </header>
   <div class="resume" id="resume" hidden>
     <img id="resumeFace" alt="">
@@ -392,6 +415,7 @@
 <section class="screen gatescreen" id="gate" hidden>
   <header class="gatebar"><button class="round" id="gateBack" type="button" aria-label="Back">‹</button><h1 id="gateTitle"></h1></header>
   <div class="gatefield" id="gateField"></div>
+  <p class="gatecount" id="gateCount"></p>
   <p class="gatehint" id="gateHint"></p>
 </section>
 
@@ -399,7 +423,8 @@
   <header class="gatebar"><button class="round" id="setupBack" type="button" aria-label="Back">‹</button><h1 id="setupTitle"></h1></header>
   <div class="host"><img id="hostFace" alt=""><div class="bubble" id="hostLine"></div></div>
   <div id="training">
-    <div class="pickgrid" id="oppGrid"></div>
+    <div class="lessons" id="lessons"></div>
+    <div id="practiceBox"><h2 class="section">Practice</h2><div class="pickgrid" id="oppGrid"></div></div>
   </div>
   <div id="online" hidden>
     <div id="roomNew" class="panel">
@@ -443,6 +468,7 @@
     <button class="round close" id="profileClose" type="button" aria-label="Close">×</button>
     <h2>Your duelist</h2>
     <p class="note center" id="acctLine"></p>
+    <div class="row center" id="emailRow"></div>
     <label class="field">Name<input id="myName" maxlength="20" placeholder="Duelist" autocomplete="nickname"></label>
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
@@ -454,9 +480,13 @@
   <div class="sheet">
     <h1 class="logo">AR <span>Duel</span></h1>
     <div class="tabs row center" id="loginTabs"><button class="btn small" type="button" data-mode="login" aria-pressed="true">Log in</button><button class="btn small" type="button" data-mode="register" aria-pressed="false">New duelist</button></div>
+    <h2 id="loginTitle" hidden>Choose a new password</h2>
     <input id="loginName" maxlength="20" placeholder="Duelist name" autocomplete="username" aria-label="Duelist name">
+    <input id="loginEmail" type="email" maxlength="120" placeholder="Email (to confirm and recover your account)" autocomplete="email" aria-label="Email" hidden>
     <input id="loginPass" type="password" maxlength="100" placeholder="Password" autocomplete="current-password" aria-label="Password">
+    <input id="loginPass2" type="password" maxlength="100" placeholder="Password again" autocomplete="new-password" aria-label="Password again" hidden>
     <button class="btn primary big" id="loginGo" type="button">Log in</button>
+    <button class="linkbtn" id="forgotBtn" type="button">Forgot your password?</button>
     <p class="note center" id="loginMsg">Your cards, decks, coins and progress are saved to your account, so you can carry on from any phone.</p>
   </div>
 </div>
@@ -486,6 +516,12 @@
     <input id="dlgInput" maxlength="40" autocomplete="off" hidden>
     <div class="row center" id="dlgBtns"></div>
   </div>
+</div>
+
+<div id="coin" hidden aria-live="polite">
+  <div class="coinflip" id="coinFace"><span class="h">★</span><span class="t">✦</span></div>
+  <h2 id="coinText"></h2>
+  <div class="row center" id="coinBtns"></div>
 </div>
 
 <div id="vs" hidden aria-live="polite">
@@ -605,7 +641,7 @@ const canvas = $("#gl");
 
 // ---------- Your account: the save lives on the server (api/account.php) ----------
 // These saved settings are copied to the account; everything else stays on this phone only.
-const SAVE_KEYS = ["cards", "decklist", "wallet", "profile", "charWins", "seenChars", "noAce", "eventBuys", "myDeck", "library", "rewards"];
+const SAVE_KEYS = ["cards", "decklist", "wallet", "profile", "charWins", "seenChars", "noAce", "eventBuys", "myDeck", "library", "rewards", "training"];
 let account = null; try { account = JSON.parse(localStorage.getItem("arduel.account") || "null"); } catch {}
 async function accountCall(action, body) {
   const r = await fetch("api/account.php?action=" + action, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -622,7 +658,8 @@ const keepAccount = () => { try { localStorage.setItem("arduel.account", JSON.st
 if (account) {
   try {
     const j = await accountCall("load", { token: account.token });
-    if (j.rev !== account.rev) { if (j.state) applySave(j.state); account.rev = j.rev; keepAccount(); }
+    if (j.rev !== account.rev) { if (j.state) applySave(j.state); account.rev = j.rev; }
+    account.email = j.email; account.verified = j.verified; keepAccount();
   } catch (e) { if (e.status === 401 || e.status === 404) { account = null; localStorage.removeItem("arduel.account"); } }
 }
 let syncTimer = null, syncing = false;
@@ -643,18 +680,39 @@ document.addEventListener("visibilitychange", async () => {
   if (document.hidden || !account || !$("#overlay").hidden) return;
   try { const j = await accountCall("load", { token: account.token }); if (j.rev !== account.rev) { applySave(j.state); account.rev = j.rev; keepAccount(); location.reload(); } } catch {}
 });
-let loginMode = "login";
-function showLogin() { $("#login").hidden = false; setTimeout(() => $("#loginName").focus(), 50); }
-for (const b of $("#loginTabs").children) b.addEventListener("click", () => {
-  loginMode = b.dataset.mode; for (const x of $("#loginTabs").children) x.setAttribute("aria-pressed", String(x === b));
-  $("#loginGo").textContent = loginMode === "login" ? "Log in" : "Create account"; $("#loginPass").autocomplete = loginMode === "login" ? "current-password" : "new-password";
-  $("#loginMsg").className = "note center"; $("#loginMsg").textContent = loginMode === "login" ? "Welcome back, duelist!" : "Pick a duelist name (3–20 letters or numbers) and a password of at least 6 characters.";
+let loginMode = "login", resetCode = null;
+function showLogin() { $("#login").hidden = false; setTimeout(() => (loginMode === "reset" ? $("#loginPass") : $("#loginName")).focus(), 50); }
+function setLoginMode(mode, text) {
+  loginMode = mode;
+  for (const x of $("#loginTabs").children) x.setAttribute("aria-pressed", String(x.dataset.mode === mode));
+  $("#loginTabs").hidden = mode === "reset"; $("#loginTitle").hidden = mode !== "reset";
+  $("#loginName").hidden = mode === "reset"; $("#loginEmail").hidden = mode !== "register"; $("#loginPass2").hidden = mode === "login"; $("#forgotBtn").hidden = mode !== "login";
+  $("#loginGo").textContent = { login: "Log in", register: "Create account", reset: "Save new password" }[mode];
+  $("#loginPass").autocomplete = mode === "login" ? "current-password" : "new-password"; $("#loginPass").placeholder = mode === "reset" ? "New password" : "Password";
+  $("#loginMsg").className = "note center";
+  $("#loginMsg").textContent = text || { login: "Welcome back, duelist!", register: "Pick a duelist name (3–20 letters or numbers; nobody else can use it), your email, and a password of at least 6 characters.", reset: "At least 6 characters." }[mode];
+}
+for (const b of $("#loginTabs").children) b.addEventListener("click", () => setLoginMode(b.dataset.mode));
+$("#forgotBtn").addEventListener("click", async () => {
+  const who = await gameDialog({ title: "Forgot your password?", text: "Enter your duelist name or email. If your email is confirmed, we'll send you a link to choose a new password.", input: "", ok: "Send link", cancel: "Cancel" });
+  if (!who) return;
+  try { await accountCall("forgot", { who }); } catch {}
+  gameAlert("If that account has a confirmed email, a reset link is on its way. Check your inbox (and spam folder).", "Check your email");
 });
 async function doLogin() {
-  const msg = $("#loginMsg"), name = $("#loginName").value.trim(), password = $("#loginPass").value;
+  const msg = $("#loginMsg"), name = $("#loginName").value.trim(), password = $("#loginPass").value, email = $("#loginEmail").value.trim();
+  const bad = t => { msg.className = "note center err"; msg.textContent = t; };
+  if (loginMode !== "login" && password !== $("#loginPass2").value) return bad("The two passwords don't match.");
+  if (loginMode === "register" && !email) return bad("Enter your email, so you can confirm your account and recover it later.");
   msg.className = "note center"; msg.textContent = "…"; $("#loginGo").disabled = true;
   try {
-    const j = await accountCall(loginMode, { name, password });
+    if (loginMode === "reset") {
+      const r = await accountCall("reset", { name: resetCode.name, code: resetCode.code, password });
+      history.replaceState(null, "", location.pathname); $("#loginName").value = r.name; $("#loginPass").value = ""; $("#loginPass2").value = "";
+      setLoginMode("login", "Password changed. Log in with your new password."); $("#loginGo").disabled = false; return;
+    }
+    const j = await accountCall(loginMode, loginMode === "register" ? { name, password, email } : { name, password });
+    if (loginMode === "register") sessionStorage.setItem("arduel.welcome", email);
     account = { name: j.name, token: j.token, rev: j.rev }; keepAccount();
     if (j.state) { applySave(j.state); location.reload(); return; }
     // a new account starts from what you have on this phone so far
@@ -666,7 +724,17 @@ async function doLogin() {
   $("#loginGo").disabled = false;
 }
 $("#loginGo").addEventListener("click", doLogin);
-$("#loginPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+for (const id of ["#loginPass", "#loginPass2"]) $(id).addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+// links from emails: ?reset=NAME:CODE opens the new-password screen, ?verified=1 confirms the email
+{
+  const q = new URLSearchParams(location.search), r = q.get("reset");
+  if (r && r.includes(":")) { const [n, c] = r.split(":"); resetCode = { name: n, code: c }; setLoginMode("reset"); setTimeout(showLogin, 0); }
+  else if (q.has("verified")) {
+    const ok = q.get("verified") === "1"; history.replaceState(null, "", location.pathname);
+    if (ok && account) { account.verified = true; keepAccount(); }
+    setTimeout(() => gameAlert(ok ? "Your email is confirmed. You can now reset your password with it if you ever forget it." : "That confirmation link isn't valid any more. Send a new one from your profile.", ok ? "Email confirmed!" : "Link expired"), 600);
+  }
+}
 const PCOLOR = [0xff9f1c, 0x4cc9f0];
 
 // ---------- Board size: zones are real card size, so physical cards can lie on them ----------
@@ -1168,7 +1236,7 @@ async function onBatch(b) {
   for (const [k, v] of Object.entries(b.cards || {})) CI.set(+k, v);
   if (window.duel) window.duel.lastBatch = b;
   quiet = Q.replay.length > 0 || S.catchup;
-  for (const m of b.msgs) await play(m);
+  for (const m of b.msgs) { lessonEvent(m); await play(m); }
   applyField(b.field); refreshUI();
   if (b.ended) return;
   if (b.waiting) {
@@ -1254,13 +1322,17 @@ function startEngine(vs, setup, log = []) {
   resetBoard(); newWorker();
   Object.assign(S, { vs, setup, me: setup.me, log: [] });
   Q.replay = [...log]; Q.net = [[], []]; S.catchup = log.length > 0;
-  worker.postMessage({ t: "start", seed: setup.seed, decks: setup.decks });
+  if (setup.lp) for (const e of [0, 1]) setLp(side(e), setup.lp[e]);
+  worker.postMessage({ t: "start", seed: setup.seed, decks: setup.decks, lp: setup.lp });
   saveDuel(); refreshUI();
 }
-// Against the computer: you and it get a random seat; the engine's player 0 goes first
-function startDuel(vs, myCards, oppCards, first) {
-  const mine = splitDeck(myCards), theirs = splitDeck(oppCards), me = first === 0 ? 0 : 1;
-  startEngine(vs, { seed: randSeed(), decks: me === 0 ? [mine, theirs] : [theirs, mine], me });
+// Against the computer. first: 0 if you go first. The engine doesn't shuffle (the last card added is the top
+// of the deck), so decks are shuffled here, except a lesson's, which is given in drawing order.
+function startDuel(vs, myCards, oppCards, first, opts = {}) {
+  const deal = cards => { const d = splitDeck(opts.fixed ? cards : shuffle([...cards])); if (opts.fixed) d.main.reverse(); return d; };
+  const mine = deal(myCards), theirs = deal(oppCards), me = first === 0 ? 0 : 1;
+  const lp = opts.lp ? (me === 0 ? opts.lp : [opts.lp[1], opts.lp[0]]) : undefined;
+  startEngine(vs, { seed: randSeed(), decks: me === 0 ? [mine, theirs] : [theirs, mine], me, lp });
 }
 function saveDuel() {
   if (!S.vs || S.vs.kind === "online") { try { if (S.vs?.kind === "online") localStorage.removeItem("arduel.duel"); } catch {} return; }
@@ -1285,6 +1357,12 @@ function infoAt(loc) { // the board card for a {controller, location, sequence} 
   return cardOf(loc.code);
 }
 function aiAnswer(m, retry) {
+  // a training opponent that just lets you practise
+  if (S.vs?.passive) {
+    if (m.type === MSG.SELECT_IDLECMD) return { type: 1, action: m.to_ep ? 7 : 6, index: null };
+    if (m.type === MSG.SELECT_BATTLECMD) return { type: 0, action: 3, index: null };
+    if (m.type === MSG.SELECT_CHAIN) return { type: 8, index: m.forced ? 0 : null };
+  }
   const mine = c => side(c.controller) === 1, hintText = (sys(Number(ui.hint || 0n)) || "").toLowerCase();
   const good = /special summon|add to (your|the) hand|to your hand|equip|activate|use|attack with/.test(hintText), bad = /destroy|banish|send|return|negate|tribute|discard|target|attack target|change|material|detach|cost/.test(hintText) && !good;
   // higher is a better pick for this question
@@ -1469,9 +1547,12 @@ function refreshUI() {
     panel.hidden = false; cardInfo(panel, c, hidden);
     for (const a of actionsFor(ui.sel.loc)) row.append(btn(a.label, () => answer(a.r), "primary"));
     row.append(btn("Close", () => { ui.sel = null; refreshUI(); })); panel.append(row);
-  } else if (m) {
+  } else if (m && S.vs?.lesson && !S.over) {
+    // training: the coach explains what to do next
     panel.hidden = false;
-    panel.append(el("div", { className: "meta", textContent: m.type === MSG.SELECT_BATTLECMD ? "Battle Phase: tap a monster to attack, or end your turn." : "Your move: tap a card to see what it can do. Glowing cards in your hand can be played." }));
+    const lesson = LESSONS.find(l => l.id === S.vs.lesson);
+    panel.append(el("div", { className: "coach" }, el("img", { src: face("Mokuba_Kaiba"), alt: "" }), el("div", {}, el("b", { textContent: lesson.title }), el("p", { textContent: lesson.tip }),
+      el("small", { textContent: m.type === MSG.SELECT_BATTLECMD ? "Battle Phase: tap your monster, then Attack. Or end your turn." : "Glowing cards can be played: tap one to see what it can do." }))));
   }
 }
 // Cards in a pile (Graveyard, banished, Extra Deck), with anything that can be activated from there
@@ -2007,6 +2088,7 @@ function renderOpenAgain() {
 $("#revealAll").addEventListener("click", () => { [...$("#pulls").children].forEach((b, k) => setTimeout(() => b.click(), k * 140)); });
 $("#openAgain").addEventListener("click", () => { $("#opening").hidden = true; openPack(lastPack, lastPack.event ? "event" : wallet.free > 0 ? "free" : "coins"); });
 $("#openDone").addEventListener("click", () => { $("#opening").hidden = true; });
+$("#freeBtn").addEventListener("click", () => $("#openShop").click());
 $("#openShop").addEventListener("click", () => { show("shop"); $("#shopLine").textContent = any(SHOP_LINES); packList = null; renderShop(); loadGm(); });
 setInterval(() => { if (!$("#shop").hidden && $("#opening").hidden) renderShop(); }, 60000); // keep event countdowns current
 $("#shopDone").addEventListener("click", () => { show("start"); renderHome(); });
@@ -2016,7 +2098,7 @@ $("#shopDone").addEventListener("click", () => { show("start"); renderHome(); })
 // w(id) = wins against that character, total = wins at this gate.
 const face = slug => `api/ygo.php?action=face&name=${encodeURIComponent(slug)}`;
 const GATES = [
-  { id: "dm", name: "Duel Monsters", color: "#ffb547", face: "Yugi_Muto", chars: [
+  { id: "dm", name: "Yu-Gi-Oh!", gen: 1, series: "Duel Monsters", color: "#ffb547", face: "Yugi_Muto", chars: [
     { id: "joey", name: "Joey Wheeler", face: "Joey_Wheeler", ace: { name: "Red-Eyes Black Dragon", id: 74677422 }, coins: 60, when: () => true,
       hi: ["Hey, pal! Up for a duel? My Red-Eyes is itching to fly!", "Time to roll the dice! Let's go!", "Bring it on! I've been practicing all week!"], win: "Aw man... nice one! Let's go again sometime.", lose: "Ha! Did you see that? Joey Wheeler's on fire!" },
     { id: "tea", name: "Téa Gardner", face: "Téa_Gardner", ace: { name: "Magician's Valkyria", id: 80304126 }, coins: 60, when: w => w("joey") >= 1,
@@ -2056,7 +2138,7 @@ const GATES = [
     { id: "yami", name: "Yami Yugi", face: "Yami_Yugi", ace: { name: "Dark Magician", id: 46986414 }, coins: 300, when: w => w("marik") >= 1,
       hi: ["It's time to duel! Show me your heart of the cards.", "Only a true duelist can stand against the King of Games."], win: "You are a true duelist. I'm proud to have faced you.", lose: "The heart of the cards guided me." },
   ] },
-  { id: "gx", name: "GX", color: "#ff4d4d", face: "Jaden_Yuki", chars: [
+  { id: "gx", name: "GX", gen: 2, series: "Yu-Gi-Oh! GX", color: "#ff4d4d", face: "Jaden_Yuki", chars: [
     { id: "syrus", name: "Syrus Truesdale", face: "Syrus_Truesdale", ace: { name: "Steamroid", id: 44729197 }, coins: 60, when: () => true,
       hi: ["Um, h-hi! Would you duel with me? I've been working on my Roids!", "I'm going to get stronger, just like my brother!"], win: "Aw, I lost again... but that was fun!", lose: "I did it! I actually won!" },
     { id: "chumley", name: "Chumley Huffington", face: "Chumley_Huffington", ace: { name: "Big Koala", id: 42129512 }, coins: 70, when: w => w("syrus") >= 1,
@@ -2086,7 +2168,7 @@ const GATES = [
     { id: "jaden", name: "Jaden Yuki", face: "Jaden_Yuki", ace: { name: "Elemental HERO Neos", id: 89943723 }, coins: 300, when: w => w("yubel") >= 1,
       hi: ["Get your game on! This is gonna be sweet!", "Let's have some fun, okay? Duel!"], win: "That was awesome! Let's duel again!", lose: "Gotcha! That's game!" },
   ] },
-  { id: "5ds", name: "5D's", color: "#4cc9f0", face: "Yusei_Fudo", chars: [
+  { id: "5ds", name: "5D's", gen: 3, series: "Yu-Gi-Oh! 5D's", color: "#4cc9f0", face: "Yusei_Fudo", chars: [
     { id: "leo", name: "Leo", face: "Leo", ace: { name: "Power Tool Dragon", id: 2403771 }, coins: 70, when: () => true,
       hi: ["I'm gonna be the King of Games someday! Duel me!", "My Morphtronics are totally awesome!"], win: "No fair! Okay, one more time!", lose: "Ha! I told you I'm good!" },
     { id: "luna", name: "Luna", face: "Luna", ace: { name: "Ancient Fairy Dragon", id: 25862681 }, coins: 80, when: w => w("leo") >= 1,
@@ -2104,7 +2186,7 @@ const GATES = [
     { id: "yusei", name: "Yusei Fudo", face: "Yusei_Fudo", ace: { name: "Stardust Dragon", id: 44508094 }, coins: 300, when: w => w("jack") >= 2,
       hi: ["Let's rev it up! Clear mind, full speed!", "Our bonds give us strength. Let's duel!"], win: "You've got real strength. I'm glad we dueled.", lose: "Stardust Dragon never lets me down." },
   ] },
-  { id: "zexal", name: "ZEXAL", color: "#c77dff", face: "Yuma_Tsukumo", chars: [
+  { id: "zexal", name: "ZEXAL", gen: 4, series: "Yu-Gi-Oh! ZEXAL", color: "#c77dff", face: "Yuma_Tsukumo", chars: [
     { id: "yuma", name: "Yuma Tsukumo", face: "Yuma_Tsukumo", ace: { name: "Number 39: Utopia", id: 84013237 }, coins: 70, when: () => true,
       hi: ["Kattobingu! Feel the flow!", "Hey! Let's duel and become friends!"], win: "Aw man... but that was so much fun!", lose: "Kattobingu! I did it!" },
     { id: "shark", name: "Shark", face: "Reginald_Kastle", ace: { name: "Number 32: Shark Drake", id: 65676461 }, coins: 110, when: w => w("yuma") >= 1,
@@ -2118,7 +2200,7 @@ const GATES = [
     { id: "vector", name: "Vector", face: "Vector", ace: { name: "Number 104: Masquerade", id: 2061963 }, coins: 250, when: w => w("kite") >= 1,
       hi: ["Hahaha! Let's play a fun little game, shall we?", "Trust me~ I'm totally a nice guy!"], win: "No no no! This isn't how it goes!", lose: "Fooled you! Hahahaha!" },
   ] },
-  { id: "arcv", name: "ARC-V", color: "#4bd36b", face: "Yuya_Sakaki", chars: [
+  { id: "arcv", name: "ARC-V", gen: 5, series: "Yu-Gi-Oh! ARC-V", color: "#4bd36b", face: "Yuya_Sakaki", chars: [
     { id: "zuzu", name: "Zuzu Boyle", face: "Zuzu_Boyle", ace: { name: "Bloom Diva the Melodious Choir", id: 84988419 }, coins: 70, when: () => true,
       hi: ["Ladies and gentlemen, the Melodious show begins!", "Don't you dare go easy on me!"], win: "You're good... really good.", lose: "That's how a Melodious encore sounds!" },
     { id: "sora", name: "Sora Perse", face: "Sora_Perse", ace: { name: "Frightfur Sabre-Tooth", id: 80889750 }, coins: 110, when: w => w("zuzu") >= 1,
@@ -2132,7 +2214,7 @@ const GATES = [
     { id: "yuya", name: "Yuya Sakaki", face: "Yuya_Sakaki", ace: { name: "Odd-Eyes Pendulum Dragon", id: 16178681 }, coins: 300, when: w => w("yuto") >= 1,
       hi: ["Ladies and gentlemen! It's showtime!", "Let's swing the pendulum of fate!"], win: "What a show! Everyone's smiling!", lose: "Thank you, thank you! What a duel!" },
   ] },
-  { id: "vrains", name: "VRAINS", color: "#3a7bff", face: "Yusaku_Fujiki", chars: [
+  { id: "vrains", name: "VRAINS", gen: 6, series: "Yu-Gi-Oh! VRAINS", color: "#3a7bff", face: "Yusaku_Fujiki", chars: [
     { id: "go", name: "Go Onizuka", face: "George_Gore", ace: { name: "Gouki The Great Ogre", id: 78437364 }, coins: 70, when: () => true,
       hi: ["Welcome to the Go Onizuka show! Charisma duelist, in the house!", "Gouki, let's wrestle!"], win: "Gah! A comeback next time!", lose: "And the champ retains!" },
     { id: "blueangel", name: "Blue Angel", face: "Skye_Zaizen", ace: { name: "Trickstar Holly Angel", id: 32448765 }, coins: 110, when: w => w("go") >= 1,
@@ -2235,10 +2317,11 @@ function renderGates() {
     const b = el("button", { type: "button", className: "portal" + (g.soon ? " locked" : "") }); b.style.setProperty("--gc", g.color);
     b.append(el("img", { src: face(g.face), alt: "" }), el("span", { className: "logo", textContent: g.name }));
     const fresh = !g.soon && available(g).some(c => !seen.includes(c.id));
-    b.append(el("span", { className: "sub", textContent: g.soon ? "Opening soon" : `${available(g).length} duelist${available(g).length === 1 ? "" : "s"} here` }));
+    b.append(el("span", { className: "gen", textContent: `GEN ${g.gen}` }), el("span", { className: "sub", textContent: g.soon ? "Opening soon" : `${available(g).length} of ${g.chars.length} duelists met` }));
     if (g.soon) b.append(el("span", { className: "lock", textContent: "SOON" }));
     if (fresh) b.append(el("span", { className: "newdot", textContent: "NEW" }));
-    b.onclick = () => g.soon ? toastHome(`The ${g.name} gate opens soon.`) : openGate(g);
+    if (!trainingDone()) { b.classList.add("locked"); b.querySelector(".sub").textContent = "Finish training to enter"; }
+    b.onclick = () => !trainingDone() ? gameDialog({ title: "Training first!", text: "Learn the basics with Mokuba before you enter the gates. It only takes a few minutes.", ok: "Go to training", cancel: "Later" }).then(go => go && openSetup("practice")) : g.soon ? toastHome(`The ${g.name} gate opens soon.`) : openGate(g);
     box.append(b);
   }
 }
@@ -2247,9 +2330,17 @@ function toastHome(text) { $("#status").className = ""; $("#status").textContent
 const HINTS = ["Keep dueling. Someone new might be watching...", "Word of your duels is spreading.", "Strong duelists attract strong rivals.", "Some duelists only show up for those who keep winning.", "Who knows who you'll meet next?"];
 let gateNow = null;
 function openGate(g) {
-  gateNow = g; show("gate"); $("#gate").style.setProperty("--gc", g.color); $("#gateTitle").textContent = g.name;
-  const seen = store.get("seenChars", []), wins = charWins(), box = $("#gateField"); box.innerHTML = "";
-  for (const c of available(g)) {
+  gateNow = g; show("gate"); $("#gate").style.setProperty("--gc", g.color); $("#gateTitle").textContent = `${g.name} · Gen ${g.gen}`;
+  const seen = store.get("seenChars", []), wins = charWins(), box = $("#gateField"), here = available(g).map(c => c.id); box.innerHTML = "";
+  $("#gateCount").textContent = `${here.length} of ${g.chars.length} duelists met`;
+  for (const c of g.chars) {
+    if (!here.includes(c.id)) {
+      // not met yet: a dark silhouette, so you can see who is still waiting
+      const chip = el("button", { type: "button", className: "chip locked" });
+      chip.append(el("img", { src: face(c.face), alt: "" }), el("b", { textContent: "???" }), el("span", { className: "stars", textContent: "" }));
+      chip.onclick = () => toast("This duelist hasn't arrived yet. Keep dueling...");
+      box.append(chip); continue;
+    }
     const chip = el("button", { type: "button", className: "chip" + (seen.includes(c.id) ? "" : " arrive") });
     chip.append(el("img", { src: face(c.face), alt: "" }), el("b", { textContent: c.name }), el("span", { className: "stars", textContent: "★".repeat(Math.min(5, wins[c.id] || 0)) }));
     if (!seen.includes(c.id)) chip.append(el("span", { className: "new", textContent: "NEW" }));
@@ -2293,6 +2384,26 @@ function playVs(oppFace, oppName) {
   return new Promise(r => setTimeout(() => { v.hidden = true; r(); }, 2100));
 }
 
+// ---------- The coin toss: the winner chooses to go first or second ----------
+// coinToss(true) lets you choose and resolves to "first" or "second"; coinToss(false, name) shows the opponent won
+// (with wait: true it stays up until hideCoin(), while the other phone chooses).
+function coinToss(iWin, oppName, wait = false) {
+  return new Promise(resolve => {
+    const c = $("#coin"), f = $("#coinFace"), box = $("#coinBtns");
+    box.innerHTML = ""; $("#coinText").textContent = "Coin toss!"; c.hidden = false;
+    f.className = "coinflip"; void f.offsetWidth; f.className = "coinflip spin" + (iWin ? "" : " tails");
+    setTimeout(() => {
+      if (iWin) {
+        $("#coinText").textContent = "You won the toss! Go first or second?";
+        const pick = v => () => { c.hidden = true; resolve(v); };
+        box.append(el("button", { type: "button", className: "btn primary big", textContent: "Go first", onclick: pick("first") }), el("button", { type: "button", className: "btn big", textContent: "Go second", onclick: pick("second") }));
+      } else if (wait) $("#coinText").textContent = `${oppName} won the toss and is choosing…`;
+      else { $("#coinText").textContent = `${oppName} won the toss and goes first.`; setTimeout(() => { c.hidden = true; resolve(null); }, 1400); }
+    }, 1700);
+  });
+}
+const hideCoin = () => { $("#coin").hidden = true; };
+
 // ---------- Starting a duel against the computer ----------
 function deckOptions(sel) {
   sel.innerHTML = "";
@@ -2317,28 +2428,88 @@ async function beginDuel(view, opp, sel, status) {
   } catch (e) { status.textContent = errText(e); return; }
   $("#meet").hidden = true;
   await playVs(vs.face, vs.name);
-  const first = Math.random() < 0.5 ? 0 : 1;
+  const first = await tossForFirst(vs.name);
   startDuel(vs, mine, theirs, first);
   await enterView(view);
   toast(first === 0 ? "You go first" : `${vs.name} goes first`);
 }
+// against the computer: if it wins the toss it chooses to go first
+async function tossForFirst(name) { const win = Math.random() < 0.5, choice = await coinToss(win, name); return win ? (choice === "first" ? 0 : 1) : 1; }
 async function enterView(view) {
   if (!duelLive() && saved) resumeSaved(); // a duel saved before the page reloaded
   if (view === "xr") { try { await startXR(); } catch (e) { toastHome("Could not start AR: " + (e.message || e)); show("start"); return; } }
   else startPreview();
   $("#lp0face").src = myFace(); $("#lp1face").src = S.vs?.face || face("Mokuba_Kaiba");
+  if (!history.state?.duel) history.pushState({ duel: 1 }, ""); // so the back button can be caught
 }
 
-// ---------- Training (practice against the computer) and the Duel Arena (online) ----------
+// ---------- Training lessons: the basics, taught with stacked decks. Finishing them opens the gates. ----------
+// hand: the 5 cards you start with, then draws, then filler (all in drawing order). goal: what finishes the lesson.
+const LESSONS = [
+  { id: "summon", title: "1. Summon a monster", goal: "summon", first: 0, oppPassive: true,
+    tip: "Tap a monster in your hand (cards that can be played glow), choose Normal Summon, then tap a glowing zone. You can Normal Summon one monster per turn.",
+    hand: ["Celtic Guardian", "Giant Soldier of Stone", "Mystical Elf", "Beaver Warrior", "Battle Ox"], filler: ["Silver Fang"], opp: ["Kuriboh"] },
+  { id: "attack", title: "2. Attack and win", goal: "win", first: 1, oppPassive: true, lp: [8000, 1500],
+    tip: "Your opponent has only 1500 life points and no monsters. Summon Vorse Raider, press Battle, tap your monster and Attack. Bring their life points to 0 to win!",
+    hand: ["Vorse Raider", "Battle Ox", "Celtic Guardian", "Feral Imp", "Mystic Horseman"], filler: ["Battle Ox"], opp: ["Kuriboh"] },
+  { id: "spell", title: "3. Play a Spell", goal: "spell", first: 0, oppPassive: true, lp: [8000, 1000],
+    tip: "Spells are used from your hand on your turn. Tap Hinotama and choose Activate: it deals 500 damage straight away. Pot of Greed draws you 2 cards.",
+    hand: ["Hinotama", "Pot of Greed", "Hinotama", "Celtic Guardian", "Battle Ox"], filler: ["Hinotama"], opp: ["Kuriboh"] },
+  { id: "trap", title: "4. Set a Trap", goal: "trap", first: 0,
+    tip: "Traps must be Set face-down first, and can be used from your opponent's next turn. Set Mirror Force, then end your turn. When your opponent attacks, the game asks if you want to respond: activate Mirror Force!",
+    hand: ["Mirror Force", "Sakuretsu Armor", "Giant Soldier of Stone", "Mystical Elf", "Celtic Guardian"], filler: ["Mystical Elf"], opp: ["Vorse Raider", "Gene-Warped Warwolf", "Alexandrite Dragon", "La Jinn the Mystical Genie of the Lamp"] },
+  { id: "tribute", title: "5. Tribute Summon", goal: "tribute", first: 0, oppPassive: true,
+    tip: "Level 5 and 6 monsters need 1 Tribute, level 7 and up need 2. Summon a monster this turn and end your turn; next turn, Tribute it to Summon Summoned Skull.",
+    hand: ["Celtic Guardian", "Summoned Skull", "Beaver Warrior", "Feral Imp", "Mystical Elf"], filler: ["Silver Fang"], opp: ["Kuriboh"] },
+  { id: "grave", title: "6. Use the Graveyard", goal: "revive", first: 0, oppPassive: true,
+    tip: "Used and destroyed cards go to the Graveyard (GY). Activate Foolish Burial to send Blue-Eyes White Dragon from your Deck to the GY, then activate Monster Reborn to bring it back to the field!",
+    hand: ["Foolish Burial", "Monster Reborn", "Celtic Guardian", "Beaver Warrior", "Mystical Elf"], filler: ["Blue-Eyes White Dragon", "Silver Fang"], opp: ["Kuriboh"] },
+];
+const LESSON_COINS = 100, TRAINING_PRIZE = { coins: 300, free: 1 };
+const trainingDone = () => LESSONS.every(l => store.get("training", { done: [] }).done.includes(l.id));
+async function startLesson(lesson) {
+  const names = [...new Set([...lesson.hand, ...lesson.filler, ...lesson.opp])];
+  let cards; try { cards = (await api({ action: "names", n: names.join("|") })).cards; } catch (e) { return gameAlert(errText(e), "Couldn't start the lesson"); }
+  const by = new Map(cards.map(c => [c.name, c])), deckOf = (front, fill) => { const out = front.map(n => by.get(n)); for (let i = 0; out.length < 30; i++) out.push(by.get(fill[i % fill.length])); return out.filter(Boolean); };
+  const vs = { kind: "ai", name: "Mokuba", face: face("Mokuba_Kaiba"), lesson: lesson.id, passive: !!lesson.oppPassive };
+  $("#banner").hidden = true;
+  startDuel(vs, deckOf(lesson.hand, lesson.filler), deckOf([], lesson.opp), lesson.first, { fixed: true, lp: lesson.lp });
+  await enterView("preview");
+  setTimeout(() => gameAlert(lesson.tip, lesson.title), 700);
+}
+// called for every engine event during a lesson
+function lessonEvent(m) {
+  const lesson = S.vs?.lesson && LESSONS.find(l => l.id === S.vs.lesson); if (!lesson || S.over) return;
+  const mine = m.controller === S.me, t = CI.get(m.code)?.type || 0;
+  const hit = { summon: m.type === MSG.SUMMONING && mine, tribute: m.type === MSG.SUMMONING && mine && (CI.get(m.code)?.level || 0) >= 5,
+    spell: m.type === MSG.CHAINING && mine && (t & 2), trap: m.type === MSG.CHAINING && mine && (t & 4), revive: m.type === MSG.SPSUMMONING && mine, win: m.type === MSG.WIN && m.player === S.me }[lesson.goal];
+  if (!hit) return;
+  S.over = true; S.lessonDone = true;
+  const tr = store.get("training", { done: [] }), first = !tr.done.includes(lesson.id), notes = ["Well done!"];
+  if (first) { tr.done.push(lesson.id); store.put("training", tr); grant({ coins: LESSON_COINS }); notes.push(`+${LESSON_COINS} coins`); }
+  if (first && trainingDone()) { grant(TRAINING_PRIZE); notes.push(`Training complete! ${rewardText(TRAINING_PRIZE)}. The gates are open: go and meet the duelists!`); }
+  setTimeout(() => { $("#bannerText").textContent = "Lesson complete!"; $("#bannerNote").textContent = notes.join("\n"); $("#rematch").hidden = true; $("#banner").hidden = false; refreshUI(); }, 1600);
+}
+
+// ---------- Training (lessons, then practice against the computer) and the Duel Arena (online) ----------
 let setup = null;
 function openSetup(kind) {
   setup = { kind, opp: null };
   show("setup"); deckOptions($("#myDeck"));
   $("#setupStatus").textContent = ""; $("#setupStatus").className = "note center";
-  $("#training").hidden = kind !== "practice"; $("#online").hidden = kind !== "online";
+  $("#training").hidden = kind !== "practice"; $("#online").hidden = kind !== "online"; $("#setupFoot").hidden = false;
   if (kind === "practice") {
     $("#setupTitle").textContent = "Training"; $("#hostFace").src = face("Mokuba_Kaiba");
-    $("#hostLine").textContent = "Want to test your deck? Pick anyone you've met, or one of your own decks. No prizes here, just practice!";
+    const done = store.get("training", { done: [] }).done, all = trainingDone();
+    $("#hostLine").textContent = all ? "You finished training! Replay a lesson any time, or test your deck against anyone you've met. No prizes here, just practice!" : "New duelist? I'll teach you the basics. Finish every lesson to open the gates!";
+    const lessons = $("#lessons"); lessons.innerHTML = "";
+    LESSONS.forEach((l, k) => {
+      const isDone = done.includes(l.id), open = isDone || k === 0 || done.includes(LESSONS[k - 1].id);
+      const b = el("button", { type: "button", className: "lesson" + (isDone ? " done" : open ? " next" : ""), disabled: !open });
+      b.append(el("span", { className: "num", textContent: isDone ? "✓" : String(k + 1) }), el("span", {}, el("b", { textContent: l.title.replace(/^\d+\. /, "") }), el("small", { textContent: isDone ? "Done · replay any time" : open ? `Reward: ${LESSON_COINS} coins` : "Finish the lesson before" })), el("span", { textContent: open ? "›" : "" }));
+      b.onclick = () => startLesson(l); lessons.append(b);
+    });
+    $("#practiceBox").hidden = !all; $("#setupFoot").hidden = !all;
     const box = $("#oppGrid"); box.innerHTML = "";
     const pick = (chip, opp) => { setup.opp = opp; for (const c of box.children) c.setAttribute("aria-pressed", String(c === chip)); };
     for (const g of GATES) for (const c of available(g)) {
@@ -2363,7 +2534,20 @@ $("#goOnline").addEventListener("click", () => openSetup("online"));
 // ---------- Your duelist: name and avatar ----------
 function openProfile() {
   $("#profile").hidden = false; $("#myName").value = profile.name;
-  $("#acctLine").textContent = account ? `Logged in as ${account.name}. Your progress is saved to your account.` : "";
+  $("#acctLine").textContent = account ? `Logged in as ${account.name}. Your progress is saved to your account.` + (account.email ? ` Email: ${account.email} (${account.verified ? "confirmed" : "not confirmed yet"}).` : " Add an email so you can recover your account.") : "";
+  const er = $("#emailRow"); er.innerHTML = "";
+  if (account) {
+    const setEmail = async () => {
+      const email = await gameDialog({ title: account.email ? "Change your email" : "Add your email", text: "We'll send a link to confirm it.", input: account.email || "", ok: "Send link", cancel: "Cancel" });
+      if (!email) return;
+      try { const j = await accountCall("setEmail", { token: account.token, email }); account.email = j.email; account.verified = false; keepAccount(); openProfile(); gameAlert(`We sent a confirmation link to ${j.email}. Check your inbox (and spam folder).`, "Check your email"); }
+      catch (e) { gameAlert(e.message, "Couldn't save the email"); }
+    };
+    if (account.email && !account.verified) er.append(el("button", { type: "button", className: "btn small primary", textContent: "Resend confirmation", onclick: async () => {
+      try { await accountCall("resend", { token: account.token }); gameAlert(`We sent the link to ${account.email} again.`, "Check your email"); } catch (e) { gameAlert(e.message, "Couldn't send it"); }
+    } }));
+    er.append(el("button", { type: "button", className: "btn small", textContent: account.email ? "Change email" : "Add email", onclick: setEmail }));
+  }
   const box = $("#avatars"); box.innerHTML = "";
   // the heroes of each series, plus every character you have beaten
   const wins = charWins(), list = [...GATES.filter(g => !g.soon).map(g => g.face), ...Object.values(CHARS).filter(c => wins[c.id]).map(c => c.face)];
@@ -2405,7 +2589,7 @@ const net = {
   // join a room (new, or after the page reloads): every move is read again from the start and replayed
   open(room) {
     this.room = room; store.put("room", room);
-    Object.assign(this, { after: 0, queue: [], hello: [null, null], replay: true, error: "" });
+    Object.assign(this, { after: 0, queue: [], hello: [null, null], replay: true, error: "", order: null, tossing: false });
     if (!this.polling) this.loop();
   },
   close() { this.room = null; store.put("room", null); },
@@ -2416,7 +2600,7 @@ const net = {
         const j = await this.call({ action: "poll", code: this.room.code, token: this.room.token, after: this.after });
         this.players = j.players; this.error = "";
         for (const m of j.msgs) { this.after = m.seq; this.receive(m); }
-        if (this.replay && !j.more) { this.replay = false; if (!$("#start").hidden) renderHome(); }
+        if (this.replay && !j.more) { this.replay = false; if (!$("#start").hidden) renderHome(); maybeStart(); }
         renderRoom();
       } catch (e) { this.error = errText(e); renderRoom(); if (/room/i.test(e.message)) { this.close(); break; } }
       await wait(this.replay ? 0 : 1000);
@@ -2426,6 +2610,7 @@ const net = {
   receive(m) {
     const mine = m.seat === this.room.seat, msg = m.msg;
     if (msg.t === "hello") { this.hello[m.seat] = msg; return maybeStart(); }
+    if (msg.t === "order") { this.order = msg.first; return maybeStart(); }
     if (mine && !this.replay) return; // already applied when it was sent
     if (S.vs?.room !== this.room.code) return;
     if (msg.t === "quit") return win(mine ? 1 : 0, mine ? "You gave up." : `${S.vs.name} gave up.`);
@@ -2436,15 +2621,26 @@ const net = {
     }
   },
 };
+// Both players are in: the host's hello says who won the coin toss; the winner's choice ({t:"order"}) starts the duel
 function maybeStart() {
   const room = net.room, mine = net.hello[room.seat], theirs = net.hello[1 - room.seat];
   if (!mine || !theirs || S.vs?.room === room.code) return;
-  // the host's hello says who goes first: 0 means the host
-  // the engine's player 0 goes first; both phones run the same engine with the host's seed
-  const hostFirst = net.hello[0].first === 0, me = (room.seat === 0) === hostFirst ? 0 : 1;
-  const decks = me === 0 ? [mine.deck, theirs.deck] : [theirs.deck, mine.deck];
-  startEngine({ kind: "online", name: theirs.name, face: face(theirs.face || "Yugi_Muto"), room: room.code }, { seed: net.hello[0].seed, decks, me });
-  S.catchup = net.replay;
+  if (net.order != null) return startOnline(net.order);
+  if (net.replay || net.tossing) return; // a choice made before a reload is still to come from the room
+  net.tossing = true;
+  const iWin = net.hello[0].coin === room.seat;
+  coinToss(iWin, theirs.name, true).then(choice => {
+    if (!iWin || net.order != null) return;
+    const first = choice === "first" ? room.seat : 1 - room.seat;
+    net.order = first; net.send({ t: "order", first }); startOnline(first);
+  });
+}
+// the engine's player 0 goes first; both phones run the same engine with the host's seed
+function startOnline(first) {
+  const room = net.room, me = room.seat === first ? 0 : 1, theirs = net.hello[1 - room.seat];
+  hideCoin(); net.tossing = false;
+  startEngine({ kind: "online", name: theirs.name, face: face(theirs.face || "Yugi_Muto"), room: room.code }, { seed: net.hello[0].seed, decks: [net.hello[first].deck, net.hello[1 - first].deck], me });
+  S.catchup = net.replay; if (!$("#start").hidden) renderHome(); else renderRoom();
 }
 function renderRoom() {
   if (!setup || setup.kind !== "online" || $("#setup").hidden) return;
@@ -2454,12 +2650,13 @@ function renderRoom() {
   $("#roomCode").textContent = r.code;
   const ready = S.vs?.room === r.code;
   $("#startRow").hidden = !ready; $("#roomSpin").hidden = ready;
-  st.textContent = net.error || (ready ? (S.over ? "This duel is over." : `${S.vs.name} is here. ${S.me === 0 ? "You go first." : `${S.vs.name} goes first.`} Start the duel:`) : r.seat === 0 ? "Waiting for your friend to join with this code…" : "Joining…");
+  st.textContent = net.error || (ready ? (S.over ? "This duel is over." : `${S.vs.name} is here. ${S.me === 0 ? "You go first." : `${S.vs.name} goes first.`} Start the duel:`) : net.hello[0] && net.hello[1] ? "Coin toss…" : r.seat === 0 ? "Waiting for your friend to join with this code…" : "Joining…");
 }
 function myHello(first) {
   const deck = chosenDeck($("#myDeck"), $("#setupStatus")); if (!deck) return null;
   const name = profile.name || "Duelist";
-  return { t: "hello", name, face: profile.face, deck: splitDeck(deck), first, seed: first == null ? null : randSeed() };
+  // the host also tosses the coin (coin: the seat that won) and picks the seed both engines use
+  return { t: "hello", name, face: profile.face, deck: splitDeck(deck), coin: first, seed: first == null ? null : randSeed() };
 }
 $("#roomCreate").addEventListener("click", async () => {
   const hello = myHello(Math.random() < 0.5 ? 0 : 1); if (!hello) return;
@@ -2577,6 +2774,7 @@ $("#topupClose").addEventListener("click", () => { $("#topup").hidden = true; })
 // Each win: coins and one random card from their deck. The ace drops 1 time in 5, and for sure by the 5th win without it.
 function finishDuel(w, why) {
   const vs = S.vs || {}, notes = [why];
+  if (vs.lesson) { if (S.lessonDone) return; $("#bannerText").textContent = w === 0 ? "You win!" : "Try again!"; $("#bannerNote").textContent = w === 0 ? why : `${why}\nTap Duel again to restart the lesson.`; $("#rematch").hidden = false; $("#banner").hidden = false; return; }
   questTick("duels");
   if (w === 0 && (vs.story || vs.kind === "online")) questTick("wins");
   if (w === 0 && vs.story) questTick("gateWins");
@@ -2610,19 +2808,21 @@ function finishDuel(w, why) {
 }
 $("#rematch").addEventListener("click", async () => {
   $("#banner").hidden = true;
+  if (S.vs?.lesson) return startLesson(LESSONS.find(l => l.id === S.vs.lesson)); // try the lesson again
   const vs = S.vs, mine = shuffle(deckCards(decks[store.get("myDeck", 0)]).map(c => ({ ...c })));
   let opp = vs.char ? npcCache.get(vs.char) : null;
   if (!opp || deckProblems(mine).length) { exitDuel(); return; }
   await playVs(vs.face, vs.name);
-  const first = Math.random() < 0.5 ? 0 : 1;
+  const first = await tossForFirst(vs.name);
   startDuel(vs, mine, opp, first);
   toast(first === 0 ? "You go first" : `${vs.name} goes first`);
 });
 $("#bannerHome").addEventListener("click", () => {
   $("#banner").hidden = true;
   if (S.vs?.kind === "online") net.close();
-  const ch = S.vs?.char && S.vs.story ? CHARS[S.vs.char] : null;
+  const ch = S.vs?.char && S.vs.story ? CHARS[S.vs.char] : null, lesson = S.vs?.lesson;
   exitDuel();
+  if (lesson) return openSetup("practice"); // back to the lesson list
   if (ch) openGate(GATES.find(g => g.id === ch.gate)); // back to the gate, where a new face may be waiting
 });
 
@@ -2749,12 +2949,12 @@ async function startXR() {
   refreshUI();
 }
 // The 3D preview camera orbits the board: drag to turn it, pinch to zoom
-const orbit = { az: 0, el: 55, zoom: 1 };
+const orbit = { az: 0, el: 76, zoom: 1 };
 function aimPreview() {
-  // far enough back that the whole board (about 66 cm wide) fits a narrow phone screen
+  // just far enough back that the whole board (about 66 cm wide, zone edge to zone edge) fills a narrow phone screen
   const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
-  const dist = Math.max(0.8, 0.39 / Math.tan(hfov / 2)) * orbit.zoom, el = THREE.MathUtils.degToRad(orbit.el), az = THREE.MathUtils.degToRad(orbit.az);
-  const target = new THREE.Vector3(Math.sin(az) * 0.2, 0, Math.cos(az) * 0.2); // the board sits above the hand and panel
+  const dist = Math.max(0.62, 0.385 / Math.tan(hfov / 2)) * orbit.zoom, el = THREE.MathUtils.degToRad(orbit.el), az = THREE.MathUtils.degToRad(orbit.az);
+  const target = new THREE.Vector3(Math.sin(az) * 0.23, 0, Math.cos(az) * 0.23); // the board sits above the hand and panel
   camera.position.set(target.x + dist * Math.cos(el) * Math.sin(az), dist * Math.sin(el), target.z + dist * Math.cos(el) * Math.cos(az));
   camera.lookAt(target);
 }
@@ -2784,6 +2984,12 @@ function aimPreview() {
   $("#overlay").addEventListener("touchmove", e => { if (ang == null || e.touches.length !== 2) return; const a = angle(e.touches); board.rotation.y -= a - ang; ang = a; }, { passive: true });
   $("#overlay").addEventListener("touchend", () => { ang = null; }, { passive: true });
 }
+// hold your Deck for 3 seconds to surrender, like in other card games
+{
+  let hold = null;
+  canvas.addEventListener("pointerdown", e => { if (mode !== "preview") return; const z = pick(e.clientX, e.clientY); if (z?.pile?.kind === "DECK" && z.pile.p === 0) hold = setTimeout(() => { hold = null; askSurrender(); }, 3000); });
+  for (const ev of ["pointerup", "pointercancel", "pointermove"]) canvas.addEventListener(ev, e => { if (hold && (ev !== "pointermove" || Math.abs(e.movementX) + Math.abs(e.movementY) > 6)) { clearTimeout(hold); hold = null; } });
+}
 $("#holoBtn").addEventListener("click", () => { holosOn = !holosOn; $("#holoBtn").textContent = holosOn ? "Hide holograms" : "Show holograms"; holoView(); });
 const table = new THREE.Mesh(new THREE.CircleGeometry(0.6, 48).rotateX(-Math.PI / 2), mat(0x3b2a1e, { roughness: 0.7 }));
 table.position.y = -0.001; table.visible = false; scene.add(table);
@@ -2802,7 +3008,17 @@ function exitDuel() {
   mode = null; board.visible = false; table.visible = false; scene.background = null;
   $("#overlay").hidden = true; show("start"); renderHome();
 }
-$("#exitBtn").addEventListener("click", exitDuel);
+// Leaving a running duel means surrendering (a lesson can just be left)
+async function askSurrender() {
+  if (!S.vs || S.over) return exitDuel();
+  if (S.vs.lesson) { if (await gameConfirm("Leave the lesson?", "You can start it again any time from Training.", "Leave")) { S.over = true; exitDuel(); openSetup("practice"); } return; }
+  if (!await gameConfirm("Surrender?", `Do you want to surrender this duel against ${S.vs.name}? It counts as a loss.`, "Surrender", true)) return;
+  if (S.vs.kind === "online") { net.send({ t: "quit" }); setTimeout(() => net.close(), 1500); }
+  saved = null; win(1, "You surrendered.");
+}
+$("#exitBtn").addEventListener("click", askSurrender);
+// the phone's back button during a duel asks too, instead of leaving
+addEventListener("popstate", () => { if (!$("#overlay").hidden && S.vs && !S.over) { history.pushState({ duel: 1 }, ""); askSurrender(); } });
 $("#resumeXR").addEventListener("click", () => enterView("xr"));
 $("#resumePreview").addEventListener("click", () => enterView("preview"));
 $("#giveUp").addEventListener("click", async () => {
@@ -2831,7 +3047,12 @@ loadModels().then(() => renderAll());
 updatePiles();
 renderHome();
 if (account) giveStarter(); else showLogin(); // a new account gets its starter deck after logging in
-if (account) { rewardBadge(); if (rewards().loginClaimed !== dayKey()) setTimeout(() => { if ($("#overlay").hidden) openRewards("login"); }, 1500); }
+if (account) {
+  rewardBadge();
+  const welcome = sessionStorage.getItem("arduel.welcome");
+  if (welcome) { sessionStorage.removeItem("arduel.welcome"); setTimeout(() => gameAlert(`Welcome, ${account.name}! We sent a link to ${welcome} to confirm your email. With it you can reset your password if you ever forget it.`, "Account created"), 1200); }
+  else if (rewards().loginClaimed !== dayKey()) setTimeout(() => { if ($("#overlay").hidden) openRewards("login"); }, 1500);
+}
 loadGm();
 if (net.room) net.open(net.room); // back into an online duel after the page reloads
 if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE }; // for testing

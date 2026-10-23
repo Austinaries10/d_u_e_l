@@ -330,7 +330,7 @@ async function openPlayer(name) {
     box.innerHTML = "";
     const card = el("div", { className: "card" });
     card.append(el("div", { className: "row", style: "justify-content:space-between" }, el("h2", { textContent: u.name }), el("span", { className: "pill " + (u.banned ? "off" : "on"), textContent: u.banned ? "Suspended" : "Active" })),
-      el("p", { textContent: `Joined ${new Date(u.created * 1000).toLocaleDateString()} · last seen ${ago(u.seen)} · ${(st.decklist || []).length} decks` }));
+      el("p", { textContent: `Joined ${new Date(u.created * 1000).toLocaleDateString()} · last seen ${ago(u.seen)} · ${(st.decklist || []).length} decks · email: ${u.email ? `${u.email} (${u.verified ? "confirmed" : "not confirmed"})` : "none"}` }));
     const coins = el("input", { type: "number", min: 0, value: st.wallet.coins || 0 }), free = el("input", { type: "number", min: 0, max: 99, value: st.wallet.free || 0 });
     coins.oninput = () => { st.wallet.coins = Math.max(0, +coins.value || 0); }; free.oninput = () => { st.wallet.free = Math.max(0, +free.value || 0); };
     card.append(el("div", { className: "form" }, el("label", { className: "field" }, "Coins", coins), el("label", { className: "field" }, "Free packs left today", free)));

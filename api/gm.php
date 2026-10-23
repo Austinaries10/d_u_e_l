@@ -169,7 +169,7 @@ if ($action === 'players') {
     $q = strtolower(trim((string)($in['q'] ?? '')));
     $out = [];
     foreach (glob(USERS . '/*.json') ?: [] as $f) {
-        if ($q !== '' && !str_contains(basename($f, '.json'), $q)) {
+        if (basename($f)[0] === '_' || ($q !== '' && !str_contains(basename($f, '.json'), $q))) { // _emails.json is the email index
             continue;
         }
         $u = json_decode((string)file_get_contents($f), true) ?: [];
@@ -206,7 +206,8 @@ function editPlayer(string $name, callable $fn): array
 if ($action === 'player') {
     requireGm($in);
     $u = editPlayer((string)($in['name'] ?? ''), fn($u) => $u);
-    echo json_encode(['name' => $u['name'], 'created' => $u['created'] ?? 0, 'seen' => $u['seen'] ?? 0, 'banned' => !empty($u['banned']), 'rev' => $u['rev'] ?? 0, 'state' => $u['state'] ?? null]);
+    echo json_encode(['name' => $u['name'], 'created' => $u['created'] ?? 0, 'seen' => $u['seen'] ?? 0, 'banned' => !empty($u['banned']), 'rev' => $u['rev'] ?? 0, 'state' => $u['state'] ?? null,
+        'email' => $u['email'] ?? '', 'verified' => !empty($u['verified'])]);
     exit;
 }
 
