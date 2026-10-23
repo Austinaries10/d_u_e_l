@@ -412,6 +412,10 @@
   .pickcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; max-height: 38vh; overflow-y: auto; margin-bottom: 10px; }
   .pc { padding: 3px; border: 2px solid transparent; border-radius: 9px; background: rgba(255,255,255,.05); color: var(--text); font: inherit; cursor: pointer; display: grid; gap: 3px; text-align: center; }
   .pc img { width: 100%; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 5px; background: #1c2230; }
+  .chainopts { display: grid; gap: 8px; margin: 8px 0; } .chainrow { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; }
+  .chainrow img { width: 44px; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 4px; cursor: pointer; } .chainrow .btn { text-align: left; justify-content: flex-start; white-space: normal; }
+  .chainopt { display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 12px; padding: 6px; color: var(--text); font: inherit; text-align: left; cursor: pointer; width: 100%; margin-top: 6px; }
+  .chainopt img { grid-row: span 2; width: 44px; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 4px; } .chainopt span { font-weight: 700; font-size: 14px; } .chainopt small { color: var(--muted); font-size: 12px; }
   .pc img.back { background: linear-gradient(135deg, #14213d, #0b1226); box-shadow: inset 0 0 0 2px #e9c46a; }
   .pc small { font-size: 10px; line-height: 1.2; color: var(--muted); }
   .pc.on { border-color: var(--accent); background: rgba(255,181,71,.2); } .pc.can { border-color: rgba(123,216,143,.7); }
@@ -1002,6 +1006,22 @@ function updatePiles() {
   }
 }
 const zoneMeshes = [];
+const FIELD_COLOR = 0x2ee6c4; // the Field Zones glow teal, so they don't look like Spell & Trap Zones
+// An active field spell spreads its artwork faintly across the whole board (the most recently played one)
+const fieldArt = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+fieldArt.position.y = -0.0005; fieldArt.renderOrder = -1;
+let fieldShown = 0;
+function updateFieldArt() {
+  const now = [0, 1].map(p => S.zones[p]?.s?.[5]).filter(sl => sl && !sl.faceDown).sort((a, b) => (b.since || 0) - (a.since || 0))[0];
+  const id = now?.card?.id || 0;
+  if (id === fieldShown) return;
+  fieldShown = id;
+  if (!fieldArt.parent) board.add(fieldArt);
+  if (!id) { fieldArt.material.opacity = 0; return; }
+  fieldArt.material.map = loadTex(imgUrl(now.card, "crop")); fieldArt.material.needsUpdate = true;
+  const w = 2 * BOARD_X, d = 2 * BOARD_Z; fieldArt.scale.set(w, 1, d);
+  effects.push({ t: 0, dur: 0.8, step: k => { fieldArt.material.opacity = 0.32 * k; } });
+}
 function zoneTexture(color, label) {
   return canvasTex(128, 184, (g, w, h) => {
     const c = "#" + color.toString(16).padStart(6, "0");
@@ -1025,7 +1045,7 @@ function buildBoard() {
     z.position.set(COLS[i === 5 ? 1 : 3], 0.001, 0); z.userData.zone = { p: 0, row: "m", i }; board.add(z); zoneMeshes.push(z);
   }
   for (const p of [0, 1]) {
-    const fz = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: zoneTexture(PCOLOR[p], "FIELD"), transparent: true, depthWrite: false }));
+    const fz = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: zoneTexture(FIELD_COLOR, "FIELD"), transparent: true, depthWrite: false }));
     fz.position.copy(pilePos(p, "FIELD", 0.001)); fz.scale.setScalar(PILE_S); if (p === 1) fz.rotation.y = Math.PI;
     fz.userData.zone = { p, row: "s", i: 5 }; board.add(fz); zoneMeshes.push(fz);
     for (const label of ["DECK", "GY", "EXTRA", "BANISHED"]) {
@@ -1294,7 +1314,7 @@ function renderSlot(p, row, i) {
   if (!slot) return;
   if (slot.obj) { board.remove(slot.obj.group); }
   const group = new THREE.Group(); group.position.copy(zonePos(p, row, i)); board.add(group);
-  group.userData.zoneRef = { p, row, i }; if (row === "s" && i === 5) group.scale.setScalar(PILE_S);
+  group.userData.zoneRef = { p, row, i }; if (row === "s" && i === 5) { group.scale.setScalar(PILE_S); slot.since ??= performance.now(); }
   const cm = cardMesh(slot.card); cm.position.y = 0.002;
   if (slot.faceDown) cm.rotation.z = Math.PI; // back up
   if (p === 1) cm.rotation.y = Math.PI;
@@ -1354,6 +1374,44 @@ function lunge(slot, targetPos) {
   const to = targetPos.clone().sub(slot.obj.group.position).multiplyScalar(0.8);
   let hitDone = false;
   effects.push({ t: 0, dur: 0.7, step: k => { const f = k < 0.5 ? k * 2 : 2 - k * 2; g.position.lerpVectors(from, to, f * f); if (k >= 0.5 && !hitDone) { hitDone = true; const p = slot.obj.group.position.clone().add(to); p.y = 0.08; sparks(p, 0xffffff); } }, done: () => g.position.copy(from) });
+}
+// A glowing sword lying over each of your monsters that can attack now; attacking sends it flying at the target
+function swordMesh() {
+  const g = new THREE.Group(), steel = new THREE.MeshStandardMaterial({ color: 0xe8eef7, emissive: 0x9fd8ff, emissiveIntensity: 0.6, metalness: 0.9, roughness: 0.25 }),
+    gold = new THREE.MeshStandardMaterial({ color: 0xffc23d, emissive: 0xffa000, emissiveIntensity: 0.5, metalness: 0.8, roughness: 0.3 }), grip = mat(0x5a3418);
+  g.add(mesh(new THREE.BoxGeometry(0.009, 0.002, 0.048), steel, 0, 0, -0.016));                       // blade (points to -z)
+  g.add(mesh(new THREE.ConeGeometry(0.0065, 0.012, 4).rotateX(-Math.PI / 2), steel, 0, 0, -0.046));   // tip
+  g.add(mesh(new THREE.BoxGeometry(0.03, 0.004, 0.005), gold, 0, 0, 0.009));                          // guard
+  g.add(mesh(new THREE.BoxGeometry(0.006, 0.004, 0.016), grip, 0, 0, 0.019));                         // grip
+  g.add(mesh(new THREE.SphereGeometry(0.0045, 10, 8), gold, 0, 0, 0.029));                            // pommel
+  const glow = mesh(new THREE.PlaneGeometry(0.03, 0.08).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }), 0, -0.002, -0.005);
+  g.add(glow); g.userData.glow = glow;
+  return g;
+}
+const readySwords = new Map(); // "p:i" -> sword over that monster
+function showSwords(list) {
+  const want = new Set(list.map(a => `${a.p}:${a.i}`));
+  for (const [k, sw] of readySwords) if (!want.has(k)) { board.remove(sw); readySwords.delete(k); }
+  for (const a of list) {
+    const k = `${a.p}:${a.i}`; if (readySwords.has(k)) continue;
+    const sw = swordMesh(), pos = zonePos(a.p, "m", a.i); sw.position.set(pos.x, 0.05, pos.z); if (a.p === 1) sw.rotation.y = Math.PI;
+    sw.userData.base = sw.position.clone(); board.add(sw); readySwords.set(k, sw);
+  }
+}
+// the attack: the sword flies from the attacker to its target (or at the opponent) and vanishes after the hit
+function swordStrike(p, i, target) {
+  if (quiet) return;
+  const k = `${p}:${i}`, from = zonePos(p, "m", i); let sw = readySwords.get(k);
+  if (sw) readySwords.delete(k); else { sw = swordMesh(); board.add(sw); }
+  const to = target.clone(); from.y = to.y = 0.05;
+  sw.position.copy(from); sw.rotation.y = Math.atan2(-(to.x - from.x), -(to.z - from.z)); // point the blade at the target
+  let hit = false;
+  effects.push({ t: 0, dur: 0.9, step: k2 => {
+    const f = Math.min(1, k2 / 0.55), e = f * f * (3 - 2 * f);
+    sw.position.lerpVectors(from, to, e); sw.position.y = 0.05 + Math.sin(f * Math.PI) * 0.05;
+    if (f >= 1 && !hit) { hit = true; const pp = to.clone(); pp.y = 0.06; sparks(pp, 0xbfe6ff); }
+    if (k2 > 0.6) { const fade = (k2 - 0.6) / 0.4; sw.scale.setScalar(1 + fade * 0.6); sw.traverse(o => { if (o.material) { o.material.transparent = true; o.material.opacity = 1 - fade; } }); }
+  }, done: () => board.remove(sw) });
 }
 function flash(p, row, i) {
   const s = S.zones[p]?.[row]?.[i]; if (quiet || !s?.obj) return;
@@ -1473,7 +1531,7 @@ async function play(m) {
       const target = m.target ? zonePos(side(m.target.controller), "m", m.target.sequence) : zonePos(1 - side(a.controller), "s", 2);
       const tg = m.target ? S.zones[side(m.target.controller)].m[m.target.sequence] : null;
       blog(side(a.controller), `${s?.card.name || "A monster"} attacked ${m.target ? (tg && !tg.faceDown ? tg.card.name : "a face-down monster") : "directly"}.`, [s?.card.id, tg && !tg.faceDown ? tg.card.id : 0].filter(Boolean));
-      toast(`${s?.card.name || "A monster"} attacks${m.target ? "" : " directly"}!`); lunge(s, target); await wait(800); break;
+      toast(`${s?.card.name || "A monster"} attacks${m.target ? "" : " directly"}!`); swordStrike(side(a.controller), a.sequence, target); await wait(900); break;
     }
     case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player); blog(p, m.type === MSG.PAY_LPCOST ? `${who(p)} paid ${m.amount} LP (${Math.max(0, S.lp[p] - m.amount)} LP left).` : `${who(p)} took ${m.amount} damage (${Math.max(0, S.lp[p] - m.amount)} LP left).`); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
     case MSG.RECOVER: { const p = side(m.player); blog(p, `${who(p)} gained ${m.amount} LP.`); setLp(p, S.lp[p] + m.amount); toast(`${who(p)}: +${m.amount} LP`); await wait(450); break; }
@@ -1675,18 +1733,23 @@ function aiAnswer(m, retry) {
       return { type: 1, action: m.to_ep ? 7 : 6, index: null };
     }
     case MSG.SELECT_BATTLECMD: {
+      // strongest attackers first; a face-down monster is attacked by a strong enough attacker (its DEF is unknown)
       const oppMon = S.zones[0].m.filter(Boolean);
-      const idx = m.attacks.findIndex(a => { const atk = atkOf(infoAt(a)); return !oppMon.length || oppMon.some(s => !s.faceDown && (s.pos === "atk" ? atkOf(s.card) < atk : (s.card.def || 0) < atk)) || (a.can_direct && atk > 0); });
-      if (idx >= 0) return { type: 0, action: 1, index: idx };
+      const beats = (s, atk) => s.faceDown ? atk >= 1600 || (atk >= 1200 && Math.random() < 0.5) : s.pos === "atk" ? atkOf(s.card) < atk : (s.card.def || 0) < atk;
+      const order = m.attacks.map((a, i) => ({ i, atk: atkOf(infoAt(a)) })).sort((x, y) => y.atk - x.atk);
+      const pick = order.find(({ i, atk }) => !oppMon.length || (m.attacks[i].can_direct && atk > 0) || oppMon.some(s => beats(s, atk)));
+      if (pick) { ui.aiAttacker = pick.atk; return { type: 0, action: 1, index: pick.i }; }
       if (m.chains.length && Math.random() < 0.3) return { type: 0, action: 0, index: 0 };
       return { type: 0, action: m.to_m2 ? 2 : 3, index: null };
     }
     case MSG.SELECT_CARD: case MSG.SELECT_TRIBUTE: {
       const list = m.selects;
       if (/attack target/.test(hintText) || (m.type === MSG.SELECT_CARD && list.every(c => !mine(c) && c.location === LOC.MZONE) && !bad)) {
-        // attack the strongest monster this attacker beats, or else the weakest
-        const ranked = list.map((c, i) => ({ i, a: atkOf(infoAt(c)) })).sort((x, y) => y.a - x.a);
-        return { type: m.type === MSG.SELECT_CARD ? 5 : 12, indicies: [ranked[ranked.length - 1].i] };
+        // attack the strongest face-up monster this attacker beats, then a face-down one, or else the weakest
+        const atk = ui.aiAttacker ?? 0, slot = c => S.zones[side(c.controller)].m[c.sequence];
+        const opts = list.map((c, i) => { const s = slot(c), down = !s || s.faceDown, v = down ? 0 : s.pos === "atk" ? atkOf(s.card) : (s.card.def || 0);
+          return { i, score: down ? 1 : v < atk ? 2000 + v : -v }; }).sort((x, y) => y.score - x.score);
+        return { type: m.type === MSG.SELECT_CARD ? 5 : 12, indicies: [opts[0].i] };
       }
       const n = Math.max(1, m.min);
       return { type: m.type === MSG.SELECT_CARD ? 5 : 12, indicies: m.type === MSG.SELECT_TRIBUTE ? list.map((c, i) => ({ i, a: atkOf(infoAt(c)) })).sort((a, b) => a.a - b.a).slice(0, n).map(x => x.i) : best(list, n) };
@@ -1788,10 +1851,11 @@ function actionsFor(loc) {
   }
   return out;
 }
-const cardImg = (c, hidden) => el("img", { src: hidden ? "" : imgUrl(c, "small"), alt: hidden ? "Face-down card" : c.name, className: hidden ? "back" : "" });
+let backImg = null; // the card back, as a picture for lists of cards
+const cardImg = (c, hidden) => el("img", { src: hidden ? (backImg ??= backTex.image.toDataURL("image/png")) : imgUrl(c, "small"), alt: hidden ? "" : c.name, className: hidden ? "back" : "" });
 function cardInfo(panel, c, hidden) {
   const top = el("div", { className: "cinfo" });
-  if (!hidden && c.id) top.append(el("img", { src: imgUrl(c, "small"), alt: "" }));
+  if (!hidden && c.id) { const im = el("img", { src: imgUrl(c, "small"), alt: "", title: "Tap to read the card" }); im.style.cursor = "pointer"; im.onclick = () => openCard(c); top.append(im); }
   const t = el("div"); t.append(el("h3", { textContent: hidden ? "Face-down card" : c.name }));
   if (!hidden) {
     t.append(el("div", { className: "meta", textContent: (c.type || c.kind) + (c.kind === "monster" ? ` · ${c.attribute} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : "") }));
@@ -1801,6 +1865,7 @@ function cardInfo(panel, c, hidden) {
 }
 function refreshUI() {
   holoView();
+  { const bm = myPrompt(); showSwords(bm?.type === MSG.SELECT_BATTLECMD && !S.over ? bm.attacks.map(a => ({ p: side(a.controller), i: a.sequence })) : []); }
   $("#lp0v").textContent = S.lp[0]; $("#lp1v").textContent = S.lp[1];
   $("#lp1name").textContent = `${who(1)} · ${S.hand[1].length} in hand`;
   $("#lp0").classList.toggle("active", S.turn === 0); $("#lp1").classList.toggle("active", S.turn === 1);
@@ -1930,9 +1995,17 @@ function askPanel(panel, m, btn) {
       break;
     }
     case MSG.SELECT_CHAIN: {
+      // each card you could respond with: tap its picture to read it, or the button to activate it
       const last = S.chain.at(-1);
       panel.append(el("h3", { textContent: last ? `${cardOf(last.code).name} was activated. Respond?` : "Activate a card or effect?" }));
-      m.selects.forEach((c, k) => { const info = cardOf(c.code); row.append(btn(`${info.name}: ${descText(c.description)}`, () => answer({ type: 8, index: k }), "primary")); });
+      if (last) { const lc = cardOf(last.code), t = el("button", { type: "button", className: "chainopt" }); t.append(cardImg(lc, false), el("span", { textContent: lc.name }), el("small", { textContent: "Tap to read the card" })); t.onclick = () => openCard(lc); panel.append(t); }
+      const opts = el("div", { className: "chainopts" });
+      m.selects.forEach((c, k) => {
+        const info = cardOf(c.code), o = el("div", { className: "chainrow" }), pic = cardImg(info, false);
+        pic.onclick = () => openCard(info); pic.title = "Tap to read the card";
+        o.append(pic, btn(`${info.name}: ${descText(c.description)}`, () => answer({ type: 8, index: k }), "primary")); opts.append(o);
+      });
+      panel.append(opts);
       if (!m.forced) row.append(btn("No", () => answer({ type: 8, index: null })));
       break;
     }
@@ -2856,6 +2929,7 @@ async function npcDeck(ch) {
     npcTierCache.set(key, list.map(n => recCards.get(n)).filter(Boolean));
   }
   npcCache.set(ch.id, npcTierCache.get(key));
+  if (LANG) trLoad(npcCache.get(ch.id).map(c => c.id)); // reward names in the chosen language
   return npcCache.get(ch.id);
 }
 const profile = store.get("profile", { name: "", face: "Yugi_Muto" });
@@ -3424,13 +3498,13 @@ function finishDuel(w, why) {
     if (Math.random() < 0.2 || (noAce[ch.id] || 0) >= 4) {
       noAce[ch.id] = 0;
       const card = ace || null;
-      if (card) { own({ ...card, rarities: [] }, "Ultra Rare"); notes.push(`ACE CARD! You got ${card.name} (Ultra Rare)!`); }
+      if (card) { own({ ...card, rarities: [] }, "Ultra Rare"); notes.push(`ACE CARD! You got ${cn(card)} (Ultra Rare)!`); }
       else api({ action: "names", n: ch.ace.name }).then(j => { if (j.cards[0]) { own({ ...j.cards[0], rarities: [] }, "Ultra Rare"); saveColl(); } }).catch(() => {});
       if (!card) notes.push(`ACE CARD! You got ${ch.ace.name} (Ultra Rare)!`);
     } else {
       noAce[ch.id] = (noAce[ch.id] || 0) + 1;
       const pool = deck.filter(c => c.id !== ch.ace.id && c.name !== ch.ace.name), card = pool.length ? any(pool) : null;
-      if (card) { const r = Math.random(), rar = r < 0.05 ? "Super Rare" : r < 0.3 ? "Rare" : "Common"; own({ ...card, rarities: [] }, rar); notes.push(`You got ${card.name} (${rar})`); }
+      if (card) { const r = Math.random(), rar = r < 0.05 ? "Super Rare" : r < 0.3 ? "Rare" : "Common"; own({ ...card, rarities: [] }, rar); notes.push(`You got ${cn(card)} (${rar})`); }
     }
     store.put("noAce", noAce); saveColl();
     if (available(g).some(c => !before.includes(c.id))) notes.push("Someone new has appeared at the gate...");
@@ -3666,6 +3740,8 @@ renderer.setAnimationLoop((time, frame) => {
     if (hits.length) { reticle.visible = true; reticle.matrix.fromArray(hits[0].getPose(renderer.xr.getReferenceSpace()).transform.matrix); }
   }
   for (const p of [0, 1]) for (const row of ["m"]) for (const s of S.zones[p][row]) if (s?.obj?.holo) s.obj.holo.userData.model.traverse(o => o.userData.animate?.(t));
+  for (const sw of readySwords.values()) { sw.position.y = sw.userData.base.y + Math.sin(t * 3) * 0.006; sw.userData.glow.material.opacity = 0.25 + Math.sin(t * 4) * 0.12; }
+  if (board.visible) updateFieldArt();
   for (const e of [...effects]) { e.t += dt; const k = Math.min(1, e.t / e.dur); e.step(k, dt); if (k >= 1) { effects.splice(effects.indexOf(e), 1); e.done?.(); } }
   renderer.render(scene, camera);
 });
