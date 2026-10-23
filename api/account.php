@@ -355,7 +355,7 @@ if ($action === 'log') {
     is_array($entries) && strlen((string)json_encode($entries)) <= 40000 || fail(400, 'Too much.');
     echo json_encode(withUser($name, function (array $u) use ($hash, $entries) {
         checkToken($u, $hash);
-        foreach (array_slice($entries, 0, 60) as $e) if (is_array($e)) ulog($u['name'], ['ev' => 'client'] + $e);
+        foreach (array_slice($entries, 0, 60) as $e) if (is_array($e)) ulog($u['name'], ['ev' => 'client.' . substr((string)($e['ev'] ?? ''), 0, 40)] + $e);
         return ['reply' => ['ok' => true]];
     }));
     exit;
