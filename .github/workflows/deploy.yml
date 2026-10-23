@@ -16,6 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The hosting caches scripts for a week, so the engine is loaded as engine/worker.js?v=<commit>
+      - name: Stamp the release
+        run: sed -i "s/__BUILD__/${GITHUB_SHA::7}/g" index.html
+
       # Uploads only changed files. Files on the server that this repo never uploaded
       # (for example cPanel's .htaccess, server/config.php and server/vendor) are left alone.
       # server/vendor (the PHP libraries, ~5,000 files) is uploaded once by hand as a zip; see README.

@@ -40,8 +40,9 @@ const FLAGS = OcgQueryFlags.CODE | OcgQueryFlags.POSITION | OcgQueryFlags.LEVEL 
 const LOCS = { hand: OcgLocation.HAND, mzone: OcgLocation.MZONE, szone: OcgLocation.SZONE, grave: OcgLocation.GRAVE, removed: OcgLocation.REMOVED, extra: OcgLocation.EXTRA };
 // The whole board, as the engine sees it right now
 function snapshot() {
+  const info = lib.duelQueryField(duel);
   const players = [0, 1].map(p => {
-    const out = { deck: lib.duelQueryCount(duel, p, OcgLocation.DECK) };
+    const out = { deck: lib.duelQueryCount(duel, p, OcgLocation.DECK), lp: Math.max(0, info.players[p].lp | 0) }; // the engine reports life points unsigned: below 0 wraps around
     for (const [k, loc] of Object.entries(LOCS)) out[k] = lib.duelQueryLocation(duel, { flags: FLAGS, controller: p, location: loc }).map(c => c && c.code !== undefined ? {
       code: c.code, position: c.position, attack: c.attack, defense: c.defense, level: c.level || c.rank || c.link?.rating || 0, overlays: c.overlayCards?.length || 0, public: !!c.isPublic,
     } : null);
