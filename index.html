@@ -3547,6 +3547,16 @@ const CHAR_DECKS = {
   ghostgirl: {"main": ["Altergeist Meluseek", "Altergeist Meluseek", "Altergeist Meluseek", "Altergeist Silquitous", "Altergeist Silquitous", "Altergeist Marionetter", "Altergeist Marionetter", "Altergeist Pookuery", "Altergeist Pookuery", "Altergeist Kunquery", "Altergeist Kunquery", "Altergeist Fifinellag", "Altergeist Fifinellag", "Altergeist Multifaker", "Altergeist Multifaker", "Spellbook Magician of Prophecy", "Ghost Belle & Haunted Mansion", "Effect Veiler", "Altergeist Pookuery", "Pot of Greed", "Monster Reborn", "Altergeist Camouflage", "Altergeist Protocol", "Altergeist Camouflage", "Altergeist Manifestation", "Altergeist Manifestation", "Mirror Force", "Sakuretsu Armor", "Negate Attack", "Magic Cylinder"], "extra": ["Altergeist Hexstia", "Altergeist Primebanshee", "Link Spider", "Linkuriboh"]},
 };
 const charWins = () => store.get("charWins", {});
+// What brings the next rival at a gate: the duelists who, beaten once more, make someone new appear
+function nextUnlock(g) {
+  const wins = charWins(), here = available(g), locked = g.chars.filter(c => !here.includes(c));
+  if (!locked.length) return "";
+  const after = id => { const w = { ...wins, [id]: (wins[id] || 0) + 1 }, f = x => w[x] || 0, t = g.chars.reduce((n, c) => n + f(c.id), 0); return locked.some(c => c.when(f, t)); };
+  const who_ = here.filter(c => after(c.id)).map(c => c.name);
+  if (who_.length === here.length) return "Win one more duel at this gate and someone new will appear.";
+  if (who_.length) return `Beat ${who_.join(" or ")} once more and someone new will appear.`;
+  return "Keep winning at this gate and someone new will appear.";
+}
 function available(g) {
   const wins = charWins(), w = id => wins[id] || 0, total = g.chars.reduce((n, c) => n + w(c.id), 0);
   return g.chars.filter(c => c.when(w, total));
@@ -3611,7 +3621,7 @@ function openGate(g) {
     box.append(chip);
   }
   store.put("seenChars", [...new Set([...seen, ...available(g).map(c => c.id)])]);
-  $("#gateHint").textContent = any(HINTS);
+  $("#gateHint").textContent = nextUnlock(g) || any(HINTS);
 }
 $("#gateBack").addEventListener("click", () => { show("start"); renderHome(); });
 
@@ -4159,6 +4169,7 @@ function finishDuel(w, why) {
     }
     store.put("noAce", noAce); saveColl();
     if (available(g).some(c => !before.includes(c.id))) notes.push("Someone new has appeared at the gate...");
+    else if (nextUnlock(g)) notes.push(nextUnlock(g));
   } else if (vs.kind === "online") { const coins = w === 0 ? 100 : 30; wallet.coins += coins; notes.push(`+${coins} coins`); }
   saveWallet(); saveDuel();
   if ($("#overlay").hidden) { toastHome(`${title} ${notes.join(" ")}`); renderHome(); return; }
