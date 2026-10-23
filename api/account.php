@@ -16,11 +16,15 @@
 //   POST ?action=reset    {name, code, password} set a new password from that link
 //   POST ?action=save     {token, rev, state}    -> {rev}   (409 with the server's save if it changed elsewhere)
 //   POST ?action=logout   {token}
+//   POST ?action=log      {token, entries}       what the game noticed (wins, saves, errors), kept to find bugs
+//   GET  ?action=logs&key=KEY[&u=NAME][&n=300]   read those notes (the key's hash is below; the key itself is never in the repo)
 
 declare(strict_types=1);
 
 const USERS = __DIR__ . '/../server/data/users';
 const MAX_STATE = 3000000; // bytes
+const LOGS = __DIR__ . '/../server/data/logs';
+const LOG_KEY_HASH = 'eb71a03e7ddd8a3ea293ced3d3bd5d4a846bc1079e1b32f37b6349cdef910d80';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -166,7 +170,42 @@ function checkToken(array $u, string $hash): void
     fail(401, 'Please log in again.');
 }
 
+// A player's diagnostic notes, one JSON line each; the file is trimmed to its newest half when it grows past 300 KB
+function ulog(string $name, array $entry): void
+{
+    is_dir(LOGS) || @mkdir(LOGS, 0775, true);
+    $file = LOGS . '/' . strtolower($name) . '.log';
+    $entry = ['at' => date('c')] + $entry;
+    @file_put_contents($file, json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+    if (@filesize($file) > 300000) {
+        $lines = file($file) ?: [];
+        @file_put_contents($file, implode('', array_slice($lines, (int)(count($lines) / 2))), LOCK_EX);
+    }
+}
+// progress worth seeing in the notes: wins per character and the save's size
+function saveSummary(?array $state): array
+{
+    return ['charWins' => $state['charWins'] ?? null, 'cards' => is_array($state['cards'] ?? null) ? count($state['cards']) : null, 'bytes' => strlen((string)json_encode($state))];
+}
+
 $action = (string)($_GET['action'] ?? '');
+if ($action === 'logs') {
+    hash_equals(LOG_KEY_HASH, hash('sha256', (string)($_GET['key'] ?? ''))) || fail(403, 'No.');
+    $u = (string)($_GET['u'] ?? '');
+    if ($u === '') {
+        $out = [];
+        foreach (glob(LOGS . '/*.log') ?: [] as $f) $out[basename($f, '.log')] = date('c', (int)filemtime($f));
+        arsort($out);
+        echo json_encode($out);
+        exit;
+    }
+    preg_match('/^[A-Za-z0-9_]{3,20}$/', $u) || fail(400, 'Bad name.');
+    $file = LOGS . '/' . strtolower($u) . '.log';
+    $lines = is_file($file) ? (file($file) ?: []) : [];
+    header('Content-Type: text/plain; charset=utf-8');
+    echo implode('', array_slice($lines, -max(1, min(2000, (int)($_GET['n'] ?? 300)))));
+    exit;
+}
 $in = json_decode((string)file_get_contents('php://input'), true) ?: [];
 $name = trim((string)($in['name'] ?? ''));
 $password = (string)($in['password'] ?? '');
@@ -261,6 +300,7 @@ if ($action === 'load') {
     echo json_encode(withUser($name, function (array $u) use ($hash) {
         checkToken($u, $hash);
         $u['seen'] = time();
+        ulog($u['name'], ['ev' => 'server.load', 'rev' => $u['rev']] + saveSummary($u['state']));
         return ['save' => $u, 'reply' => ['name' => $u['name'], 'rev' => $u['rev'], 'state' => $u['state'], 'email' => $u['email'] ?? '', 'verified' => !empty($u['verified'])]];
     }));
     exit;
@@ -293,17 +333,30 @@ if ($action === 'resend') {
 if ($action === 'save') {
     $state = $in['state'] ?? null;
     is_array($state) || fail(400, 'Nothing to save.');
-    strlen(json_encode($state)) <= MAX_STATE || fail(413, 'Your save is too large.');
+    if (strlen(json_encode($state)) > MAX_STATE) { ulog($name, ['ev' => 'server.save.tooLarge'] + saveSummary($state)); fail(413, 'Your save is too large.'); }
     echo json_encode(withUser($name, function (array $u) use ($hash, $state, $in) {
         checkToken($u, $hash);
         // saved from another device, or changed by the game master, since this browser last loaded it
         if ((int)($in['rev'] ?? -1) !== (int)$u['rev']) {
+            ulog($u['name'], ['ev' => 'server.save.conflict', 'sentRev' => $in['rev'] ?? null, 'rev' => $u['rev'], 'sent' => saveSummary($state), 'has' => saveSummary($u['state'])]);
             fail(409, 'Your save changed somewhere else.', ['rev' => $u['rev'], 'state' => $u['state']]);
         }
         $u['state'] = $state;
         $u['rev']++;
+        ulog($u['name'], ['ev' => 'server.save', 'rev' => $u['rev']] + saveSummary($state));
         $u['seen'] = time();
         return ['save' => $u, 'reply' => ['rev' => $u['rev']]];
+    }));
+    exit;
+}
+
+if ($action === 'log') {
+    $entries = $in['entries'] ?? [];
+    is_array($entries) && strlen((string)json_encode($entries)) <= 40000 || fail(400, 'Too much.');
+    echo json_encode(withUser($name, function (array $u) use ($hash, $entries) {
+        checkToken($u, $hash);
+        foreach (array_slice($entries, 0, 60) as $e) if (is_array($e)) ulog($u['name'], ['ev' => 'client'] + $e);
+        return ['reply' => ['ok' => true]];
     }));
     exit;
 }

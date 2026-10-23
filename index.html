@@ -52,7 +52,7 @@
   .lp.p1 { border-color: rgba(76,201,240,.6); text-align: right; } .lp.p1 b { color: var(--p1); }
   .lp.active { box-shadow: 0 0 0 2px currentColor inset; }
   .turn { font-size: 12px; text-align: center; color: var(--muted); }
-  #toast { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 78px); transform: translateX(-50%); transition: opacity .25s; opacity: 0; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: 13px; max-width: 92%; text-align: center; }
+  #toast { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 84px); transform: translateX(-50%); transition: opacity .25s; opacity: 0; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: 13px; max-width: 92%; text-align: center; }
   #toast.show { opacity: 1; }
   #hint { position: absolute; left: 50%; top: 30%; transform: translateX(-50%); background: var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; font-size: 14px; max-width: min(86%, 420px); text-align: center; }
   #banner { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); background: rgba(14,18,26,.9); border: 2px solid var(--accent); border-radius: 20px; padding: 22px 26px; text-align: center; }
@@ -362,6 +362,8 @@
   .spot.wide .art { inset: 8px 8px 38px; }
   .chest { width: 54px; height: 40px; border-radius: 8px 8px 6px 6px; background: linear-gradient(180deg, #c27a2c 0 40%, #7a4515 40% 100%); box-shadow: inset 0 0 0 3px #ffd36b, 0 0 16px rgba(255,211,107,.6); position: relative; }
   .chest::after { content: ""; position: absolute; left: 50%; top: 34%; width: 10px; height: 12px; margin-left: -5px; background: #ffd36b; border-radius: 3px; }
+  #rewardTabs .btn { position: relative; } .tabdot { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #ff3d6e; color: #fff; font: 700 11px/18px var(--font); box-shadow: 0 0 0 2px #1a1f3a; animation: pulse 1.2s infinite; }
+  .tabdot[hidden] { display: none; }
   .badge { position: absolute; top: 8px; right: 10px; min-width: 24px; height: 24px; border-radius: 12px; background: #ff3d6e; font-weight: 700; display: grid; place-items: center; animation: pulse 1.2s infinite; }
   .calhead { position: relative; margin: 0 -4px 6px; padding: 18px 16px; border-radius: 16px; overflow: hidden; background: linear-gradient(160deg, #3a1d7a, #1b1142); }
   .calhead::before { content: ""; position: absolute; left: -10%; right: -10%; top: 46%; height: 34px; background: linear-gradient(90deg, #6ee7ff, #ffffff); transform: rotate(-12deg); opacity: .9; }
@@ -418,6 +420,11 @@
   .chainopt img { grid-row: span 2; width: 44px; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 4px; } .chainopt span { font-weight: 700; font-size: 14px; } .chainopt small { color: var(--muted); font-size: 12px; }
   .pc img.back { background: linear-gradient(135deg, #14213d, #0b1226); box-shadow: inset 0 0 0 2px #e9c46a; }
   .pc small { font-size: 10px; line-height: 1.2; color: var(--muted); }
+  .pickwrap { max-height: 40vh; overflow-y: auto; margin-bottom: 10px; } .pickwrap .pickcards { max-height: none; overflow: visible; margin-bottom: 6px; }
+  .pickhead { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin: 2px 0 6px; padding-left: 8px; border-left: 3px solid var(--p0); color: var(--p0); }
+  .pickhead.side1 { border-color: var(--p1); color: var(--p1); }
+  .pc.side0 { background: rgba(255,159,28,.08); } .pc.side1 { background: rgba(76,201,240,.1); box-shadow: inset 0 0 0 1px rgba(76,201,240,.35); }
+  .pcinfo { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(10,14,24,.85); border: 1px solid rgba(255,255,255,.6); color: #fff; font: italic 800 13px/20px Georgia, serif; text-align: center; }
   .pc.on { border-color: var(--accent); background: rgba(255,181,71,.2); } .pc.can { border-color: rgba(123,216,143,.7); }
   #panel.slim { padding: 8px 12px; } #panel.slim .meta { margin: 0 0 6px; font-size: 13px; color: #c8ffd4; }
   .cinfo { display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: start; margin-bottom: 8px; } .cinfo img { width: 54px; border-radius: 5px; } .cinfo h3 { font-size: 15px; }
@@ -433,11 +440,39 @@
   .hcard.can { box-shadow: 0 0 0 2px rgba(123,216,143,.9), 0 0 14px rgba(123,216,143,.6); }
   #panel .row .btn { max-width: 100%; white-space: normal; text-align: left; }
 
-  .lp { display: flex; gap: 8px; align-items: center; }
-  .lp img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: center 20%; background: #22294a; border: 2px solid currentColor; flex: 0 0 auto; }
-  .lp.p1 { flex-direction: row-reverse; } .lp div { min-width: 0; } .lp small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+  /* life points: slanted duel banners with the duelist's portrait breaking out of the frame */
+  .lp { position: relative; isolation: isolate; display: block; background: none; border: 0; border-radius: 0; padding: 7px 18px 8px 56px; min-height: 56px; backdrop-filter: none; -webkit-backdrop-filter: none; color: #fff; transition: filter .3s; }
+  .lp::before { content: ""; position: absolute; inset: 8px 0 2px 22px; z-index: -1; clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%); background: repeating-linear-gradient(115deg, rgba(255,255,255,.07) 0 2px, transparent 2px 9px), linear-gradient(100deg, #5a2400 0%, #c8650a 45%, #ffb347 100%); box-shadow: inset 0 0 0 1px rgba(255,220,160,.5); }
+  .lp::after { content: ""; position: absolute; left: 22px; right: 10px; top: 8px; height: 2px; z-index: -1; background: linear-gradient(90deg, transparent, #ffe2b0, transparent); }
+  .lp.p1 { padding: 7px 56px 8px 18px; text-align: right; }
+  .lp.p1::before { inset: 8px 22px 2px 0; clip-path: polygon(16px 0, 100% 0, 100% 100%, 0 100%); background: repeating-linear-gradient(65deg, rgba(255,255,255,.07) 0 2px, transparent 2px 9px), linear-gradient(260deg, #06264f 0%, #1769b8 45%, #6fd8ff 100%); box-shadow: inset 0 0 0 1px rgba(170,230,255,.5); }
+  .lp.p1::after { left: 10px; right: 22px; background: linear-gradient(90deg, transparent, #c9f1ff, transparent); }
+  .lp img { position: absolute; top: 0; left: 0; width: 54px; height: 58px; border-radius: 12px 12px 12px 4px; object-fit: cover; object-position: center 18%; background: #22294a; border: 2px solid #ffd27a; box-shadow: 0 4px 14px rgba(0,0,0,.5); z-index: 1; }
+  .lp.p1 img { left: auto; right: 0; border-radius: 12px 12px 4px 12px; border-color: #8be4ff; }
+  .lp div { min-width: 0; position: relative; padding-top: 2px; }
+  .lp small { display: block; font-size: 10px; font-weight: 700; letter-spacing: .06em; color: rgba(255,255,255,.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .lp b, .lp.p0 b, .lp.p1 b { display: block; font-size: 27px; line-height: 1; font-style: italic; font-weight: 800; letter-spacing: -.5px; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 14px rgba(255,255,255,.35); font-variant-numeric: tabular-nums; }
+  .lp b i { font-size: 11px; margin-right: 3px; letter-spacing: 0; opacity: .85; }
+  .lpfill { display: block; height: 4px; margin-top: 4px; border-radius: 2px; background: rgba(0,0,0,.4); overflow: hidden; }
+  .lpfill span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #fff6d8, #ffd166); transition: width .7s ease-out, background .3s; }
+  .lp.p1 .lpfill span { margin-left: auto; background: linear-gradient(270deg, #e9fbff, #7fdcff); }
+  .lp.low .lpfill span { background: #ff5d5d; animation: lowlp 1s infinite; } @keyframes lowlp { 50% { opacity: .45; } }
+  .lp.active { box-shadow: none; filter: drop-shadow(0 0 10px rgba(255,190,90,.75)); } .lp.p1.active { filter: drop-shadow(0 0 10px rgba(100,210,255,.8)); }
+  .lp.hit { animation: lphit .45s; } @keyframes lphit { 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+  .lpdelta { position: absolute; top: 46px; font-size: 22px; font-weight: 800; font-style: italic; color: #ff6b6b; text-shadow: 0 2px 0 #000, 0 0 10px rgba(255,60,60,.7); pointer-events: none; animation: lpdelta 1.4s ease-out forwards; z-index: 2; }
+  .lp.p0 .lpdelta { left: 60px; } .lp.p1 .lpdelta { right: 60px; } .lpdelta.heal { color: #7bd88f; text-shadow: 0 2px 0 #000, 0 0 10px rgba(80,220,120,.7); }
+  @keyframes lpdelta { 0% { opacity: 0; transform: translateY(-6px) scale(.7); } 15% { opacity: 1; transform: translateY(0) scale(1.15); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(18px); } }
+  .turn { background: linear-gradient(180deg, rgba(16,24,44,.92), rgba(8,12,24,.92)); border: 1px solid rgba(150,190,255,.35); border-radius: 10px; padding: 4px 9px 5px; text-align: center; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.4); min-width: 64px; }
+  .turn small { display: block; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .turn b { display: block; font-size: 12px; white-space: nowrap; } .turn span { display: block; font-size: 11px; font-weight: 700; color: var(--accent); }
   .dock .row .btn { border-radius: 14px; }
   #endBtn { margin-left: auto; padding: 12px 18px; font-size: 15px; }
+  /* wide screens: life-point banners don't stretch forever, and the hand and buttons stand in a column on the right */
+  @media (orientation: landscape) and (min-width: 700px) {
+    .lpbar { grid-template-columns: minmax(0, 380px) auto minmax(0, 380px); justify-content: space-between; }
+    .dock { left: auto; width: min(380px, 40vw); top: calc(env(safe-area-inset-top, 0px) + 78px); align-content: end; }
+    #hand { height: auto; max-height: 150px; } #hand .hcard { flex: 0 0 auto; }
+  }
   h2.section { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; }
 </style>
 </head>
@@ -446,9 +481,9 @@
 
 <div id="overlay" hidden>
   <div class="lpbar">
-    <div class="lp p0 ui" id="lp0"><img id="lp0face" alt=""><div><small>You</small><b id="lp0v">8000</b></div></div>
-    <div class="turn" id="turnLabel">Player 1's turn</div>
-    <div class="lp p1 ui" id="lp1"><img id="lp1face" alt=""><div><small id="lp1name">Opponent</small><b id="lp1v">8000</b></div></div>
+    <div class="lp p0 ui" id="lp0"><img id="lp0face" alt=""><div><small>You</small><b><i>LP</i><span id="lp0v">8000</span></b><span class="lpfill"><span id="lp0fill"></span></span></div></div>
+    <div class="turn" id="turnLabel"><small id="turnNo">Turn 1</small><b id="turnWho">Your turn</b><span id="turnPhase"></span></div>
+    <div class="lp p1 ui" id="lp1"><img id="lp1face" alt=""><div><small id="lp1name">Opponent</small><b><i>LP</i><span id="lp1v">8000</span></b><span class="lpfill"><span id="lp1fill"></span></span></div></div>
   </div>
   <div id="toast"></div>
   <div id="announce" hidden></div>
@@ -586,6 +621,7 @@
     <p class="note center" id="acctLine"></p>
     <div class="row center" id="emailRow"></div>
     <label class="field">Name<input id="myName" maxlength="20" placeholder="Duelist" autocomplete="nickname"></label>
+    <label class="field">Board view<select id="viewSel"><option value="">Arena (3D ruins)</option><option value="top">Top-down (biggest cards)</option></select></label>
     <label class="field notr">Language · 语言 · 言語<select id="langSel"><option value="">English</option><option value="zh">简体中文</option><option value="ja">日本語</option></select></label>
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
@@ -753,6 +789,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { buildArena } from "./arena.js?v=__BUILD__";
 
 const $ = s => document.querySelector(s);
 const canvas = $("#gl");
@@ -828,6 +865,23 @@ async function accountCall(action, body) {
   if (!r.ok || j.error) throw Object.assign(new Error(j.error || `Server error ${r.status}`), { status: r.status, data: j });
   return j;
 }
+// Diagnostic notes for finding bugs (wins, saves, errors); sent with the account a few seconds later
+const logQ = [];
+let logTimer = null;
+function dlog(ev, data = {}) {
+  if (!account) return;
+  logQ.push({ ev, t: Date.now(), build: "__BUILD__", ...data }); if (logQ.length > 120) logQ.shift();
+  clearTimeout(logTimer); logTimer = setTimeout(flushLog, 3000);
+}
+function flushLog(leaving) {
+  if (!account || !logQ.length) return;
+  const entries = logQ.splice(0, 60);
+  fetch("api/account.php?action=log", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: account.token, entries }), keepalive: !!leaving }).catch(() => {});
+  if (logQ.length) logTimer = setTimeout(flushLog, 1000);
+}
+addEventListener("error", e => dlog("error", { msg: String(e.message).slice(0, 300), at: `${e.filename?.split("/").pop()}:${e.lineno}:${e.colno}` }));
+addEventListener("unhandledrejection", e => dlog("rejection", { msg: String(e.reason?.message || e.reason).slice(0, 300), stack: String(e.reason?.stack || "").slice(0, 600) }));
+const winsNow = () => { try { return JSON.parse(localStorage.getItem("arduel.charWins") || "null"); } catch { return "unreadable"; } };
 const collectSave = () => Object.fromEntries(SAVE_KEYS.map(k => [k, (() => { try { return JSON.parse(localStorage.getItem("arduel." + k)); } catch { return null; } })()]));
 function applySave(state) {
   for (const k of SAVE_KEYS) { try { if (state && state[k] != null) localStorage.setItem("arduel." + k, JSON.stringify(state[k])); else localStorage.removeItem("arduel." + k); } catch {} }
@@ -842,6 +896,7 @@ if (account) {
     if (changed && j.state) { const local = collectSave(); applySave(dirty.length ? mergeSave(j.state, local, dirty) : j.state); account.rev = j.rev; }
     if (j.state && (changed || !localStorage.getItem("arduel.base"))) localStorage.setItem("arduel.base", JSON.stringify(j.state));
     if (dirty.length) setTimeout(() => syncSave(), 2000);
+    dlog("start", { rev: j.rev, wasRev: account.rev, changed, dirty, serverWins: j.state?.charWins ?? null, localWins: winsNow(), standalone: matchMedia("(display-mode: standalone)").matches, storage: Object.keys(localStorage).filter(k => k.startsWith("arduel.")).map(k => `${k.slice(7)}:${localStorage.getItem(k).length}`).join(" "), lang: localStorage.getItem("arduel.lang") || "" });
     account.email = j.email; account.verified = j.verified; keepAccount();
   } catch (e) { if (e.status === 401 || e.status === 404) { account = null; localStorage.removeItem("arduel.account"); } }
 }
@@ -883,8 +938,9 @@ async function syncSave() {
   if (!account || syncing) return; syncing = true;
   const sending = dirtyKeys();
   const state = collectSave();
-  try { const j = await accountCall("save", { token: account.token, rev: account.rev, state }); account.rev = j.rev; keepAccount(); setBase(state); const d = dirtyKeys(); for (const k of sending) d.delete(k); setDirty(d); }
+  try { const j = await accountCall("save", { token: account.token, rev: account.rev, state }); dlog("saved", { rev: j.rev, keys: [...sending], wins: state.charWins }); account.rev = j.rev; keepAccount(); setBase(state); const d = dirtyKeys(); for (const k of sending) d.delete(k); setDirty(d); }
   catch (e) {
+    dlog("saveFailed", { status: e.status || 0, msg: String(e.message).slice(0, 200), bytes: JSON.stringify(state).length });
     if (e.status === 409) {
       // changed somewhere else meanwhile: keep both, then save the combined copy
       applySave(mergeSave(e.data.state, collectSave(), dirtyKeys())); setBase(e.data.state); account.rev = e.data.rev; keepAccount();
@@ -897,9 +953,9 @@ async function syncSave() {
 }
 // Coming back to the game: pick up changes made elsewhere (outside a duel), keeping this phone's unsent ones
 document.addEventListener("visibilitychange", async () => {
-  if (document.hidden) { if (account && dirtyKeys().size) { clearTimeout(syncTimer); syncSave(); } return; } // leaving: send what's waiting
+  if (document.hidden) { flushLog(true); if (account && dirtyKeys().size) { clearTimeout(syncTimer); syncSave(); } return; } // leaving: send what's waiting
   if (!account || !$("#overlay").hidden) return;
-  try { const j = await accountCall("load", { token: account.token }); if (j.rev !== account.rev) { applySave(mergeSave(j.state, collectSave(), dirtyKeys())); setBase(j.state); account.rev = j.rev; keepAccount(); location.reload(); } } catch {}
+  try { const j = await accountCall("load", { token: account.token }); if (j.rev !== account.rev) { dlog("reloadMerge", { rev: j.rev, wasRev: account.rev, dirty: [...dirtyKeys()], serverWins: j.state?.charWins ?? null, localWins: winsNow() }); applySave(mergeSave(j.state, collectSave(), dirtyKeys())); setBase(j.state); account.rev = j.rev; keepAccount(); location.reload(); } } catch {}
 });
 // after a merge, the screens showing coins, cards and progress need the combined values
 function refreshAfterMerge() { try { const w = store.get("wallet", null); if (w) Object.assign(wallet, w); loadCollection(store.get("cards", {})).then(() => { if (!$("#start").hidden) renderHome(); }); } catch {} }
@@ -1377,15 +1433,29 @@ function lunge(slot, targetPos) {
 }
 // A glowing sword lying over each of your monsters that can attack now; attacking sends it flying at the target
 function swordMesh() {
-  const g = new THREE.Group(), steel = new THREE.MeshStandardMaterial({ color: 0xe8eef7, emissive: 0x9fd8ff, emissiveIntensity: 0.6, metalness: 0.9, roughness: 0.25 }),
-    gold = new THREE.MeshStandardMaterial({ color: 0xffc23d, emissive: 0xffa000, emissiveIntensity: 0.5, metalness: 0.8, roughness: 0.3 }), grip = mat(0x5a3418);
-  g.add(mesh(new THREE.BoxGeometry(0.009, 0.002, 0.048), steel, 0, 0, -0.016));                       // blade (points to -z)
-  g.add(mesh(new THREE.ConeGeometry(0.0065, 0.012, 4).rotateX(-Math.PI / 2), steel, 0, 0, -0.046));   // tip
-  g.add(mesh(new THREE.BoxGeometry(0.03, 0.004, 0.005), gold, 0, 0, 0.009));                          // guard
-  g.add(mesh(new THREE.BoxGeometry(0.006, 0.004, 0.016), grip, 0, 0, 0.019));                         // grip
-  g.add(mesh(new THREE.SphereGeometry(0.0045, 10, 8), gold, 0, 0, 0.029));                            // pommel
-  const glow = mesh(new THREE.PlaneGeometry(0.03, 0.08).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }), 0, -0.002, -0.005);
-  g.add(glow); g.userData.glow = glow;
+  const g = new THREE.Group(), steel = new THREE.MeshStandardMaterial({ color: 0xf2f6ff, emissive: 0x7fc8ff, emissiveIntensity: 0.45, metalness: 0.95, roughness: 0.18 }),
+    gold = new THREE.MeshStandardMaterial({ color: 0xffc23d, emissive: 0xb36b00, emissiveIntensity: 0.5, metalness: 0.85, roughness: 0.28 }),
+    gem = new THREE.MeshStandardMaterial({ color: 0xff2950, emissive: 0xff1040, emissiveIntensity: 0.9, metalness: 0.2, roughness: 0.1 }), grip = mat(0x4a2a14, { roughness: 0.8 });
+  // drawn flat with the tip towards +y, then laid down so the blade points to -z (at the opponent)
+  const flat = (shape, depth, m, bevel = 0) => { const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: !!bevel, bevelThickness: bevel, bevelSize: bevel * 1.6, bevelSegments: 1, curveSegments: 10 }); geo.translate(0, 0, -depth / 2).rotateX(-Math.PI / 2); return new THREE.Mesh(geo, m); };
+  const L = 0.058, W = 0.0042, TIP = 0.016;
+  const blade = new THREE.Shape([[-W, 0], [W, 0], [W * 0.8, L - TIP], [0, L], [-W * 0.8, L - TIP]].map(([x, y]) => new THREE.Vector2(x, y)));
+  g.add(flat(blade, 0.0008, steel, 0.0006));
+  // the fuller: a bright groove down the middle of the blade
+  const fuller = new THREE.Mesh(new THREE.PlaneGeometry(0.0012, L * 0.62).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xcff0ff })); fuller.position.set(0, 0.0012, -L * 0.36); g.add(fuller);
+  // a curved crossguard with a ruby in the middle
+  const guard = new THREE.Shape(); guard.moveTo(-0.018, 0.005); guard.quadraticCurveTo(0, -0.001, 0.018, 0.005); guard.lineTo(0.017, -0.0005); guard.quadraticCurveTo(0, -0.0065, -0.017, -0.0005); guard.closePath();
+  g.add(flat(guard, 0.003, gold, 0.0006));
+  g.add(mesh(new THREE.SphereGeometry(0.0027, 14, 10), gem, 0, 0.0022, 0.0015));
+  // the grip, wrapped with gold rings, and a gem pommel
+  g.add(mesh(new THREE.CylinderGeometry(0.0026, 0.0026, 0.016, 10).rotateX(Math.PI / 2), grip, 0, 0, 0.011));
+  for (const z of [0.006, 0.011, 0.016]) g.add(mesh(new THREE.TorusGeometry(0.0028, 0.0007, 6, 14), gold, 0, 0, z));
+  g.add(mesh(new THREE.OctahedronGeometry(0.0042), gold, 0, 0, 0.022));
+  // a soft blue aura in the blade's own shape (no square behind it)
+  const auraShape = new THREE.Shape([[-W * 2.6, -0.004], [W * 2.6, -0.004], [W * 2, L - TIP], [0, L + 0.008], [-W * 2, L - TIP]].map(([x, y]) => new THREE.Vector2(x, y)));
+  const glow = new THREE.Mesh(new THREE.ShapeGeometry(auraShape).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x8fd6ff, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false }));
+  glow.position.y = -0.002; g.add(glow); g.userData.glow = glow;
+  g.position.z = 0; g.children.forEach(c => { c.position.z += 0.016; }); // hold it at its balance point, over the card's middle
   return g;
 }
 const readySwords = new Map(); // "p:i" -> sword over that monster
@@ -1429,9 +1499,21 @@ async function announce(html, ms, card) {
   await wait(ms); a.hidden = true;
 }
 const where = l => (l & LOC.OVERLAY) ? "material" : l === LOC.HAND ? "hand" : l === LOC.MZONE ? "monster zone" : l === LOC.SZONE ? "spell/trap zone" : l === LOC.GRAVE ? "GY" : l === LOC.REMOVED ? "banished" : l === LOC.EXTRA ? "Extra Deck" : "Deck";
-function setLp(p, v) {
-  S.lp[p] = Math.max(0, v); $("#lp" + p + "v").textContent = S.lp[p];
-  if (!quiet) (p === 0 ? $("#lp0") : $("#lp1")).animate([{ transform: "scale(1.25)" }, { transform: "scale(1)" }], { duration: 500 });
+function setLp(p, v) { S.lp[p] = Math.max(0, v); showLp(p); }
+// the banner counts down (or up) to the new life points, with the change floating out of it
+const lpShown = [8000, 8000], lpRun = [0, 0];
+function showLp(p, instant = quiet) {
+  const to = S.lp[p], from = lpShown[p], box = $("#lp" + p);
+  $("#lp" + p + "fill").style.width = Math.min(100, to / 80) + "%"; box.classList.toggle("low", to > 0 && to <= 2000);
+  if (instant) { lpShown[p] = to; lpRun[p]++; $("#lp" + p + "v").textContent = to; return; }
+  if (to === from) return;
+  lpShown[p] = to;
+  const d = el("span", { className: "lpdelta" + (to > from ? " heal" : ""), textContent: (to > from ? "+" : "−") + Math.abs(to - from) });
+  box.append(d); setTimeout(() => d.remove(), 1500);
+  if (to < from) { box.classList.remove("hit"); void box.offsetWidth; box.classList.add("hit"); }
+  const run = ++lpRun[p], t0 = performance.now(), dur = Math.min(900, 300 + Math.abs(to - from) / 6);
+  const tick = now => { if (run !== lpRun[p]) return; const k = Math.min(1, (now - t0) / dur), e = 1 - (1 - k) ** 3; $("#lp" + p + "v").textContent = Math.round(from + (to - from) * e); if (k < 1) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
 }
 
 // ---------- Playing the engine's events ----------
@@ -1664,7 +1746,7 @@ function resetBoard() {
   for (const p of [0, 1]) for (const row of ["m", "s"]) for (let i = 0; i < S.zones[p][row].length; i++) clearSlot(p, row, i);
   Object.assign(S, { lp: [8000, 8000], turn: 0, turnCount: 0, phase: 0, hand: [[], []], deckN: [0, 0], gy: [[], []], banished: [[], []], extra: [[], []], zones: blankZones(), chain: [], over: false, winner: null, log: [], catchup: false });
   Object.assign(ui, { mode: "idle", sel: null, pick: [], last: null, hint: 0n });
-  $("#lp0v").textContent = 8000; $("#lp1v").textContent = 8000;
+  showLp(0, true); showLp(1, true);
 }
 // setup: { seed, decks: [engine player 0's deck, player 1's], me: which engine player you are }
 function startEngine(vs, setup, log = []) {
@@ -1866,10 +1948,12 @@ function cardInfo(panel, c, hidden) {
 function refreshUI() {
   holoView();
   { const bm = myPrompt(); showSwords(bm?.type === MSG.SELECT_BATTLECMD && !S.over ? bm.attacks.map(a => ({ p: side(a.controller), i: a.sequence })) : []); }
-  $("#lp0v").textContent = S.lp[0]; $("#lp1v").textContent = S.lp[1];
+  showLp(0); showLp(1);
   $("#lp1name").textContent = `${who(1)} · ${S.hand[1].length} in hand`;
   $("#lp0").classList.toggle("active", S.turn === 0); $("#lp1").classList.toggle("active", S.turn === 1);
-  $("#turnLabel").textContent = S.over ? "Duel over" : `${S.turn === 0 ? "Your turn" : `${who(1)}'s turn`} · ${PHASES[S.phase] || ""}`;
+  $("#turnNo").textContent = `Turn ${Math.max(1, S.turnCount)}`;
+  $("#turnWho").textContent = S.over ? "Duel over" : S.turn === 0 ? "Your turn" : "Rival's turn";
+  $("#turnPhase").textContent = S.over ? "" : PHASES[S.phase] || "";
   const m = myPrompt();
   // phase buttons
   const bp = $("#bpBtn"), end = $("#endBtn");
@@ -1941,15 +2025,28 @@ const titleFor = m => sys(Number(ui.hint || 0n)) || { [MSG.SELECT_CARD]: "Select
 function askPanel(panel, m, btn) {
   panel.hidden = false;
   const row = el("div", { className: "row" });
+  // the choices split into your cards and the opponent's; tap a card to choose it, or its ⓘ to read it first
   const cardsGrid = (list, picked) => {
-    const grid = el("div", { className: "pickcards" });
-    list.forEach((c, k) => {
-      const info = cardOf(c.code), hidden = !c.code || (side(c.controller) === 1 && (c.position & 10) && c.location !== LOC.GRAVE);
-      const b = el("button", { type: "button", className: "pc" + (picked(k) ? " on" : "") });
-      b.append(cardImg(info, hidden), el("small", { textContent: `${hidden ? "Face-down" : info.name} · ${side(c.controller) === 1 ? "opp. " : ""}${where(c.location)}` }));
-      b.onclick = () => togglePick(k); grid.append(b);
-    });
-    return grid;
+    const wrap = el("div", { className: "pickwrap" }), groups = [[], []];
+    list.forEach((c, k) => groups[side(c.controller) === 1 ? 1 : 0].push([c, k]));
+    for (const p of [0, 1]) {
+      if (!groups[p].length) continue;
+      const grid = el("div", { className: "pickcards" });
+      for (const [c, k] of groups[p]) {
+        const info = cardOf(c.code), hidden = !c.code || (p === 1 && (c.position & 10) && c.location !== LOC.GRAVE);
+        const b = el("button", { type: "button", className: `pc side${p}` + (picked(k) ? " on" : "") });
+        b.append(cardImg(info, hidden), el("small", { textContent: `${hidden ? "Face-down" : info.name} · ${where(c.location)}` }));
+        b.onclick = () => togglePick(k);
+        if (!hidden) {
+          const i = el("span", { className: "pcinfo", textContent: "i", title: "Read the card", role: "button", "aria-label": "Read the card" });
+          i.onclick = e => { e.stopPropagation(); openCard(info); }; b.append(i);
+          b.oncontextmenu = e => { e.preventDefault(); openCard(info); };
+        }
+        grid.append(b);
+      }
+      wrap.append(el("div", { className: `pickhead side${p}`, textContent: p === 0 ? "Your cards" : `${who(1)}'s cards` }), grid);
+    }
+    return wrap;
   };
   switch (m.type) {
     case MSG.SORT_CARD: {
@@ -1961,6 +2058,7 @@ function askPanel(panel, m, btn) {
         if (order.includes(k)) b.append(el("span", { className: "ord", textContent: String(order.indexOf(k) + 1) }));
         b.onclick = () => { ui.pick = order.includes(k) ? order.filter(x => x !== k) : [...order, k]; refreshUI(); };
         b.oncontextmenu = e => { e.preventDefault(); openCard(info); };
+        const i = el("span", { className: "pcinfo", textContent: "i", title: "Read the card", role: "button", "aria-label": "Read the card" }); i.onclick = e => { e.stopPropagation(); openCard(info); }; b.append(i);
         grid.append(b);
       });
       panel.append(el("h3", { textContent: "Put these cards in order" }), el("div", { className: "meta", textContent: `Tap them in the order you want: 1 goes on top. ${order.length} of ${m.cards.length} chosen.` }), grid);
@@ -2087,7 +2185,7 @@ const store = {
   put(k, v) {
     const text = JSON.stringify(v);
     try { localStorage.setItem("arduel." + k, text); }
-    catch { try { localStorage.removeItem("arduel.base"); localStorage.setItem("arduel." + k, text); } catch { try { toast("This phone's storage for the game is full: progress may not be saved."); } catch {} } } // full: drop the sync copy and retry
+    catch { try { localStorage.removeItem("arduel.base"); localStorage.setItem("arduel." + k, text); } catch (e) { dlog("storageFull", { key: k, bytes: text.length, msg: String(e?.message).slice(0, 120) }); try { toast("This phone's storage for the game is full: progress may not be saved."); } catch {} } } // full: drop the sync copy and retry
     onSaved(k);
   },
 };
@@ -3404,10 +3502,22 @@ function claimable() {
   for (const g of GATES) STORY_STEPS.forEach((st, k) => { const need = st.n === "all" ? g.chars.length : st.n; if (g.chars.length && storyBeaten(g) >= need && !r.story.includes(`${g.id}:${k}`)) out.push(`${g.id}:${k}`); });
   return out;
 }
-function rewardBadge() { const n = claimable().length; $("#rewardBadge").hidden = !n; $("#rewardBadge").textContent = n; }
+// the red dot on the home button, and on each tab that has something waiting to be claimed
+const claimTab = id => id === "login" ? "login" : id.includes(":") ? "story" : "quests";
+function rewardBadge() {
+  const list = claimable(), n = list.length; $("#rewardBadge").hidden = !n; $("#rewardBadge").textContent = n;
+  for (const b of $("#rewardTabs").children) {
+    const k = list.filter(id => claimTab(id) === b.dataset.tab).length;
+    let dot = b.querySelector(".tabdot"); if (!dot) { dot = el("span", { className: "tabdot" }); b.append(dot); }
+    dot.hidden = !k; dot.textContent = k;
+  }
+}
 let rewardTab = "login";
 function openRewards(tab) {
+  // opened from the home button: go straight to a tab with something to claim
+  if (!tab) { const waiting = claimable().map(claimTab); if (waiting.length && !waiting.includes(rewardTab)) rewardTab = waiting[0]; }
   if (tab) rewardTab = tab;
+  setTimeout(rewardBadge);
   $("#rewards").hidden = false;
   for (const b of $("#rewardTabs").children) b.setAttribute("aria-pressed", String(b.dataset.tab === rewardTab));
   const body = $("#rewardBody"), r = rewards(); body.innerHTML = "";
@@ -3432,7 +3542,7 @@ function openRewards(tab) {
     b.onclick = () => {
       const rr = rewards(); rr.streak = streak; rr.loginClaimed = dayKey(); rr.calDay = (rr.calDay || 0) + 1; store.put("rewards", rr);
       grant(LOGIN_REWARDS[todayIdx]); if (STREAK_BONUS[streak]) { grant(STREAK_BONUS[streak]); toastHome(`${streak}-day streak bonus: ${rewardText(STREAK_BONUS[streak])}!`); }
-      rewardBadge(); openRewards();
+      rewardBadge(); openRewards(rewardTab);
     };
     body.append(el("div", { className: "row center" }, b));
   } else if (rewardTab === "quests") {
@@ -3443,7 +3553,7 @@ function openRewards(tab) {
       const row = el("div", { className: "quest" });
       const b = el("button", { type: "button", className: "btn small " + (have >= q.need && !done ? "primary" : ""), textContent: done ? "Claimed" : have >= q.need ? "Claim" : `${have}/${q.need}` });
       b.disabled = done || have < q.need;
-      b.onclick = () => { const rr = rewards(); rr.quests.claimed.push(q.id); store.put("rewards", rr); grant(q.reward); rewardBadge(); openRewards(); };
+      b.onclick = () => { const rr = rewards(); rr.quests.claimed.push(q.id); store.put("rewards", rr); grant(q.reward); rewardBadge(); openRewards(rewardTab); };
       const bar = el("div", { className: "bar" }); bar.append(el("i", { style: `width:${have / q.need * 100}%` }));
       row.append(el("div", {}, el("b", { textContent: q.text }), el("br"), el("small", { textContent: rewardText(q.reward) })), b, bar);
       list.append(row);
@@ -3456,7 +3566,7 @@ function openRewards(tab) {
       const row = el("div", { className: "quest" });
       const b = el("button", { type: "button", className: "btn small " + (have >= need && !done ? "primary" : ""), textContent: done ? "Claimed" : have >= need ? "Claim" : `${have}/${need}` });
       b.disabled = done || have < need;
-      b.onclick = () => { const rr = rewards(); rr.story.push(id); store.put("rewards", rr); grant(st.reward); rewardBadge(); openRewards(); };
+      b.onclick = () => { const rr = rewards(); rr.story.push(id); store.put("rewards", rr); grant(st.reward); rewardBadge(); openRewards(rewardTab); };
       const bar = el("div", { className: "bar" }); bar.append(el("i", { style: `width:${have / need * 100}%` }));
       row.append(el("div", {}, el("b", { textContent: `${g.name}: ${st.n === "all" ? "beat every duelist you can meet" : `beat ${st.n} different duelists`}` }), el("br"), el("small", { textContent: rewardText(st.reward) })), b, bar);
       list.append(row);
@@ -3478,6 +3588,7 @@ $("#topupClose").addEventListener("click", () => { $("#topup").hidden = true; })
 // Each win: coins and one random card from their deck. The ace drops 1 time in 5, and for sure by the 5th win without it.
 function finishDuel(w, why) {
   const vs = S.vs || {}, notes = [why];
+  dlog("duelEnd", { winner: w, why: String(why).slice(0, 120), kind: vs.kind, char: vs.char, story: vs.story, lesson: !!vs.lesson, wins: winsNow() });
   if (vs.lesson) { if (S.lessonDone) return; $("#bannerText").textContent = w === 0 ? "You win!" : "Try again!"; $("#bannerNote").textContent = w === 0 ? why : `${why}\nTap Duel again to restart the lesson.`; $("#rematch").hidden = false; $("#banner").hidden = false; return; }
   questTick("duels");
   if (w === 0 && (vs.story || vs.kind === "online")) questTick("wins");
@@ -3488,6 +3599,7 @@ function finishDuel(w, why) {
   if (ch && vs.story && w === 0) {
     const g = GATES.find(x => x.id === ch.gate), before = available(g).map(c => c.id);
     const tiersBefore = tiersUnlocked(ch), wins = charWins(); wins[ch.id] = (wins[ch.id] || 0) + 1; store.put("charWins", wins);
+    dlog("winCounted", { char: ch.id, wins: winsNow(), dirty: [...dirtyKeys()] });
     if (tiersUnlocked(ch) > tiersBefore) {
       const t = tiersUnlocked(ch) - 1, next = tiersUnlocked(ch) < TIER_WINS.length ? ` Next time ${ch.name} brings the ${TIERS[t + 1][1]} deck.` : "";
       notes.push(`NEW DECK UNLOCKED: ${ch.name}'s ${TIERS[t][1]} deck! Build it in Decks → Character decks.${next}`);
@@ -3659,15 +3771,33 @@ async function startXR() {
 }
 // The board seen straight from above, fixed, and as big as the free space between the life points and your hand allows
 const BOARD_X = 2 * PITCH + CARD_W * 0.59 + 0.004, BOARD_Z = PILE_Z + CARD_H * 0.56 * PILE_S + 0.004; // half the board's width and depth, piles included
+// Arena view tilts the camera so the ruins rise behind the opponent; top-down is the flat, biggest board
+const topDown = () => { try { return localStorage.getItem("arduel.view") === "top"; } catch { return false; } };
 function aimPreview() {
   // (in a lesson the coach's line sits above the hand, so leave room for it)
-  const W = innerWidth, H = innerHeight, top = $("#lp0").getBoundingClientRect().bottom + 6, bottom = Math.max(top + 120, $("#hand").getBoundingClientRect().top - 6 - (S.vs?.lesson ? 70 : 0));
-  camera.clearViewOffset(); camera.fov = 30; camera.aspect = W / H; camera.updateProjectionMatrix();
-  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-  // distance at which the board's width fills the screen, or its depth fills the free height, whichever is closer to us
-  const dist = Math.max(BOARD_X / (t * camera.aspect) / ((W - 6) / W), BOARD_Z / t / ((bottom - top) / H));
-  camera.up.set(0, 0, -1); camera.position.set(0, dist, 0); camera.lookAt(0, 0, 0); camera.updateMatrixWorld();
-  camera.setViewOffset(W, H, 0, H / 2 - (top + bottom) / 2, W, H); // centred in the free space
+  const W = innerWidth, H = innerHeight, top = $("#lp0").getBoundingClientRect().bottom + 6, dock = $(".dock").getBoundingClientRect();
+  // on a wide screen the hand sits in a column on the right and the board gets everything to its left
+  const beside = dock.left > W * 0.4, left = 0, right = beside ? dock.left - 6 : W;
+  const bottom = beside ? H - 8 : Math.max(top + 120, $("#hand").getBoundingClientRect().top - 6 - (S.vs?.lesson ? 70 : 0));
+  const tilt = topDown() ? 0 : W > H ? (H > 600 ? 1.05 : 0.95) : 0.6; // radians away from straight down: more on a wide screen, where there's room
+  camera.clearViewOffset(); camera.fov = W > H ? 40 : 30; camera.aspect = W / H; camera.updateProjectionMatrix();
+  camera.up.set(0, 0, -1);
+  // the board's corners (a little above it too, for the holograms) must fit between the life points and the hand
+  const corners = [];
+  for (const x of [-BOARD_X, BOARD_X]) for (const z of [-BOARD_Z, BOARD_Z]) for (const y of [0, tilt ? 0.03 : 0]) corners.push(new THREE.Vector3(x, y, z));
+  const v = new THREE.Vector3(), aim = new THREE.Vector3(0, 0, tilt ? -0.03 : 0);
+  const frame = d => {
+    camera.position.set(0, d * Math.cos(tilt), d * Math.sin(tilt)).add(aim); camera.lookAt(aim); camera.updateMatrixWorld();
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (const c of corners) { v.copy(c).project(camera); const px = (v.x + 1) / 2 * W, py = (1 - v.y) / 2 * H; x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
+    return { x0, x1, y0, y1 };
+  };
+  // (on a big screen the board doesn't need it all, so the arena shows around it)
+  const big = beside && H > 600, maxH = big ? bottom - Math.max(top, H * 0.3) : bottom - top;
+  let lo = 0.2, hi = 12;
+  for (let k = 0; k < 40; k++) { const d = (lo + hi) / 2, b = frame(d); if (b.x1 - b.x0 <= right - left - 8 && b.y1 - b.y0 <= maxH) hi = d; else lo = d; }
+  const b = frame(hi);
+  camera.setViewOffset(W, H, (b.x0 + b.x1) / 2 - (left + right) / 2, (b.y0 + b.y1) / 2 - (bottom - maxH / 2), W, H); // centred in the free space (the lower part of a big screen)
 }
 {
   // a tap on the board (not a drag) picks what is under it
@@ -3692,11 +3822,12 @@ function aimPreview() {
   for (const ev of ["pointerup", "pointercancel", "pointermove"]) canvas.addEventListener(ev, e => { if (hold && (ev !== "pointermove" || Math.abs(e.movementX) + Math.abs(e.movementY) > 6)) { clearTimeout(hold); hold = null; } });
 }
 $("#holoBtn").addEventListener("click", () => { holosOn = !holosOn; $("#holoBtn").style.opacity = holosOn ? "" : ".5"; $("#holoBtn").setAttribute("aria-label", holosOn ? "Hide holograms" : "Show holograms"); holoView(); });
-const table = new THREE.Mesh(new THREE.CircleGeometry(0.6, 48).rotateX(-Math.PI / 2), mat(0x3b2a1e, { roughness: 0.7 }));
-table.position.y = -0.001; table.visible = false; scene.add(table);
+// the ruins arena around the board (not in AR, where the board lies on your real table)
+const arena = buildArena(), table = arena.group;
+table.visible = false; scene.add(table);
 function startPreview() {
   mode = "preview"; board.position.set(0, 0, 0); board.rotation.set(0, 0, 0); board.visible = true; table.visible = true;
-  scene.background = new THREE.Color(0x10141c);
+  scene.background = new THREE.Color(0x1d1a22); scene.fog = arena.fog;
   show(""); $("#overlay").hidden = false; renderAll(); refreshUI(); aimPreview();
 }
 function resumeDuel() {
@@ -3706,7 +3837,7 @@ function resumeDuel() {
 let lastMode = null;
 function exitDuel() {
   const s = renderer.xr.getSession(); if (s) s.end();
-  mode = null; board.visible = false; table.visible = false; scene.background = null;
+  mode = null; board.visible = false; table.visible = false; scene.background = null; scene.fog = null;
   $("#overlay").hidden = true; show("start"); renderHome();
 }
 // Leaving a running duel means surrendering (a lesson can just be left)
@@ -3742,6 +3873,7 @@ renderer.setAnimationLoop((time, frame) => {
   for (const p of [0, 1]) for (const row of ["m"]) for (const s of S.zones[p][row]) if (s?.obj?.holo) s.obj.holo.userData.model.traverse(o => o.userData.animate?.(t));
   for (const sw of readySwords.values()) { sw.position.y = sw.userData.base.y + Math.sin(t * 3) * 0.006; sw.userData.glow.material.opacity = 0.25 + Math.sin(t * 4) * 0.12; }
   if (board.visible) updateFieldArt();
+  if (table.visible) arena.update(t);
   for (const e of [...effects]) { e.t += dt; const k = Math.min(1, e.t / e.dur); e.step(k, dt); if (k >= 1) { effects.splice(effects.indexOf(e), 1); e.done?.(); } }
   renderer.render(scene, camera);
 });
@@ -3765,6 +3897,8 @@ if (net.room) net.open(net.room); // back into an online duel after the page rel
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js?v=__BUILD__").catch(() => {});
 // card language: saved on this phone; the page reloads so the duel engine and texts switch over
 $("#langSel").value = LANG;
+$("#viewSel").value = topDown() ? "top" : "";
+$("#viewSel").addEventListener("change", () => { try { localStorage.setItem("arduel.view", $("#viewSel").value); } catch {} if (mode === "preview") aimPreview(); });
 $("#langSel").addEventListener("change", () => { try { localStorage.setItem("arduel.lang", $("#langSel").value); } catch {} location.reload(); });
 let installPrompt = null;
 const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
@@ -3778,7 +3912,7 @@ $("#installBtn").addEventListener("click", async () => {
 });
 showInstall();
 
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson }; // for testing
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards }; // for testing
 </script>
 </body>
 </html>
