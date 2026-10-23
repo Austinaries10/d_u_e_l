@@ -667,6 +667,7 @@
 "Tap a card to flip it": "点击卡片翻开",
 "Tap a glowing card in your hand. Tap here for the full tip.": "点击手牌中发光的卡。点这里查看完整提示。",
 "Tap a monster in your hand (cards that can be played glow), choose Normal Summon, then tap a glowing zone. You can Normal Summon one monster per turn.": "点击手牌中的怪兽(可以使用的卡会发光),选择「通常召唤」,然后点击发光的区域。每回合可以通常召唤一只怪兽。",
+"Tap one of the glowing monsters to attack it": "请点击一只发光的怪兽来攻击",
 "Tap the Share button in Safari, then “Add to Home Screen”. AR Duel then opens full screen like an app.": "在 Safari 中点击「分享」按钮,然后选择「添加到主屏幕」。之后 AR Duel 会像应用一样全屏打开。",
 "Tap them in the order you want: 1 goes on top. {0} of {1} chosen.": "按你想要的顺序点击:1 放在最上面。已选 {0}/{1}。",
 "Tap to read all": "点击查看全部",
@@ -997,6 +998,7 @@
 "× {0}": "× {0}",
 "‹ {0}'s decks": "‹ {0}的卡组",
 "− Remove one": "− 移除一张",
+"⚔ Tap the glowing monster you want to attack": "⚔ 点击发光的怪兽进行攻击",
 "📲 Install the app": "📲 安装应用",
 "🔒 Beat {0} {1} more time{2} to unlock": "🔒 再击败{0} {1} 次即可解锁"
 }

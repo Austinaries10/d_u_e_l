@@ -667,6 +667,7 @@
 "Tap a card to flip it": "タップしてカードをめくる",
 "Tap a glowing card in your hand. Tap here for the full tip.": "手札の光っているカードをタップ。ここをタップでヒント全文。",
 "Tap a monster in your hand (cards that can be played glow), choose Normal Summon, then tap a glowing zone. You can Normal Summon one monster per turn.": "手札のモンスターをタップ(使えるカードは光ります)、「通常召喚」を選んで光っているゾーンをタップ。通常召喚は1ターンに1回です。",
+"Tap one of the glowing monsters to attack it": "光っているモンスターをタップして攻撃",
 "Tap the Share button in Safari, then “Add to Home Screen”. AR Duel then opens full screen like an app.": "Safariの共有ボタンから「ホーム画面に追加」をタップ。AR Duelがアプリのように全画面で開きます。",
 "Tap them in the order you want: 1 goes on top. {0} of {1} chosen.": "置きたい順にタップ:1が一番上。{1}枚中{0}枚選択済み。",
 "Tap to read all": "タップして全文を表示",
@@ -997,6 +998,7 @@
 "× {0}": "× {0}",
 "‹ {0}'s decks": "‹ {0}のデッキ",
 "− Remove one": "− 1枚外す",
+"⚔ Tap the glowing monster you want to attack": "⚔ 攻撃したい光っているモンスターをタップ",
 "📲 Install the app": "📲 アプリをインストール",
 "🔒 Beat {0} {1} more time{2} to unlock": "🔒 {0}にあと{1}回勝つと解放"
 }
