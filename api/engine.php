@@ -5,6 +5,8 @@
 //
 //   ?action=cards&codes=46986414,55144522   engine data, name, text and effect strings for each card
 //   ?action=script&name=c55144522.lua        a card script, or a base script such as utility.lua
+//   ?action=base                             all base scripts (constant.lua, utility.lua and what they load), as JSON
+//   ?action=scripts&codes=46986414,55144522  the scripts of these cards, as JSON (one request instead of one per card)
 //   ?action=strings                          system, victory and archetype texts
 
 declare(strict_types=1);
@@ -52,7 +54,116 @@ function cached(string $file, string $url, int $ttl): ?string
     return is_file($file) ? $file : null;
 }
 
+// A script from the cache, downloaded first when missing or a week old ('' when the card has none)
+function scriptFile(string $name, ?string $body = null, bool $fetched = false): string
+{
+    $file = dir_('scripts') . "/$name";
+    if (!$fetched && is_file($file) && filemtime($file) >= time() - WEEK) {
+        return $file;
+    }
+    if (!$fetched) {
+        foreach (scriptUrls($name) as $url) {
+            if (($body = fetchUrl($url)) !== null) {
+                break;
+            }
+        }
+    }
+    if ($body !== null) {
+        file_put_contents($file, $body);
+    } elseif (!is_file($file)) {
+        file_put_contents($file, ''); // no script: a normal monster, or a card without one
+    } else {
+        touch($file);
+    }
+    return $file;
+}
+// card scripts live in official/ (or pre-release/), base scripts at the top of the repository
+function scriptUrls(string $name): array
+{
+    return array_map(fn($d) => SCRIPTS . $d . $name, preg_match('/^c\d+\.lua$/', $name) ? ['official/', 'pre-release/', ''] : ['', 'official/']);
+}
+// Download the missing scripts all at once (from official/ first, then the other folders for any not found)
+function prefetch(array $names): void
+{
+    $need = array_values(array_filter($names, fn($n) => !is_file(dir_('scripts') . "/$n") || filemtime(dir_('scripts') . "/$n") < time() - WEEK));
+    for ($try = 0; $need && $try < 3; $try++) {
+        $mh = curl_multi_init();
+        $hs = [];
+        foreach ($need as $n) {
+            $url = scriptUrls($n)[$try] ?? null;
+            if ($url === null) {
+                continue;
+            }
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_TIMEOUT => 30, CURLOPT_USERAGENT => 'ARDuel/1.0 (+https://duel.cck8.my)']);
+            curl_multi_add_handle($mh, $ch);
+            $hs[$n] = $ch;
+        }
+        do {
+            $st = curl_multi_exec($mh, $running);
+            $running && curl_multi_select($mh, 1.0);
+        } while ($running && $st === CURLM_OK);
+        $left = [];
+        foreach ($hs as $n => $ch) {
+            $body = curl_multi_getcontent($ch);
+            if (curl_getinfo($ch, CURLINFO_RESPONSE_CODE) === 200 && is_string($body)) {
+                scriptFile($n, $body, true);
+            } else {
+                $left[] = $n;
+            }
+            curl_multi_remove_handle($mh, $ch);
+            curl_close($ch);
+        }
+        curl_multi_close($mh);
+        $need = $left;
+    }
+    foreach ($need as $n) {
+        scriptFile($n, null, true); // not found anywhere: remember that it has no script
+    }
+}
+function sendJson(array $data): never
+{
+    header('Content-Type: application/json; charset=utf-8');
+    if (str_contains((string)($_SERVER['HTTP_ACCEPT_ENCODING'] ?? ''), 'gzip') && function_exists('gzencode') && !ini_get('zlib.output_compression')) {
+        header('Content-Encoding: gzip');
+        header('Vary: Accept-Encoding');
+        echo gzencode(json_encode($data), 6);
+    } else {
+        echo json_encode($data);
+    }
+    exit;
+}
+
 $action = (string)($_GET['action'] ?? '');
+
+if ($action === 'base') {
+    // constant.lua and utility.lua, plus every base script they load (followed through LoadScript calls)
+    header('Cache-Control: public, max-age=86400');
+    $out = [];
+    $todo = ['constant.lua', 'utility.lua'];
+    while ($todo) {
+        $n = array_shift($todo);
+        if (isset($out[$n]) || !preg_match('/^[a-z0-9_]{1,60}\.lua$/', $n)) {
+            continue;
+        }
+        $out[$n] = (string)file_get_contents(scriptFile($n));
+        preg_match_all('/LoadScript\("([a-z0-9_]+\.lua)"\)/', $out[$n], $m);
+        array_push($todo, ...$m[1]);
+    }
+    sendJson(['scripts' => $out]);
+}
+
+if ($action === 'scripts') {
+    header('Cache-Control: public, max-age=86400');
+    $codes = array_slice(array_values(array_unique(array_filter(array_map('intval', explode(',', (string)($_GET['codes'] ?? '')))))), 0, 200);
+    $names = array_map(fn($c) => "c$c.lua", $codes);
+    prefetch($names);
+    $out = [];
+    foreach ($names as $n) {
+        $out[$n] = (string)file_get_contents(scriptFile($n));
+    }
+    sendJson(['scripts' => $out]);
+}
 
 if ($action === 'cards') {
     header('Content-Type: application/json; charset=utf-8');
@@ -87,21 +198,7 @@ if ($action === 'cards') {
 if ($action === 'script') {
     $name = (string)($_GET['name'] ?? '');
     preg_match('/^[a-z0-9_]{1,60}\.lua$/', $name) || fail(400, 'Bad script name.');
-    $file = dir_('scripts') . "/$name";
-    if (!is_file($file) || filemtime($file) < time() - WEEK) {
-        // card scripts live in official/ (or pre-release/), base scripts at the top of the repository
-        $body = null;
-        foreach (preg_match('/^c\d+\.lua$/', $name) ? ['official/', 'pre-release/', ''] : ['', 'official/'] as $dir) {
-            if (($body = fetchUrl(SCRIPTS . $dir . $name)) !== null) {
-                break;
-            }
-        }
-        if ($body !== null) {
-            file_put_contents($file, $body);
-        } elseif (!is_file($file)) {
-            file_put_contents($file, ''); // no script: a normal monster, or a card without one
-        }
-    }
+    $file = scriptFile($name);
     header('Content-Type: text/plain; charset=utf-8');
     header('Cache-Control: public, max-age=86400');
     readfile($file);

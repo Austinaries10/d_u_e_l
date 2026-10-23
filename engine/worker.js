@@ -26,6 +26,10 @@ function cardData(code) {
   const c = cards.get(code); if (!c) return null;
   return { code: c.code, alias: c.alias, setcodes: c.setcodes, type: c.type, level: c.level, attribute: c.attribute, race: BigInt(c.race), attack: c.attack, defense: c.defense, lscale: c.lscale, rscale: c.rscale, link_marker: c.link_marker };
 }
+// Fetch many scripts in one request, before the engine asks for them one by one
+async function loadScripts(query) {
+  try { const j = await (await fetch(`${API}?${query}`)).json(); for (const [k, v] of Object.entries(j.scripts || {})) scripts.set(k, v || null); } catch {}
+}
 function script(name) {
   if (!scripts.has(name)) { const s = getSync(`${API}?action=script&name=${encodeURIComponent(name)}`); scripts.set(name, s || null); }
   return scripts.get(name);
@@ -71,7 +75,8 @@ onmessage = async ({ data }) => {
       if (duel) { lib.destroyDuel(duel); duel = null; }
       // decks[p] = { main: [codes], extra: [codes] } for engine players 0 and 1 (player 0 goes first).
       // The engine doesn't shuffle: the last card of main is the top of the deck.
-      await loadCards(data.decks.flatMap(d => [...d.main, ...d.extra]));
+      const codes = [...new Set(data.decks.flatMap(d => [...d.main, ...d.extra]))];
+      await Promise.all([loadCards(codes), scripts.has("utility.lua") ? null : loadScripts("action=base"), loadScripts(`action=scripts&codes=${codes.filter(c => !scripts.has(`c${c}.lua`)).join(",")}`)]);
       duel = lib.createDuel({
         flags: OcgDuelMode.MODE_MR5, seed: data.seed.map(BigInt),
         // lp: starting life points of engine players 0 and 1 (training lessons give the opponent less)
