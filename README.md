@@ -4,6 +4,9 @@ A Yu-Gi-Oh! style card duel in AR for the phone browser: the duel board is place
 
 Live: https://duel.cck8.my · Source: https://github.com/Austinaries10/d_u_e_l
 
+## Install as an app (PWA)
+AR Duel can be installed on the home screen and then opens full screen like an app: on Android Chrome use the browser's "Install app" / "Add to Home screen" (or **📲 Install the app** in your profile), on iPhone Safari use Share → Add to Home Screen. `manifest.json` describes the app and its icons (`icons/`); `sw.js` keeps the rules engine files, card pictures and character faces on the phone so duels start faster, while the page, accounts, saves and duels always come from the server.
+
 ## Accounts
 Players register with a unique duelist name (case-insensitive), an email (also unique) and a password typed twice. A confirmation link is emailed (PHP `mail()` on the hosting), and "Forgot password?" emails a reset link valid for an hour. Players log in with a duelist name and password (`api/account.php`). Their whole save (cards, decks, coins, free packs, character progress, avatar) is stored on the server in `server/data/users/` and copied to the browser, so they can carry on from any phone. Changes are saved a moment after they happen; if the save changed somewhere else (another phone, or the game master), the game reloads the newer save. A new account starts from whatever was on that phone, plus a starter deck.
 
@@ -34,7 +37,7 @@ The home screen is a small world: **gates** for each Yu-Gi-Oh! series, and the *
 - **Training**: the lessons, then free practice: your deck against any character you have met, or against one of your own decks. No rewards
 - **Duel Arena**: one player creates a room and shares the 5-letter code, the other joins. Both phones post their moves to `api/room.php` and poll for the other's once a second; rooms are files in `server/cache/rooms` and expire after a day. Reloading the page rebuilds the duel from the room's moves. The winner gets 100 coins, the loser 30
 - **The computer** plays known spells when they help, Normal Summons its best monster (tributing when worth it), sets its traps, attacks only when it wins the battle, and answers your attacks with its traps
-- **Board**: a fixed top-down view, drawn as big as the space between the life points and your hand allows (the banished pile sits beyond the Deck to keep the board narrow). Tap your cards on the board to use them. Each monster's artwork floats over its card in a glowing frame (attribute colour) with its ATK/DEF below; **👁** hides them. Online duels can also be played in **AR**, with the board on a real table and standing holograms; twist two fingers to turn it
+- **Board**: a fixed top-down view, drawn as big as the space between the life points and your hand allows. All 5 Monster and Spell/Trap zones keep the full rules; the Field Zone, Extra Deck, banished pile, Graveyard and Deck sit in a slim row of their own beyond each player's Spell/Trap Zones, so the five card columns get the whole width. Tap your cards on the board to use them. Each monster's artwork floats over its card in a glowing frame (attribute colour) with its ATK/DEF below; **👁** hides them. Online duels can also be played in **AR**, with the board on a real table and standing holograms; twist two fingers to turn it
 
 ## Collecting
 - **Starter deck**: a new player gets a random starter deck without a main character's name (Starter Deck 2006, the 5D's starters, Duelist Toolbox, Dawn of the Xyz, Xyz Symphony, Space-Time Showdown, Link Strike or Codebreaker; `STARTERS` in `api/ygo.php`). Character decks such as Pegasus' are won through the gates

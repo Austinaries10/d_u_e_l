@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AR Duel</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0c1028">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AR Duel">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap">
 <style>
@@ -508,7 +516,7 @@
     <label class="field">Name<input id="myName" maxlength="20" placeholder="Duelist" autocomplete="nickname"></label>
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
-    <div class="row center"><button class="btn small danger" id="logoutBtn" type="button">Log out</button></div>
+    <div class="row center"><button class="btn small" id="installBtn" type="button" hidden>📲 Install the app</button><button class="btn small danger" id="logoutBtn" type="button">Log out</button></div>
     <p class="about">Duel rules: EDOPro's ocgcore and Project Ignis card scripts (AGPL-3.0). Card data and images: YGOPRODeck and Project Ignis. Character pictures: Yugipedia. Yu-Gi-Oh! © Kazuki Takahashi / Konami. This game is free software under the AGPL-3.0: <a class="link" href="https://github.com/Austinaries10/d_u_e_l" target="_blank" rel="noopener">source code</a></p>
   </div>
 </div>
@@ -779,9 +787,12 @@ const PCOLOR = [0xff9f1c, 0x4cc9f0];
 const CARD_W = 0.059, CARD_H = 0.086, PITCH = 0.088;
 const COLS = [-2, -1, 0, 1, 2].map(i => i * PITCH);
 // player 0 sits on the +z side (nearest the phone when the board is placed), player 1 opposite
-const ROW_Z = { m: 0.07, s: 0.18 };
+const ROW_Z = { m: 0.1, s: 0.2 }; // far enough apart that the shared Extra Monster Zones on the centre line don't overlap the rows
 const zoneZ = (p, row) => (p === 0 ? 1 : -1) * ROW_Z[row];
-const pileX = p => (p === 0 ? 1 : -1) * 3 * PITCH, banZ = p => (p === 0 ? 1 : -1) * (ROW_Z.s + 0.105); // the banished pile sits beyond the Deck
+// The Field Zone and the piles sit in a row of their own beyond each player's Spell & Trap Zones, a little smaller,
+// so the five card columns get the whole width of the screen
+const PILE_S = 0.82, PILE_Z = ROW_Z.s + 0.093, PILE_COL = { EXTRA: -2, FIELD: -1, BANISHED: 0, GY: 1, DECK: 2 };
+const pilePos = (p, kind, y = 0) => new THREE.Vector3((p === 0 ? 1 : -1) * PILE_COL[kind] * PITCH, y, (p === 0 ? 1 : -1) * PILE_Z);
 
 // ---------- Scene ----------
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -811,7 +822,7 @@ function updatePiles() {
       if ((cur?.userData.code || 0) === (top?.id || 0)) continue;
       if (cur) board.remove(cur);
       if (!top) { pileTops[p][k] = null; continue; }
-      const m = cardMesh(top); m.userData.code = top.id; m.position.copy(k === "gy" ? new THREE.Vector3(pileX(p), 0.003, zoneZ(p, "m")) : new THREE.Vector3(pileX(p), 0.003, banZ(p)));
+      const m = cardMesh(top); m.userData.code = top.id; m.position.copy(pilePos(p, k === "gy" ? "GY" : "BANISHED", 0.003)); m.scale.setScalar(PILE_S);
       if (p === 1) m.rotation.y = Math.PI; if (top.faceDown) m.rotation.z = Math.PI;
       board.add(m); (pileTops[p] ??= {})[k] = m;
     }
@@ -842,19 +853,19 @@ function buildBoard() {
   }
   for (const p of [0, 1]) {
     const fz = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: zoneTexture(PCOLOR[p], "FIELD"), transparent: true, depthWrite: false }));
-    fz.position.set((p === 0 ? -1 : 1) * 3 * PITCH, 0.001, zoneZ(p, "m")); if (p === 1) fz.rotation.y = Math.PI;
+    fz.position.copy(pilePos(p, "FIELD", 0.001)); fz.scale.setScalar(PILE_S); if (p === 1) fz.rotation.y = Math.PI;
     fz.userData.zone = { p, row: "s", i: 5 }; board.add(fz); zoneMeshes.push(fz);
-    for (const [x, zz, label] of [[pileX(p), zoneZ(p, "s"), "DECK"], [pileX(p), zoneZ(p, "m"), "GY"], [-pileX(p), zoneZ(p, "s"), "EXTRA"], [pileX(p), banZ(p), "BANISHED"]]) {
-      const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: zoneTexture(PCOLOR[p], label === "BANISHED" ? "BANISHED" : label), transparent: true, depthWrite: false }));
-      z.position.set(x, 0.001, zz); if (p === 1) z.rotation.y = Math.PI;
+    for (const label of ["DECK", "GY", "EXTRA", "BANISHED"]) {
+      const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: zoneTexture(PCOLOR[p], label), transparent: true, depthWrite: false }));
+      z.position.copy(pilePos(p, label, 0.001)); z.scale.setScalar(PILE_S); if (p === 1) z.rotation.y = Math.PI;
       z.userData.pile = { p, kind: label }; board.add(z); zoneMeshes.push(z);
     }
     // the Deck and Extra Deck as stacks of face-down cards
-    const stack = x => { const m = new THREE.Mesh(new THREE.BoxGeometry(CARD_W, 0.012, CARD_H), [mat(0x222833), mat(0x222833), new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), mat(0x222833), mat(0x222833), mat(0x222833)]); m.position.set(x, 0.007, zoneZ(p, "s")); board.add(m); return m; };
-    deckPiles[p] = { deck: stack(pileX(p)), extra: stack(-pileX(p)) };
+    const stack = kind => { const m = new THREE.Mesh(new THREE.BoxGeometry(CARD_W * PILE_S, 0.012, CARD_H * PILE_S), [mat(0x222833), mat(0x222833), new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), mat(0x222833), mat(0x222833), mat(0x222833)]); m.position.copy(pilePos(p, kind, 0.007)); board.add(m); return m; };
+    deckPiles[p] = { deck: stack("DECK"), extra: stack("EXTRA") };
   }
   // centre line
-  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.002).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 }));
+  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.002).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 }));
   board.add(line);
 }
 
@@ -1101,7 +1112,7 @@ function cardOf(code, live) {
 const isExtraType = t => !!(t & (0x40 | 0x2000 | 0x800000 | 0x4000000));
 function zonePos(p, row, i) {
   if (row === "m" && i >= 5) return new THREE.Vector3((p === 0 ? 1 : -1) * COLS[i === 5 ? 1 : 3], 0, 0); // the shared Extra Monster Zones
-  if (row === "s" && i === 5) return new THREE.Vector3((p === 0 ? -1 : 1) * 3 * PITCH, 0, zoneZ(p, "m"));   // Field Zone
+  if (row === "s" && i === 5) return pilePos(p, "FIELD");   // Field Zone
   return new THREE.Vector3(p === 0 ? COLS[i] : -COLS[i], 0, zoneZ(p, row));
 }
 
@@ -1110,7 +1121,7 @@ function renderSlot(p, row, i) {
   if (!slot) return;
   if (slot.obj) { board.remove(slot.obj.group); }
   const group = new THREE.Group(); group.position.copy(zonePos(p, row, i)); board.add(group);
-  group.userData.zoneRef = { p, row, i };
+  group.userData.zoneRef = { p, row, i }; if (row === "s" && i === 5) group.scale.setScalar(PILE_S);
   const cm = cardMesh(slot.card); cm.position.y = 0.002;
   if (slot.faceDown) cm.rotation.z = Math.PI; // back up
   if (p === 1) cm.rotation.y = Math.PI;
@@ -3229,9 +3240,10 @@ async function startXR() {
   refreshUI();
 }
 // The board seen straight from above, fixed, and as big as the free space between the life points and your hand allows
-const BOARD_X = 3 * PITCH + CARD_W * 0.59 + 0.004, BOARD_Z = ROW_Z.s + 0.105 + CARD_H * 0.56 + 0.004; // half the board's width and depth, piles included
+const BOARD_X = 2 * PITCH + CARD_W * 0.59 + 0.004, BOARD_Z = PILE_Z + CARD_H * 0.56 * PILE_S + 0.004; // half the board's width and depth, piles included
 function aimPreview() {
-  const W = innerWidth, H = innerHeight, top = $("#lp0").getBoundingClientRect().bottom + 6, bottom = Math.max(top + 120, $("#hand").getBoundingClientRect().top - 6);
+  // (in a lesson the coach's line sits above the hand, so leave room for it)
+  const W = innerWidth, H = innerHeight, top = $("#lp0").getBoundingClientRect().bottom + 6, bottom = Math.max(top + 120, $("#hand").getBoundingClientRect().top - 6 - (S.vs?.lesson ? 70 : 0));
   camera.clearViewOffset(); camera.fov = 30; camera.aspect = W / H; camera.updateProjectionMatrix();
   const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   // distance at which the board's width fills the screen, or its depth fills the free height, whichever is closer to us
@@ -3328,7 +3340,22 @@ if (account) {
 }
 loadGm();
 if (net.room) net.open(net.room); // back into an online duel after the page reloads
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE }; // for testing
+// ---------- Installable app (PWA) ----------
+// Android/desktop Chrome offer an install prompt we can show from a button; on iPhone it's Share → Add to Home Screen
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js?v=__BUILD__").catch(() => {});
+let installPrompt = null;
+const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const showInstall = () => { $("#installBtn").hidden = standalone() || !(installPrompt || isIOS); };
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; showInstall(); });
+addEventListener("appinstalled", () => { installPrompt = null; showInstall(); toast("AR Duel is on your home screen!"); });
+$("#installBtn").addEventListener("click", async () => {
+  if (installPrompt) { installPrompt.prompt(); await installPrompt.userChoice.catch(() => {}); installPrompt = null; showInstall(); return; }
+  gameAlert("Tap the Share button in Safari, then “Add to Home Screen”. AR Duel then opens full screen like an app.", "Install on iPhone");
+});
+showInstall();
+
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick }; // for testing
 </script>
 </body>
 </html>
