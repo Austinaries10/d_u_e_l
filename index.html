@@ -540,6 +540,35 @@
   @keyframes turnphone { 0%, 20% { transform: rotate(0); } 50%, 80% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
   #rotate h2 { margin: 0 0 8px; font-size: 22px; } #rotate p { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 300px; }
   #rotate .btn { margin: 4px auto; display: block; }
+  /* ---------- Deck builder ---------- */
+  .edkick { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #8fb4ff; }
+  .deckstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .deckstats .st { border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; background: rgba(255,255,255,.04); display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 6px; }
+  .deckstats small { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; } .deckstats b { font-size: 17px; }
+  .deckstats .bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); overflow: hidden; } .deckstats .bar i { display: block; height: 100%; }
+  .deckstats .monster .bar i { background: #e0913a; } .deckstats .spell .bar i { background: #2fbf8a; } .deckstats .trap .bar i { background: #d05aa8; }
+  .edDeck, .edAdd { display: grid; gap: 12px; align-content: start; min-width: 0; }
+  @media (orientation: landscape) and (min-width: 640px) {
+    #editor.screen { overflow: hidden; padding-top: calc(env(safe-area-inset-top, 0px) + 10px); padding-bottom: 8px; }
+    #editor .intro { max-width: 1400px; height: 100%; grid-template-columns: minmax(0, 1fr) minmax(300px, 40%); gap: 16px; }
+    #editor .edAdd { grid-column: 1; grid-row: 1; overflow-y: auto; padding-right: 4px; gap: 8px; }
+    #editor .edDeck { grid-column: 2; grid-row: 1; overflow-y: auto; padding: 12px; border-radius: 16px; border: 1px solid rgba(150,190,255,.25); background: linear-gradient(180deg, rgba(24,34,70,.6), rgba(10,14,30,.7)); gap: 8px; }
+    #editor .form { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; } #editor .field select, #editor .field input { padding: 6px 8px; font-size: 13px; }
+    #editor h2.section { margin: 0; }
+    /* the cards as tiles: a picture, the name, and add / remove */
+    #editor .results { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+    #editor .results .deckcard { grid-template-columns: 1fr; gap: 4px; padding: 5px; align-items: start; }
+    #editor .results .deckcard img { width: 100%; }
+    #editor .results .deckcard b { font-size: 11px; line-height: 1.2; } #editor .results .deckcard b .rar { display: none; } #editor .results .deckcard small { display: none; }
+    #editor .results .deckcard .row { justify-content: space-between; gap: 4px; flex-wrap: nowrap; } #editor .results .deckcard .row .note { font-size: 10px; } #editor .results .deckcard .row .btn { padding: 4px 8px; font-size: 11px; }
+    #editor .decklist { grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; }
+    #editor .decklist .deckcard { position: relative; display: block; padding: 0; border: 0; background: none; }
+    #editor .decklist .deckcard img { width: 100%; display: block; box-shadow: 0 3px 8px rgba(0,0,0,.5); }
+    #editor .decklist .deckcard > div:nth-child(2) { display: none; }
+    #editor .decklist .deckcard .row { position: absolute; left: 2px; right: 2px; bottom: 2px; justify-content: space-between; flex-wrap: nowrap; }
+    #editor .decklist .deckcard .row .note { background: rgba(0,0,0,.75); color: #fff; font-weight: 700; font-size: 11px; padding: 0 5px; border-radius: 6px; }
+    #editor .decklist .deckcard .row .btn { width: 22px; height: 22px; padding: 0; min-width: 0; font-size: 13px; line-height: 1; border-radius: 50%; background: rgba(160,30,50,.9); border-color: rgba(255,140,150,.7); }
+  }
   /* ---------- The lobby ---------- */
   .brand, .showcase { display: none; }
   .spot .sign small { display: none; }
@@ -807,9 +836,13 @@
 
 <section class="screen" id="editor" hidden>
   <div class="intro">
-    <div class="row" style="justify-content:space-between"><h1 style="font-size:24px;overflow-wrap:anywhere" id="edName"></h1><button class="btn small" id="edDone" type="button">Back</button></div>
+   <div class="edDeck">
+    <div class="row" style="justify-content:space-between"><div><small class="edkick">Deck builder</small><h1 style="font-size:24px;overflow-wrap:anywhere;margin:0" id="edName"></h1></div><button class="btn small" id="edDone" type="button">Back</button></div>
     <div class="row"><b id="deckCount"></b><button class="btn small" id="edRename" type="button">Rename</button><button class="btn small danger" id="clearDeck" type="button">Clear</button><span class="note" id="deckStatus"></span></div>
+    <div class="deckstats" id="deckStats"></div>
     <div class="decklist" id="deckList"></div>
+   </div>
+   <div class="edAdd">
     <h2 class="section">Add cards</h2>
     <div class="tabs row" id="srcTabs"><button class="btn small" type="button" data-src="mine" aria-pressed="true">My cards</button><button class="btn small" type="button" data-src="all" aria-pressed="false">All cards</button></div>
     <div class="row"><label class="field" style="flex:1 1 220px">Search card names and card text<input id="searchBox" placeholder="e.g. dark magician, destroy, draw 2" autocomplete="off"></label><button class="btn primary" id="searchBtn" type="button">Search</button></div>
@@ -824,6 +857,7 @@
     <p class="note" id="resultInfo"></p>
     <div class="results" id="results"></div>
     <div class="row"><button class="btn" id="moreBtn" type="button" hidden>Load more</button></div>
+   </div>
   </div>
 </section>
 
@@ -2691,6 +2725,13 @@ function renderDeck() {
   const problems = deckProblems(cards);
   const nExtra = cards.filter(c => /Fusion|Synchro|XYZ|Link/.test(c.type || "")).length;
   $("#deckCount").textContent = `Main ${cards.length - nExtra} · Extra ${nExtra}` + (problems.length ? ` · not legal: ${problems.join("; ")}` : "");
+  // how the deck is made up, as bars
+  const st = $("#deckStats"); st.innerHTML = "";
+  for (const [k, label] of [["monster", "Monsters"], ["spell", "Spells"], ["trap", "Traps"]]) {
+    const n = cards.filter(c => c.kind === k && !/Fusion|Synchro|XYZ|Link/.test(c.type || "")).length, bar = el("span", { className: "bar" });
+    bar.append(el("i", { style: `width:${Math.min(100, n / 0.4)}%` }));
+    st.append(el("div", { className: "st " + k }, el("small", { textContent: label }), el("b", { textContent: n }), bar));
+  }
   const groups = new Map(); for (const c of cards) { const g = groups.get(c.id) || { c, n: 0 }; g.n++; groups.set(c.id, g); }
   const list = $("#deckList"); list.innerHTML = "";
   if (!cards.length) list.append(Object.assign(document.createElement("p"), { className: "note", textContent: "This deck is empty. Add cards you own from below (20–60 cards)." }));
