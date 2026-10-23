@@ -271,6 +271,26 @@
 
   .npcscreen { background: radial-gradient(80% 50% at 50% 20%, #2c3a7a 0%, transparent 70%), linear-gradient(180deg, #0c1028, #151a3d); }
   .npcscreen > * { max-width: 560px; margin-left: auto; margin-right: auto; }
+  #recipes { padding: 16px 16px 32px; overflow-y: auto; }
+  .recgen { margin: 18px 0 8px; font-size: 13px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+  .recfaces { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 12px 8px; }
+  .recfaces .chip img { width: 64px; height: 64px; } .recfaces .chip:nth-child(3n+2) { margin-top: 0; } .recfaces .chip b { font-size: 11px; max-width: 80px; }
+  .rechead { display: flex; align-items: center; gap: 14px; margin: 6px 0 14px; } .rechead img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; object-position: center 20%; border: 3px solid #fff; }
+  .rechead b { font-size: 20px; display: block; } .rechead small { color: var(--muted); font-size: 13px; }
+  .tierlist { display: grid; gap: 10px; }
+  .tier { display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 16px; border: 2px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+  .tier .lv { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; font-size: 18px; color: #0b1020; }
+  .tier.t1 .lv { background: #9bd2ff; } .tier.t2 .lv { background: #8be0a4; } .tier.t3 .lv { background: #ffd166; } .tier.t4 .lv { background: linear-gradient(135deg, #ff7ab6, #b388ff); }
+  .tier b { display: block; font-size: 15px; } .tier small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .tier .bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,.12); margin-top: 6px; overflow: hidden; } .tier .bar i { display: block; height: 100%; background: var(--good); }
+  .tier.ready { border-color: var(--good); }
+  .recsum { margin: 4px 0 12px; font-size: 14px; } .recsum b { color: var(--accent); }
+  .reccards { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .rc { position: relative; background: none; border: 0; padding: 0; color: var(--text); font: inherit; cursor: pointer; }
+  .rc img { width: 100%; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 6px; background: #1c2230; display: block; }
+  .rc.miss img { filter: grayscale(1) brightness(.45); } .rc span { position: absolute; right: 3px; bottom: 3px; font: 700 11px var(--font); padding: 2px 6px; border-radius: 999px; background: rgba(8,10,24,.85); }
+  .rc.miss span { background: #b3263e; } .rc.ok span { background: #1f7a3c; }
+  .missing { font-size: 13px; line-height: 1.6; columns: 2; column-gap: 16px; margin: 0 0 14px; padding-left: 18px; }
   .host { display: grid; justify-items: center; gap: 14px; margin: 6px auto 16px; }
   .host img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; object-position: center 20%; border: 4px solid #fff; background: #22294a; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
   .host .bubble { max-width: 380px; text-align: center; }
@@ -420,6 +440,11 @@
   <div id="status"></div>
 </section>
 
+<section class="screen npcscreen" id="recipes" hidden>
+  <header class="gatebar"><button class="round" id="recBack" type="button" aria-label="Back">‹</button><h1 id="recTitle">Character decks</h1></header>
+  <div id="recBody"></div>
+</section>
+
 <section class="screen gatescreen" id="gate" hidden>
   <header class="gatebar"><button class="round" id="gateBack" type="button" aria-label="Back">‹</button><h1 id="gateTitle"></h1></header>
   <div class="gatefield" id="gateField"></div>
@@ -547,7 +572,7 @@
     <p class="note">Keep up to 10 decks. A deck can only use cards you own, up to 3 copies of each, and needs 20–60 cards to duel.</p>
     <div class="slots" id="deckSlots"></div>
     <div id="banlist"></div>
-    <div class="row"><button class="btn primary" id="newDeck" type="button">+ New deck</button><span class="note" id="slotStatus"></span></div>
+    <div class="row"><button class="btn primary" id="newDeck" type="button">+ New deck</button><button class="btn" id="openRecipes" type="button">Character decks</button><span class="note" id="slotStatus"></span></div>
   </div>
 </section>
 
@@ -1873,6 +1898,129 @@ async function renameDeck(i) {
   const name = (await gameDialog({ title: "Rename deck", input: decks[i].name, ok: "Save", cancel: "Cancel" }))?.trim();
   if (name) { decks[i].name = name.slice(0, 40); saveDecks(); renderSlots(); if (!$("#editor").hidden) renderDeck(); }
 }
+// ---------- Character decks: ready-made recipes for each character, from a simple starter to a pro build ----------
+// Starter is made from the character's story deck, Story is the deck they duel with, Advanced and Pro come from
+// data/recipes.txt. Each shows which cards you own; with enough copies you can save it as one of your decks.
+const TIERS = [["starter", "Starter", "Their signature monster with simple cards"], ["story", "Story", "The deck they duel with"], ["advanced", "Advanced", "Their archetype, with more support"], ["pro", "Pro", "A competitive build"]];
+const BASIC_POOL = ["Celtic Guardian", "Giant Soldier of Stone", "Mystical Elf", "Beaver Warrior", "Battle Ox", "Gemini Elf", "La Jinn the Mystical Genie of the Lamp", "Kuriboh", "Sangan", "Silver Fang", "Feral Imp", "Hinotama", "Dian Keto the Cure Master", "Mystical Space Typhoon", "Swords of Revealing Light", "Trap Hole", "Waboku", "Sakuretsu Armor", "Magic Cylinder", "Mirror Force"];
+let recipeText = null;
+// "## id", "# advanced|pro Name", "3 Card Name", "--" for the Extra Deck, "@block" to include a "## @block"
+function parseRecipes(txt) {
+  const blocks = {}, out = {}; let cur = null, part = "main";
+  for (const raw of txt.split("\n")) {
+    const s = raw.trim(); let m;
+    if (!s || (s.startsWith("#") && !s.startsWith("## ") && !/^# (advanced|pro) /.test(s))) continue;
+    if (s.startsWith("## ")) { const id = s.slice(3).trim(); cur = id.startsWith("@") ? (blocks[id.slice(1)] = { main: [], extra: [] }) : null; out[id] ??= {}; part = "main"; if (!cur) out.__cur = id; continue; }
+    if ((m = s.match(/^# (advanced|pro) (.+)$/))) { cur = out[out.__cur][m[1]] = { name: m[2], main: [], extra: [] }; part = "main"; continue; }
+    if (s === "--") { part = "extra"; continue; }
+    if (!cur) continue;
+    if (s.startsWith("@")) { const b = blocks[s.slice(1)]; if (b) { cur.main.push(...b.main); cur.extra.push(...b.extra); } continue; }
+    if ((m = s.match(/^(\d+) (.+)$/))) cur[part].push([+m[1], m[2]]);
+  }
+  delete out.__cur; return out;
+}
+async function recipes() {
+  if (!recipeText) { const r = await fetch("data/recipes.txt?v=__BUILD__"); if (!r.ok) throw new Error("Couldn't load the character decks."); recipeText = parseRecipes(await r.text()); }
+  return recipeText;
+}
+const ownedByName = () => { const m = new Map(); for (const e of Object.values(coll)) m.set(e.card.name, (m.get(e.card.name) || 0) + e.n); return m; };
+const tally = list => { const m = new Map(); for (const n of list) m.set(n, (m.get(n) || 0) + 1); return [...m].map(([n, k]) => [k, n]); };
+// The four decks of a character, as [[copies, name], ...] for the Main and Extra Deck
+async function charRecipes(ch) {
+  const all = await recipes(), d = CHAR_DECKS[ch.id], story = { main: tally(Array.isArray(d) ? d : d.main), extra: tally(Array.isArray(d) ? [] : d.extra) };
+  // starter: one of each of their cards (ace first), then simple basics, 40 in all
+  const main = [], used = new Set(), add = (k, n) => { if (used.has(n)) return; used.add(n); main.push([k, n]); };
+  add(1, ch.ace.name);
+  for (const [, n] of story.main) { if (main.length >= 14) break; if (!["Monster Reborn", "Pot of Greed", "Raigeki", "Dark Hole", "Change of Heart", "Graceful Charity"].includes(n)) add(1, n); }
+  let total = main.length;
+  for (const n of BASIC_POOL) { if (total >= 40) break; if (used.has(n)) continue; const k = Math.min(2, 40 - total); add(k, n); total += k; }
+  const starter = { name: `${ch.name.split(" ")[0]}'s Starter`, main, extra: story.extra.slice(0, 3).map(([, n]) => [1, n]) };
+  return { starter, story: { name: `${ch.name.split(" ")[0]}'s Story Deck`, ...story }, advanced: all[ch.id]?.advanced, pro: all[ch.id]?.pro };
+}
+const recCards = new Map(); // card name -> card, for pictures of cards you don't own yet
+async function loadRecCards(names) {
+  const need = [...new Set(names)].filter(n => !recCards.has(n));
+  for (let i = 0; i < need.length; i += 60) { const { cards } = await api({ action: "names", n: need.slice(i, i + 60).join("|") }); for (const c of cards) recCards.set(c.name, c); }
+}
+function recipeProgress(r, owned) {
+  const rows = [...r.main, ...r.extra]; let have = 0, need = 0;
+  for (const [k, n] of rows) { need += k; have += Math.min(k, owned.get(n) || 0); }
+  return { have, need };
+}
+function openRecipes() {
+  show("recipes"); $("#recTitle").textContent = "Character decks";
+  const box = $("#recBody"); box.innerHTML = "";
+  box.append(el("p", { className: "note", textContent: "Pick a duelist to see their decks, from a simple starter to a pro build. Duelists you haven't met yet are hidden." }));
+  for (const g of GATES) {
+    if (g.soon || !g.chars.length) continue;
+    box.append(el("h2", { className: "recgen", textContent: `${g.name} · Gen ${g.gen}` }));
+    const grid = el("div", { className: "recfaces" }), here = available(g).map(c => c.id);
+    for (const c of g.chars) {
+      const met = here.includes(c.id), chip = el("button", { type: "button", className: "chip" + (met ? "" : " locked") });
+      chip.append(el("img", { src: face(c.face), alt: "" }), el("b", { textContent: met ? c.name : "???" }));
+      chip.onclick = () => met ? openCharRecipes(CHARS[c.id]) : toast("Meet this duelist at the gates first.");
+      grid.append(chip);
+    }
+    box.append(grid);
+  }
+}
+async function openCharRecipes(ch) {
+  show("recipes"); $("#recTitle").textContent = ch.name;
+  const box = $("#recBody"); box.innerHTML = ""; box.append(note("Loading decks…"));
+  let list; try { list = await charRecipes(ch); } catch (e) { box.innerHTML = ""; box.append(note(errText(e))); return; }
+  const owned = ownedByName(); box.innerHTML = "";
+  const head = el("div", { className: "rechead" }); head.append(el("img", { src: face(ch.face), alt: "" }), el("div", {}, el("b", { textContent: ch.name }), el("small", { textContent: `Ace: ${ch.ace.name}` }))); box.append(head);
+  const tl = el("div", { className: "tierlist" });
+  TIERS.forEach(([key, label, about], i) => {
+    const r = list[key]; if (!r) return;
+    const { have, need } = recipeProgress(r, owned), b = el("button", { type: "button", className: `tier t${i + 1}` + (have >= need ? " ready" : "") });
+    const bar = el("div", { className: "bar" }); bar.append(el("i", { style: `width:${Math.round(100 * have / need)}%` }));
+    b.append(el("span", { className: "lv", textContent: String(i + 1) }), el("span", {}, el("b", { textContent: `${label}: ${r.name}` }), el("small", { textContent: `${about} · you have ${have} of ${need} cards` }), bar), el("span", { textContent: have >= need ? "✓" : "›" }));
+    b.onclick = () => openRecipe(ch, label, r); tl.append(b);
+  });
+  box.append(tl);
+}
+async function openRecipe(ch, label, r) {
+  const box = $("#recBody"); box.innerHTML = ""; box.append(note("Loading cards…"));
+  try { await loadRecCards([...r.main, ...r.extra].map(x => x[1])); } catch (e) { box.innerHTML = ""; box.append(note(errText(e))); return; }
+  const owned = ownedByName(), { have, need } = recipeProgress(r, owned), missing = [];
+  box.innerHTML = "";
+  const back = el("button", { type: "button", className: "btn small", textContent: `‹ ${ch.name}'s decks`, onclick: () => openCharRecipes(ch) }); box.append(back);
+  box.append(el("h2", { className: "section", textContent: `${label}: ${r.name}` }));
+  const sum = el("p", { className: "recsum" }); sum.innerHTML = `You have <b>${have}</b> of <b>${need}</b> cards.`; box.append(sum);
+  for (const [part, rows] of [["Main Deck", r.main], ["Extra Deck", r.extra]]) {
+    if (!rows.length) continue;
+    box.append(el("h2", { className: "recgen", textContent: `${part} (${rows.reduce((a, [k]) => a + k, 0)})` }));
+    const grid = el("div", { className: "reccards" });
+    for (const [k, n] of rows) {
+      const c = recCards.get(n), got = Math.min(k, owned.get(n) || 0); if (got < k) missing.push([k - got, n]);
+      const b = el("button", { type: "button", className: "rc " + (got >= k ? "ok" : "miss"), title: n });
+      b.append(el("img", { src: c ? imgUrl(c, "small") : "", alt: n, loading: "lazy" }), el("span", { textContent: `${got}/${k}` }));
+      b.onclick = () => gameAlert(`${c?.summary || ""}\n\nYou have ${owned.get(n) || 0} · this deck uses ${k}.`, n); grid.append(b);
+    }
+    box.append(grid);
+  }
+  const btn = el("button", { type: "button", className: "btn primary big", textContent: missing.length ? `Missing ${need - have} card${need - have === 1 ? "" : "s"}` : "Build this deck" });
+  btn.disabled = !!missing.length; btn.onclick = () => buildRecipe(ch, label, r); box.append(btn);
+  if (missing.length) {
+    box.append(el("h2", { className: "recgen", textContent: "Cards you still need" }));
+    const ul = el("ul", { className: "missing" }); for (const [k, n] of missing) ul.append(el("li", { textContent: `${k}× ${n}` })); box.append(ul);
+    box.append(note("Open packs in the Shop, or win duels at the gates, to collect them."));
+  }
+}
+async function buildRecipe(ch, label, r) {
+  if (decks.length >= MAX_DECKS) return gameAlert(`You already have ${MAX_DECKS} decks. Delete one in Decks to make room.`, "No room for a new deck");
+  const ids = [];
+  for (const [k, n] of [...r.main, ...r.extra]) {
+    let left = k; for (const e of Object.values(coll)) { if (e.card.name !== n) continue; for (let j = 0; j < e.n && left > 0; j++, left--) ids.push(e.card.id); if (!left) break; }
+  }
+  const legal = legalize(ids), dropped = ids.length - legal.length, name = `${ch.name.split(" ")[0]} · ${label}`.slice(0, 40);
+  decks.push({ name, ids: legal }); saveDecks();
+  await gameAlert(`Saved as "${name}" (${legal.length} cards).${dropped ? ` ${dropped} card${dropped === 1 ? " was" : "s were"} left out because of the Forbidden & Limited list.` : ""} You'll find it in Decks.`, "Deck built!");
+  show("decks"); renderSlots();
+}
+$("#openRecipes").addEventListener("click", openRecipes);
+$("#recBack").addEventListener("click", () => { if ($("#recTitle").textContent === "Character decks") { show("decks"); renderSlots(); } else openRecipes(); });
 $("#newDeck").addEventListener("click", async () => {
   if (decks.length >= MAX_DECKS) return;
   const name = (await gameDialog({ title: "Name your new deck", input: `Deck ${decks.length + 1}`, ok: "Create", cancel: "Cancel" }))?.trim(); if (!name) return;

@@ -47,6 +47,7 @@ The home screen is a small world: **gates** for each Yu-Gi-Oh! series, and the *
 ## Decks
 - Up to 10 decks: create, rename, copy, delete
 - A deck uses only cards you own (up to 3 copies, and no more than you own): a Main Deck of 20–60 cards and an Extra Deck of up to 15 (Fusion, Synchro, Xyz, Link). You pick your deck before each duel
+- **Character decks** (Decks → Character decks): pick a duelist you've met to see four decks, easy to strong: **Starter** (their ace with simple cards, made from their story deck), **Story** (the deck they duel with), **Advanced** (their archetype with more support) and **Pro** (a competitive build). Each shows which cards you own (have / need); with every card owned, **Build this deck** saves it (Forbidden & Limited cards are left out), otherwise it lists the cards still needed. Advanced and Pro recipes live in `data/recipes.txt` (`## character`, `# advanced|pro Deck name`, `3 Card Name`, `--` before the Extra Deck)
 - **Search** your own cards, or all 14,000+ cards in the database. The words are matched in card names and in card text (monsters, spells and traps); name matches come first, and text matches are marked "found in card text". Filter by kind, attribute, type (Dragon, Spellcaster, Quick-Play…), level and archetype. Sort A–Z, by card type (monsters, spells, traps), ATK, DEF or level
 
 ## Board

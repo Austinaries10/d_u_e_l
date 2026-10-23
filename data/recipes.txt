@@ -1,0 +1,2961 @@
+# Character deck recipes for the deck builder: Advanced and Pro decks per character.
+# (Starter decks are made from each character's story deck, and Story decks are the decks they duel with.)
+# Format:  ## <character id>   # advanced|pro <deck name>   <copies> <exact card name>   --  (Extra Deck from here)
+# @<block> adds a block defined with  ## @<block>
+
+## @staples
+3 Ash Blossom & Joyous Spring
+2 Effect Veiler
+1 Called by the Grave
+2 Infinite Impermanence
+
+## @links
+--
+1 I:P Masquerena
+1 Knightmare Phoenix
+1 Knightmare Unicorn
+1 S:P Little Knight
+
+## joey
+# advanced Red-Eyes Fusion
+3 Red-Eyes Black Dragon
+3 Black Dragon's Chick
+2 Red-Eyes Wyvern
+1 Red-Eyes Retro Dragon
+2 Gearfried the Iron Knight
+2 Time Wizard
+2 Baby Dragon
+2 Alligator's Sword
+1 Jinzo #7
+3 Red-Eyes Fusion
+2 Return of the Red-Eyes
+2 Red-Eyes Insight
+1 Monster Reborn
+2 Metalmorph
+2 Inferno Fire Blast
+1 Graceful Dice
+1 Skull Dice
+2 Red-Eyes Spirit
+2 Shadow Spell
+2 Kunai with Chain
+2 Magic Cylinder
+--
+1 Thousand Dragon
+1 Black Skull Dragon
+1 Alligator's Sword Dragon
+1 Meteor Black Comet Dragon
+1 Red-Eyes Slash Dragon
+1 Red-Eyes Flare Metal Dragon
+# pro Red-Eyes Competitive
+3 Red-Eyes Black Dragon
+2 Red-Eyes Darkness Metal Dragon
+2 Red-Eyes Black Meteor Dragon
+1 Red-Eyes Alternative Black Dragon
+1 Red-Eyes Retro Dragon
+1 Red-Eyes Wyvern
+1 Lord of the Red
+1 Black Metal Dragon
+2 Black Dragon's Chick
+3 Red-Eyes Fusion
+3 Red-Eyes Insight
+2 Cards of the Red Stone
+1 Return of the Red-Eyes
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+1 Lightning Storm
+2 Red-Eyes Spirit
+@staples
+--
+1 Red-Eyes Slash Dragon
+1 Red-Eyes Flare Metal Dragon
+1 Meteor Black Comet Dragon
+1 Black Skull Dragon
+1 Archfiend Black Skull Dragon
+1 Thousand Dragon
+1 Number 11: Big Eye
+1 Abyss Dweller
+@links
+
+## tea
+# advanced Magician Girls
+2 Magician's Valkyria
+2 Dark Magician Girl
+2 Apple Magician Girl
+2 Lemon Magician Girl
+2 Berry Magician Girl
+2 Chocolate Magician Girl
+2 Kiwi Magician Girl
+2 Shining Angel
+2 Mystical Elf
+2 Magician's Rod
+2 Sage's Stone
+2 Magic Formula
+1 Monster Reborn
+2 Magicians Unite
+2 Mage Power
+2 Dian Keto the Cure Master
+2 Upstart Goblin
+2 Magician's Circle
+2 Magical Hats
+1 Mirror Force
+2 Draining Shield
+--
+1 Dark Magician Girl the Dragon Knight
+1 Ebon High Magician
+1 Magi Magi ☆ Magician Gal
+# pro Magician Girl Competitive
+3 Apple Magician Girl
+2 Lemon Magician Girl
+2 Berry Magician Girl
+2 Chocolate Magician Girl
+1 Kiwi Magician Girl
+1 Dark Magician Girl
+1 Magician's Valkyria
+1 Magician of Dark Illusion
+2 Magician's Rod
+2 Magicalized Fusion
+2 Pot of Prosperity
+1 Monster Reborn
+2 Magician Navigation
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+2 Dark Magic Veil
+2 Magician's Circle
+3 Magicians' Combination
+@staples
+--
+1 Dark Magician Girl the Dragon Knight
+1 Ebon High Magician
+1 Magi Magi ☆ Magician Gal
+1 Ebon Illusion Magician
+1 Number 11: Big Eye
+1 Abyss Dweller
+1 Underworld Goddess of the Closed World
+@links
+
+## tristan
+# advanced Machine Corps
+2 Machine King
+2 Cyber Commander
+2 Mechanicalchaser
+2 Machine King Prototype
+2 Robotic Knight
+3 Cyber Dragon
+2 Proto-Cyber Dragon
+2 Card Trooper
+2 Blast Sphere
+2 Giant Soldier of Stone
+2 Machine Duplication
+2 Limiter Removal
+1 Monster Reborn
+2 Pot of Greed
+2 Shield & Sword
+2 Machine Conversion Factory
+2 Mirror Force
+2 Sakuretsu Armor
+2 Magic Cylinder
+2 Rare Metalmorph
+--
+1 Cyber Twin Dragon
+1 Chimeratech Fortress Dragon
+1 Cyber End Dragon
+# pro Machine Competitive
+3 Cyber Dragon
+2 Cyber Dragon Core
+2 Cyber Dragon Vier
+1 Cyber Dragon Nachster
+1 Cyber Dragon Drei
+3 Machine King
+2 Machine Duplication
+2 Cybernetic Horizon
+2 Cyber Emergency
+3 Cyber Repair Plant
+2 Pot of Prosperity
+1 Monster Reborn
+2 Limiter Removal
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+1 Lightning Storm
+2 Overload Fusion
+@staples
+--
+1 Cyber Dragon Infinity
+1 Cyber Dragon Nova
+1 Chimeratech Rampage Dragon
+1 Chimeratech Megafleet Dragon
+1 Chimeratech Fortress Dragon
+1 Cyber Twin Dragon
+1 Cyber End Dragon
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+1 Cyberse Quantum Dragon
+@links
+
+## weevil
+# advanced Insect Swarm
+2 Insect Queen
+2 Great Moth
+3 Petit Moth
+2 Cocoon of Evolution
+3 Hercules Beetle
+2 Leghul
+2 Insect Knight
+2 Pinch Hopper
+2 Flying Kamakiri #1
+2 Insect Soldiers of the Sky
+2 Howling Insect
+2 Insect Barrier
+2 Insect Imitation
+1 Monster Reborn
+2 Pot of Greed
+2 Insect Armor with Laser Cannon
+2 Gift of The Mystical Elf
+2 DNA Surgery
+1 Mirror Force
+2 Spider Web
+--
+1 Ultimate Great Insect
+# pro Beetrooper Competitive
+3 Beetrooper Fly & Sting
+3 Beetrooper Scout Buggy
+2 Beetrooper Light Flapper
+2 Beetrooper Scale Bomber
+2 Beetrooper Assault Roller
+1 Beetrooper Sting Lancer
+1 Insect Queen
+2 Howling Insect
+3 Beetrooper Landing
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 Forbidden Droplet
+1 Harpie's Feather Duster
+2 Beetrooper Formation
+3 Beetrooper Descent
+@staples
+--
+2 Beetrooper Armor Horn
+1 Giant Beetrooper Invincible Atlas
+1 Ultra Beetrooper Absolute Hercules
+1 Beetrooper Cruel Saturnas
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+1 Underworld Goddess of the Closed World
+@links
+
+## rex
+# advanced Dinosaur Rush
+2 Black Tyranno
+3 Two-Headed King Rex
+2 Megazowler
+2 Sabersaurus
+3 Gilasaurus
+2 Babycerasaurus
+2 Petiteranodon
+2 Ultimate Tyranno
+2 Miracle Jurassic Egg
+2 Fossil Dig
+2 Jurassic World
+1 Monster Reborn
+2 Big Evolution Pill
+2 Pot of Greed
+2 Hunting Instinct
+2 Survival Instinct
+1 Mirror Force
+2 Sakuretsu Armor
+2 Magic Cylinder
+2 Fissure
+--
+1 Evolzar Laggia
+# pro Dinosaur Competitive
+3 Souleating Oviraptor
+2 Miscellaneousaurus
+3 Ultimate Conductor Tyranno
+1 Giant Rex
+2 Fossil Dyna Pachycephalo
+2 Babycerasaurus
+2 Big Evolution Pill
+2 Petiteranodon
+1 Overtex Qoatlus
+3 Fossil Dig
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+2 Lost World
+2 Forbidden Droplet
+1 Survival Instinct
+@staples
+--
+1 Evolzar Laggia
+1 Evolzar Lars
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+1 Underworld Goddess of the Closed World
+@links
+
+## mako
+# advanced Sea Legends
+2 The Legendary Fisherman
+1 The Legendary Fisherman II
+1 The Legendary Fisherman III
+1 Fortress Whale
+3 Great White
+2 Kairyu-Shin
+2 Fiend Kraken
+2 Star Boy
+2 7 Colored Fish
+2 Amphibious Bugroth MK-3
+2 Unshaven Angler
+2 Spike Seadra
+2 Mother Grizzly
+2 Umi
+2 A Legendary Ocean
+1 Monster Reborn
+2 Pot of Greed
+2 Salvage
+2 Torrential Tribute
+1 Mirror Force
+2 Tornado Wall
+2 Fissure
+--
+1 Number 32: Shark Drake
+# pro Marincess Competitive
+3 Marincess Sea Horse
+3 Marincess Sea Star
+2 Marincess Crown Tail
+2 Marincess Basilalima
+2 Marincess Blue Tang
+2 Marincess Pascalus
+2 Marincess Mandarin
+1 The Legendary Fisherman III
+3 Marincess Battle Ocean
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 A Legendary Ocean
+1 Harpie's Feather Duster
+2 Marincess Dive
+2 Marincess Cascade
+@staples
+--
+1 Marincess Coral Anemone
+1 Marincess Coral Triangle
+1 Marincess Wonder Heart
+1 Marincess Great Bubble Reef
+1 Marincess Aqua Argonaut
+1 Abyss Dweller
+1 Marincess Crystal Heart
+@links
+
+## mai
+# advanced Harpie Sisters
+3 Harpie Lady
+2 Harpie Lady Sisters
+2 Harpie's Pet Dragon
+2 Harpie Lady 1
+2 Harpie Lady 2
+2 Harpie Lady 3
+2 Harpie Channeler
+2 Harpie Harpist
+2 Cyber Harpie Lady
+2 Elegant Egotist
+2 Hysteric Party
+2 Harpies' Hunting Ground
+2 Harpie Queen
+2 Harpie Lady Elegance
+1 Monster Reborn
+2 Pot of Greed
+2 Triangle Ecstasy Spark
+2 Hysteric Sign
+1 Mirror Force
+2 Harpie Lady Phoenix Formation
+1 Harpie's Feather Duster
+--
+1 Harpie's Pet Phantasmal Dragon
+1 Cyber Slash Harpie Lady
+# pro Harpie Competitive
+3 Harpie Lady
+2 Harpie Lady 1
+2 Harpie Channeler
+2 Harpie Harpist
+1 Harpie Perfumer
+1 Harpie's Pet Dragon
+1 Harpie Oracle
+3 Elegant Egotist
+3 Harpie's Feather Storm
+2 Harpie Dancer
+2 Hysteric Sign
+2 Hysteric Party
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+2 Harpies' Hunting Ground
+@staples
+--
+1 Harpie's Pet Phantasmal Dragon
+1 Harpie Conductor
+1 Cyber Slash Harpie Lady
+1 Number 11: Big Eye
+1 Abyss Dweller
+@links
+
+## keith
+# advanced Machine Gun
+2 Barrel Dragon
+2 Slot Machine
+2 Desperado Barrel Dragon
+1 Twin-Barrel Dragon
+2 Roulette Spider
+2 Launcher Spider
+2 Blowback Dragon
+2 Mechanicalchaser
+2 Robotic Knight
+2 Cyber Dragon
+2 Card Trooper
+2 Machine Duplication
+2 Limiter Removal
+1 Monster Reborn
+2 Pot of Greed
+2 Graceful Dice
+2 Skull Dice
+2 Roulette Barrel
+1 Mirror Force
+2 Magic Cylinder
+2 Sakuretsu Armor
+1 Torrential Tribute
+--
+1 Gatling Dragon
+1 Cyber Twin Dragon
+# pro Rokket Competitive
+3 Absorouter Dragon
+2 Magnarokket Dragon
+2 Rokket Caliber
+3 Rokket Tracer
+2 Rokket Synchron
+1 Exploderokket Dragon
+1 Silverrokket Dragon
+2 Shelrokket Dragon
+2 Autorokket Dragon
+3 Quick Launch
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+2 Rokket Recharger
+2 Forbidden Droplet
+1 Lightning Storm
+@staples
+--
+1 Borreload Dragon
+1 Borrelsword Dragon
+1 Borreload Savage Dragon
+1 Topologic Gumblar Dragon
+1 Abyss Dweller
+@links
+
+## bakura
+# advanced Dark Necrofear
+2 Dark Necrofear
+3 The Earl of Demise
+2 Headless Knight
+2 Dark Ruler Ha Des
+2 Archfiend Soldier
+2 Lesser Fiend
+2 Sangan
+2 Spirit Reaper
+2 Ryu-Kishin Powered
+1 Destiny Board
+2 Dark Sanctuary
+2 Pot of Greed
+1 Monster Reborn
+2 Dark Hole
+2 Card of Sanctity
+2 Spirit Message "I"
+2 Spirit Message "N"
+2 Spirit Message "A"
+2 Spirit Message "L"
+2 Call of the Haunted
+1 Mirror Force
+--
+1 Dark Balter the Terrible
+# pro Fiend Competitive
+3 Dark Necrofear
+3 Diabellstar the Black Witch
+2 Snake-Eye Ash
+2 Snake-Eyes Poplar
+1 Snake-Eyes Flamberge Dragon
+2 Fabled Raven
+2 Snake-Eye Birch
+1 Destiny Board
+3 Original Sinful Spoils - Snake-Eye
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+2 Dark Sanctuary
+2 Sinful Spoils of Doom - Rciela
+3 WANTED: Seeker of Sinful Spoils
+@staples
+--
+1 Promethean Princess, Bestower of Flames
+1 Snake-Eyes Doomed Dragon
+1 Moon of the Closed Heaven
+1 Salamangreat Almiraj
+1 Underworld Goddess of the Closed World
+1 Abyss Dweller
+@links
+
+## kaiba
+# advanced Blue-Eyes Fusion
+3 Blue-Eyes White Dragon
+2 Blue-Eyes Alternative White Dragon
+2 Kaiser Sea Horse
+2 Lord of D.
+2 Vorse Raider
+2 La Jinn the Mystical Genie of the Lamp
+2 X-Head Cannon
+2 Y-Dragon Head
+2 Z-Metal Tank
+1 Kaibaman
+2 Polymerization
+2 The Flute of Summoning Dragon
+1 Monster Reborn
+2 Pot of Greed
+2 Shrink
+2 Enemy Controller
+2 Burst Stream of Destruction
+2 Crush Card Virus
+1 Mirror Force
+2 Ring of Destruction
+2 Interdimensional Matter Transporter
+--
+1 Blue-Eyes Ultimate Dragon
+1 XYZ-Dragon Cannon
+1 Blue-Eyes Twin Burst Dragon
+1 Blue-Eyes Tyrant Dragon
+1 Neo Blue-Eyes Ultimate Dragon
+# pro Blue-Eyes Competitive
+3 Blue-Eyes White Dragon
+3 Blue-Eyes Alternative White Dragon
+2 Blue-Eyes Jet Dragon
+2 Blue-Eyes Abyss Dragon
+1 Blue-Eyes Solid Dragon
+3 The White Stone of Ancients
+2 Sage with Eyes of Blue
+1 Maiden of White
+1 Dictator of D.
+2 Bingo Machine, Go!!!
+3 Ultimate Fusion
+3 Chaos Form
+2 Pot of Prosperity
+1 Monster Reborn
+2 Roar of the Blue-Eyed Dragons
+1 Harpie's Feather Duster
+@staples
+--
+1 Blue-Eyes Twin Burst Dragon
+1 Blue-Eyes Tyrant Dragon
+1 Blue-Eyes Ultimate Dragon
+1 Neo Blue-Eyes Ultimate Dragon
+1 Blue-Eyes Spirit Dragon
+1 Azure-Eyes Silver Dragon
+1 Blue-Eyes Alternative Ultimate Dragon
+1 Number 38: Hope Harbinger Dragon Titanic Galaxy
+1 Divine Arsenal AA-ZEUS - Sky Thunder
+1 Baronne de Fleur
+@links
+
+## pegasus
+# advanced Toon World
+2 Toon Summoned Skull
+2 Toon Dark Magician Girl
+2 Blue-Eyes Toon Dragon
+2 Toon Mermaid
+2 Toon Gemini Elf
+2 Toon Alligator
+2 Toon Goblin Attack Force
+2 Toon Masked Sorcerer
+2 Manga Ryu-Ran
+2 Toon Cannon Soldier
+2 Toon World
+2 Toon Kingdom
+2 Comic Hand
+1 Monster Reborn
+2 Pot of Greed
+2 Shadow Toon
+2 Toon Table of Contents
+2 Toon Briefcase
+1 Mirror Force
+2 Toon Defense
+1 Relinquished
+1 Toon Bookmark
+--
+1 Thousand-Eyes Restrict
+# pro Toon Competitive
+3 Toon Gemini Elf
+2 Toon Dark Magician
+2 Toon Black Luster Soldier
+2 Toon Harpie Lady
+1 Toon Summoned Skull
+1 Blue-Eyes Toon Dragon
+1 Toon Cyber Dragon
+1 Toon Mask
+2 Toon Bookmark
+3 Toon Kingdom
+3 Toon Table of Contents
+2 Toon World
+2 Toon Page-Flip
+2 Pot of Prosperity
+1 Monster Reborn
+2 Comic Hand
+2 Toon Briefcase
+@staples
+--
+1 Thousand-Eyes Restrict
+1 Relinquished Anima
+1 Abyss Dweller
+@links
+
+## marik
+# advanced Egyptian Gods
+1 The Winged Dragon of Ra
+1 The Winged Dragon of Ra - Sphere Mode
+2 Lava Golem
+2 Makyura the Destructor
+2 Revival Jam
+2 Helpoemer
+1 Metalzoa
+2 Byser Shock
+2 Gil Garth
+2 Drillago
+2 Fiend's Hand Mirror
+2 Dark Magic Curtain
+2 Monster Reborn
+2 Pot of Greed
+2 Mystical Space Typhoon
+2 Card of Safe Return
+2 Monster Recovery
+2 Nightmare Wheel
+2 Viser Des
+2 Mind Control
+1 Mirror Force
+2 The Masked Beast
+--
+1 Humanoid Worm Drake
+# pro Ra Competitive
+1 The Winged Dragon of Ra
+1 The Winged Dragon of Ra - Sphere Mode
+1 The Winged Dragon of Ra - Immortal Phoenix
+3 Ra's Disciple
+2 Lava Golem
+2 Dark Magician of Chaos
+2 Fabled Raven
+3 Gold Sarcophagus
+3 Millennium Revelation
+3 Mound of the Bound Creator
+2 Swords of Revealing Light
+1 Card of Safe Return
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+3 Ultimate Offering
+@staples
+--
+1 Abyss Dweller
+1 Number 41: Bagooska the Terribly Tired Tapir
+@links
+
+## paradox
+# advanced Gate Guardian
+2 Gate Guardian
+3 Sanga of the Thunder
+3 Kazejin
+3 Suijin
+2 Labyrinth Wall
+2 Wall Shadow
+2 Big Shield Gardna
+2 Shadow Ghoul
+2 Labyrinth of Nightmare
+2 Labyrinth Heavy Tank
+2 Pot of Greed
+1 Monster Reborn
+2 Dark Hole
+2 Polymerization
+2 Fusion Gate
+2 Shadow Ghoul of the Labyrinth
+2 Guardian of the Labyrinth
+2 Mirror Force
+2 Magic Cylinder
+--
+1 Gate Guardian of Thunder and Wind
+1 Labyrinth Tank
+# pro Gate Guardian Competitive
+3 Sanga of the Thunder
+3 Kazejin
+3 Suijin
+2 Gate Guardian
+2 Dark Element
+2 Labyrinth Wall Shadow
+2 Wall of Illusion
+2 Labyrinth of Nightmare
+2 Shadow Ghoul of the Labyrinth
+2 Guardian of the Labyrinth
+2 Polymerization
+2 Fusion Gate
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+@staples
+--
+1 Gate Guardian of Thunder and Wind
+1 Gate Guardian of Water and Thunder
+1 Gate Guardian of Wind and Water
+1 Abyss Dweller
+1 Gate Guardians Combined
+@links
+
+## espa
+# advanced Jinzo Psychics
+3 Jinzo
+2 Jinzo - Returner
+2 Jinzo - Lord
+1 Jinzo - Jector
+2 Psychic Commander
+2 Krebons
+2 Cyber Dragon
+2 Card Trooper
+2 Esper Girl
+2 Mind Protector
+2 Psychic Snail
+2 Emergency Teleport
+1 Monster Reborn
+2 Pot of Greed
+2 Limiter Removal
+2 Psychic Feel Zone
+2 Telepathic Power
+2 Mirror Force
+2 Magic Cylinder
+2 Sakuretsu Armor
+1 Jinzo - Energy Shocker
+--
+1 Magical Android
+1 Thought Ruler Archfiend
+# pro Jinzo Competitive
+3 Jinzo
+2 Jinzo - Jector
+2 Jinzo - Returner
+2 Jinzo - Energy Shocker
+1 Jinzo - Lord
+2 Psychic Commander
+2 Krebons
+3 Emergency Teleport
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+2 Forbidden Droplet
+2 Psychic Wheeleder
+2 Jinzo the Machine Menace
+3 Cyber Dragon
+@staples
+--
+1 Psychic End Punisher
+1 Thought Ruler Archfiend
+1 Magical Android
+1 Abyss Dweller
+1 Jinzo - Layered
+@links
+
+## bonz
+# advanced Zombie Horde
+2 Pumpking the King of Ghosts
+2 Ryu Kokki
+2 Spirit Reaper
+2 Zombyra the Dark
+2 Pyramid Turtle
+2 Mezuki
+2 Despair from the Dark
+2 Il Blud
+2 Plaguespreader Zombie
+2 Goblin Zombie
+2 Book of Life
+2 Zombie World
+2 Card of Safe Return
+1 Monster Reborn
+2 Pot of Greed
+2 Call of the Mummy
+2 Call of the Haunted
+2 Overpowering Eye
+2 Mirror Force
+1 Ring of Destruction
+2 Red-Eyes Zombie Dragon
+--
+1 Doomkaiser Dragon
+1 Red-Eyes Zombie Dragon Lord
+# pro Zombie Competitive
+3 Mezuki
+2 Shiranui Spectralsword
+2 Shiranui Samurai
+2 Shiranui Squire
+2 Uni-Zombie
+1 Gozuki
+2 Glow-Up Bulb
+1 Doomking Balerdroch
+3 Zombie World
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+2 Shiranui Style Synthesis
+2 Forbidden Droplet
+2 Shiranui Swordmaster
+2 Shiranui Solitaire
+@staples
+--
+1 Shiranui Shogunsaga
+1 Shiranui Sunsaga
+1 Shiranui Samuraisaga
+1 Shiranui Swordsaga
+1 Red-Eyes Zombie Necro Dragon
+1 Borrelend Dragon
+1 Baronne de Fleur
+@links
+
+## lumis
+# advanced Masked Beasts
+2 Masked Beast Des Gardius
+2 The Masked Beast
+2 Masked Chameleon
+2 Grand Tiki Elder
+2 Melchid the Four-Face Beast
+2 Masked Clown
+2 Tiki Curse
+2 Tiki Soul
+2 Mask of Restrict
+2 Mask of Darkness
+2 Curse of the Masked Beast
+2 Mask of Dispel
+2 Mask of Weakness
+2 Mask of Brutality
+1 Monster Reborn
+2 Pot of Greed
+2 Mask of the Accursed
+2 Advanced Ritual Art
+1 Mirror Force
+2 Mask Charge
+2 Masked Chopper
+--
+1 Masked HERO Dark Law
+# pro Masquerade Competitive
+3 Masked Beast Des Gardius
+2 Grand Tiki Elder
+2 Melchid the Four-Face Beast
+2 Tiki Curse
+2 Tiki Soul
+2 Masked Chameleon
+2 Mask of Restrict
+2 Curse of the Masked Beast
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 Mask of Darkness
+1 Harpie's Feather Duster
+2 Advanced Ritual Art
+2 Pre-Preparation of Rites
+2 Masked Chopper
+1 Mask Charge
+@staples
+--
+1 Masked HERO Dark Law
+1 Masked HERO Anki
+1 Masked HERO Koga
+1 Abyss Dweller
+1 Number 41: Bagooska the Terribly Tired Tapir
+@links
+
+## ishizu
+# advanced Mill Fairies
+2 Sorciere de Fleur
+2 Mystical Shine Ball
+2 The Agent of Mystery - Earth
+2 Master Hyperion
+2 The Agent of Judgment - Saturn
+2 The Agent of Wisdom - Mercury
+2 The Agent of Creation - Venus
+2 Bountiful Artemis
+2 Shining Angel
+2 Honest
+1 Monster Reborn
+2 Pot of Greed
+2 The Sanctuary in the Sky
+2 Cards of Consonance
+2 Exchange of the Spirit
+2 Gravekeeper's Servant
+2 Card Destruction
+2 Mirror Force
+2 Solemn Judgment
+2 Divine Wrath
+1 The Agent of Miracles - Jupiter
+--
+1 Ancient Fairy Dragon
+# pro Mill Competitive
+3 Sorciere de Fleur
+3 Mystical Shine Ball
+2 The Agent of Mystery - Earth
+2 Master Hyperion
+2 Neo-Parshath, the Sky Paladin
+3 The Sanctuary in the Sky
+3 Exchange of the Spirit
+2 Pot of Prosperity
+2 Card Destruction
+2 Gravekeeper's Servant
+2 Needle Ceiling
+2 Solemn Strike
+2 Divine Wrath
+2 The Agent of Miracles - Jupiter
+@staples
+--
+1 Ancient Fairy Dragon
+1 Baronne de Fleur
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+@links
+
+## odion
+# advanced Mystical Knight Traps
+2 Mystical Knight of Jackal
+2 Embodiment of Apophis
+2 Mystic Tomato
+2 Sangan
+2 Spirit Reaper
+2 Cyber Jar
+2 Soul Taker
+2 Temple of the Kings
+2 Pot of Greed
+1 Monster Reborn
+2 Mystical Space Typhoon
+2 Card of Safe Return
+2 Mirror Force
+2 Magic Cylinder
+2 Sakuretsu Armor
+2 Dimensional Prison
+2 Bottomless Trap Hole
+2 Call of the Haunted
+2 Mind Crush
+2 Torrential Tribute
+1 Dark Bribe
+--
+# pro Trap Monsters Competitive
+3 Mystical Knight of Jackal
+3 Embodiment of Apophis
+2 Tiki Curse
+2 Tiki Soul
+3 Temple of the Kings
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 Infinite Impermanence
+3 Metalmorph
+2 Solemn Strike
+2 Dimensional Barrier
+2 Evenly Matched
+2 Torrential Tribute
+1 Mystical Space Typhoon
+@staples
+--
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+@links
+
+## yami
+# advanced Dark Magician
+3 Dark Magician
+2 Dark Magician Girl
+2 Magician of Dark Illusion
+2 Magician's Rod
+2 Skilled Dark Magician
+2 Kuriboh
+2 Big Shield Gardna
+2 Celtic Guardian
+2 Gazelle the King of Mythical Beasts
+2 Thousand Knives
+2 Dark Magic Attack
+2 Dark Magic Curtain
+2 Magical Dimension
+1 Monster Reborn
+2 Pot of Greed
+2 Swords of Revealing Light
+2 Magician Navigation
+2 Magical Hats
+1 Mirror Force
+1 Spellbinding Circle
+2 Breaker the Magical Warrior
+--
+1 Dark Paladin
+1 The Dark Magicians
+1 Dark Magician Girl the Dragon Knight
+1 Ebon Illusion Magician
+# pro Dark Magician Competitive
+3 Dark Magician
+2 Dark Magician Girl
+3 Magician's Rod
+2 Magician of Dark Illusion
+1 Magicians' Souls
+1 Timaeus the United Dragon
+3 Illusion Magic
+2 Dark Magical Circle
+1 Eternal Soul
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 Dark Magic Veil
+1 Soul Servant
+2 Magicians' Combination
+2 Magician's Valkyria
+2 Dark Magic Attack
+@staples
+--
+1 The Dark Magicians
+1 Dark Paladin
+1 Dark Magician the Dragon Knight
+1 Dark Magician Girl the Dragon Knight
+1 Ebon Illusion Magician
+1 Ebon High Magician
+1 Baronne de Fleur
+@links
+
+## syrus
+# advanced Roid Fusion
+3 Steamroid
+2 Gyroid
+3 Drillroid
+2 Submarineroid
+3 Truckroid
+2 Expressroid
+3 Ambulanceroid
+2 Rescueroid
+3 Patroid
+2 Jetroid
+3 Polymerization
+2 Vehicroid Connection Zone
+1 Monster Reborn
+2 Pot of Greed
+2 Supercharge
+2 Mirror Force
+2 Magic Cylinder
+1 Sakuretsu Armor
+--
+1 Super Vehicroid Jumbo Drill
+1 Steam Gyroid
+1 Ambulance Rescueroid
+2 Super Vehicroid - Stealth Union
+# pro Speedroid Competitive
+3 Speedroid Terrortop
+3 Speedroid Taketomborg
+3 Speedroid Menko
+2 Speedroid Red-Eyed Dice
+3 Speedroid Den-Den Daiko Duke
+2 Steamroid
+3 Speedroid Rubberband Plane
+3 Speedroid Wheel
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+3 Forbidden Droplet
+@staples
+--
+1 Hi-Speedroid Chanbara
+1 Hi-Speedroid Kendama
+1 Hi-Speedroid Puzzle
+1 Clear Wing Fast Dragon
+1 Crystal Wing Synchro Dragon
+1 Clear Wing Synchro Dragon
+1 Baronne de Fleur
+@links
+
+## chumley
+# advanced Koala March
+3 Big Koala
+3 Des Kangaroo
+3 Tree Otter
+3 Gazelle the King of Mythical Beasts
+2 Rescue Rabbit
+3 Berfomet
+2 Mad Lobster
+3 Polymerization
+3 Fusion Sage
+1 Monster Reborn
+2 Pot of Greed
+3 Tribal Synergy
+2 Mirror Force
+2 Draining Shield
+3 Magic Cylinder
+2 Sakuretsu Armor
+--
+1 Master of Oz
+3 Chimera the Flying Mythical Beast
+2 Koalo-Koala
+# pro Beast Competitive
+3 Tri-Brigade Kitt
+3 Tri-Brigade Nervall
+3 Tri-Brigade Kerass
+3 Tri-Brigade Fraktall
+3 Big Koala
+3 Tri-Brigade Mercourier
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+3 Tri-Brigade Revolt
+3 Tri-Brigade Roar
+1 Lightning Storm
+@staples
+--
+1 Tri-Brigade Shuraig the Ominous Omen
+3 Tri-Brigade Ferrijit the Barren Blossom
+1 Tri-Brigade Bearbrumm the Rampant Rampager
+1 Tri-Brigade Rugal the Silver Sheller
+1 Tri-Brigade Arms Bucephalus II
+1 Master of Oz
+1 Abyss Dweller
+@links
+
+## alexis
+# advanced Cyber Girl Ritual
+3 Cyber Prima
+2 Cyber Angel Benten
+3 Cyber Angel Idaten
+2 Cyber Angel Dakini
+3 Cyber Petit Angel
+2 Etoile Cyber
+3 Blade Skater
+2 Cyber Tutu
+2 Cyber Gymnast
+2 Machine Angel Ritual
+2 Polymerization
+1 Monster Reborn
+2 Pot of Greed
+2 Doble Passe
+2 Fulfillment of the Contract
+2 Mirror Force
+2 Sakuretsu Armor
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Cyber Blader
+# pro Cyber Angel Competitive
+3 Cyber Angel Benten
+3 Cyber Angel Idaten
+2 Cyber Angel Dakini
+3 Cyber Angel Natasha
+3 Cyber Petit Angel
+3 Cyber Prima
+2 Herald of Orange Light
+3 Machine Angel Ritual
+3 Machine Angel Absolute Ritual
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Harpie's Feather Duster
+@staples
+--
+1 Cyber Blader
+1 Herald of the Arc Light
+1 Underworld Goddess of the Closed World
+1 Abyss Dweller
+@links
+
+## bastion
+# advanced Water Dragon Formula
+3 Water Dragon
+2 Water Dragon Cluster
+3 Hydrogeddon
+3 Oxygeddon
+3 Duoterion
+2 Carboneddon
+3 Litmus Doom Swordsman
+2 Vortex Trooper
+3 Bonding - H2O
+2 Bonding - D2O
+2 Bonding - DHO
+1 Monster Reborn
+2 Pot of Greed
+2 Litmus Doom Ritual
+2 Mirror Force
+2 Magic Cylinder
+2 Sakuretsu Armor
+1 Torrential Tribute
+--
+1 Number 41: Bagooska the Terribly Tired Tapir
+# pro Dinomist Competitive
+3 Dinomist Rex
+3 Dinomist Pteran
+3 Dinomist Stegosaur
+3 Dinomist Ankylos
+2 Dinomist Brachion
+2 Dinomist Plesios
+3 Dinomist Charge
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+3 Dinomist Rush
+2 Pendulum Call
+2 Wavering Eyes
+@staples
+--
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+1 Number 11: Big Eye
+@links
+
+## chazz
+# advanced Armed Dragon LV
+3 Armed Dragon LV3
+2 Armed Dragon LV5
+3 Armed Dragon LV7
+1 Armed Dragon LV10
+3 Ojama Yellow
+3 Ojama Green
+2 Ojama Black
+3 Masked Dragon
+2 Level Up!
+3 Ojama Delta Hurricane!!
+2 Polymerization
+1 Monster Reborn
+2 Pot of Greed
+2 Level Modulation
+2 Ojamagic
+2 Mirror Force
+2 Sakuretsu Armor
+2 Magic Cylinder
+--
+1 Ojama King
+1 VWXYZ-Dragon Catapult Cannon
+2 Ojama Knight
+# pro Armed Dragon Competitive
+3 Armed Dragon LV3
+3 Armed Dragon LV5
+2 Armed Dragon LV7
+2 Armed Dragon LV10
+3 Armed Dragon Thunder LV3
+3 Armed Dragon Thunder LV5
+1 Armed Dragon Thunder LV7
+2 Armed Dragon Thunder LV10
+2 Masked Dragon
+3 Armed Dragon Flash
+2 Pot of Prosperity
+1 Monster Reborn
+2 Level Up!
+2 Triple Tactics Talent
+1 Armed Dragon LV10 White
+@staples
+--
+1 Armed Dragon Catapult Cannon
+1 Number 11: Big Eye
+@links
+
+## crowler
+# advanced Ancient Gear
+3 Ancient Gear Golem
+2 Ancient Gear Gadjiltron Dragon
+3 Ancient Gear Beast
+3 Ancient Gear Soldier
+3 Ancient Gear Engineer
+2 Ancient Gear Knight
+2 Ancient Gear Wyvern
+2 Ancient Gear Box
+2 Ancient Gear Castle
+2 Geartown
+2 Polymerization
+1 Monster Reborn
+2 Pot of Greed
+2 Ancient Gear Fusion
+2 Ancient Gear Catapult
+2 Mirror Force
+2 Magic Cylinder
+2 Statue of the Wicked
+1 Ancient Gear Hydra
+--
+1 Ultimate Ancient Gear Golem
+1 Chaos Ancient Gear Giant
+# pro Ancient Gear Competitive
+3 Ancient Gear Wyvern
+3 Ancient Gear Golem
+3 Ancient Gear Golem - Ultimate Pound
+3 Ancient Gear Gadget
+3 Ancient Gear Statue
+3 Ancient Gear Fusion
+3 Pot of Prosperity
+1 Monster Reborn
+3 Geartown
+3 Triple Tactics Talent
+3 Ancient Gear Hydra
+1 Ancient Gear Frame
+2 Ancient Gear Fortress
+@staples
+--
+1 Ultimate Ancient Gear Golem
+1 Ancient Gear Megaton Golem
+@links
+
+## zane
+# advanced Cyber End
+3 Cyber Dragon
+3 Proto-Cyber Dragon
+2 Cyber Dragon Core
+3 Cyber Dragon Drei
+2 Cyber Phoenix
+2 Cyber Larva
+2 Cyber Valley
+2 Cyberdark Horn
+2 Cyberdark Edge
+2 Cyberdark Keel
+2 Polymerization
+2 Power Bond
+1 Monster Reborn
+2 Pot of Greed
+2 Limiter Removal
+2 Cyber Network
+2 Call of the Haunted
+2 Mirror Force
+1 Magic Cylinder
+1 Cyber Laser Dragon
+--
+1 Cyber End Dragon
+1 Cyber Twin Dragon
+1 Chimeratech Overdragon
+1 Cyberdark Dragon
+# pro Cyber Dragon Competitive
+3 Cyber Dragon
+3 Cyber Dragon Core
+2 Cyber Dragon Vier
+3 Cyber Dragon Nachster
+1 Cyber Dragon Drei
+3 Cyber Dragon Herz
+1 Cyber Eltanin
+2 Cyber Valley
+2 Cybernetic Horizon
+2 Cyber Emergency
+3 Power Bond
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 Cyber Revsystem
+@staples
+--
+1 Cyber Dragon Infinity
+1 Cyber Dragon Nova
+1 Cyber Dragon Sieger
+1 Chimeratech Rampage Dragon
+1 Chimeratech Megafleet Dragon
+1 Cyber End Dragon
+1 Cyber Twin Dragon
+1 Cyber Eternity Dragon
+1 Cyber Ogre 2
+@links
+
+## aster
+# advanced Destiny HEROes
+3 Destiny HERO - Dogma
+2 Destiny HERO - Plasma
+3 Destiny HERO - Diamond Dude
+2 Destiny HERO - Doom Lord
+3 Destiny HERO - Dasher
+2 Destiny HERO - Disk Commander
+2 Destiny HERO - Malicious
+2 Destiny HERO - Defender
+2 Destiny HERO - Captain Tenacious
+2 Destiny HERO - Double Dude
+2 D - Spirit
+2 Clock Tower Prison
+2 Destiny Draw
+1 Monster Reborn
+2 Pot of Greed
+2 D - Time
+2 D - Counter
+2 Destiny Signal
+2 Mirror Force
+--
+1 Destiny End Dragoon
+1 Destiny HERO - Dystopia
+# pro Destiny HERO Competitive
+3 Destiny HERO - Malicious
+3 Destiny HERO - Dasher
+2 Destiny HERO - Decider
+3 Destiny HERO - Denier
+3 Destiny HERO - Drawhand
+2 Destiny HERO - Plasma
+3 Destiny HERO - Dogma
+3 Destiny Draw
+3 Pot of Prosperity
+1 Monster Reborn
+3 Fusion Destiny
+3 Triple Tactics Talent
+@staples
+--
+1 Destiny HERO - Dystopia
+1 Destiny HERO - Destroyer Phoenix Enforcer
+1 Destiny HERO - Dangerous
+1 Destiny End Dragoon
+1 Destiny HERO - Dusktopia
+1 Destiny HERO - Dominance
+@links
+
+## hassleberry
+# advanced Dino Rumble
+3 Ultimate Tyranno
+2 Dark Driceratops
+3 Black Ptera
+2 Sabersaurus
+3 Gilasaurus
+2 Super Conductor Tyranno
+3 Hydrogeddon
+2 Babycerasaurus
+3 Petiteranodon
+2 Jurassic World
+3 Fossil Dig
+1 Monster Reborn
+2 Pot of Greed
+2 Big Evolution Pill
+3 Hunting Instinct
+2 Mirror Force
+2 Survival Instinct
+--
+1 Evolzar Laggia
+# pro Dinosaur Competitive
+3 Ultimate Conductor Tyranno
+3 Souleating Oviraptor
+3 Miscellaneousaurus
+2 Fossil Dyna Pachycephalo
+3 Babycerasaurus
+2 Petiteranodon
+2 Giant Rex
+3 Fossil Dig
+3 Lost World
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Forbidden Droplet
+@staples
+--
+1 Evolzar Laggia
+1 Evolzar Lars
+1 Number 41: Bagooska the Terribly Tired Tapir
+@links
+
+## atticus
+# advanced Red-Eyes Darkness
+3 Red-Eyes Darkness Metal Dragon
+2 Red-Eyes Black Dragon
+3 Red-Eyes Wyvern
+2 Red-Eyes Retro Dragon
+3 Black Dragon's Chick
+2 Honest
+3 Mystic Tomato
+2 Sangan
+3 Red-Eyes Fusion
+2 Inferno Fire Blast
+3 Cards of the Red Stone
+1 Monster Reborn
+2 Pot of Greed
+2 Return of the Red-Eyes
+3 Red-Eyes Spirit
+2 Mirror Force
+2 Magic Cylinder
+--
+1 Red-Eyes Slash Dragon
+1 Red-Eyes Flare Metal Dragon
+1 Meteor Black Comet Dragon
+# pro Red-Eyes Darkness Competitive
+3 Red-Eyes Darkness Metal Dragon
+3 Red-Eyes Black Dragon
+3 Red-Eyes Black Meteor Dragon
+2 Red-Eyes Alternative Black Dragon
+2 Red-Eyes Wyvern
+2 Lord of the Red
+3 Red-Eyes Fusion
+3 Red-Eyes Insight
+3 Cards of the Red Stone
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Red-Eyes Spirit
+@staples
+--
+1 Red-Eyes Slash Dragon
+1 Red-Eyes Flare Metal Dragon
+1 Meteor Black Comet Dragon
+1 Black Skull Dragon
+1 Archfiend Black Skull Dragon
+@links
+
+## axel
+# advanced Volcanic Burn
+3 Volcanic Doomfire
+3 Volcanic Shell
+3 Volcanic Scattershot
+2 Volcanic Rocket
+3 Volcanic Hammerer
+2 Volcanic Slicer
+3 Volcanic Counter
+2 Blaze Accelerator
+2 Tri-Blaze Accelerator
+2 Blaze Accelerator Reload
+2 Ring of Destruction
+1 Monster Reborn
+2 Pot of Greed
+2 Firewall
+2 Volcanic Recharge
+2 Mirror Force
+2 Magic Cylinder
+2 Ceasefire
+--
+# pro Volcanic Competitive
+3 Volcanic Shell
+3 Volcanic Scattershot
+3 Volcanic Rocket
+2 Volcanic Doomfire
+3 Volcanic Emperor
+2 Volcanic Blaster
+2 Volcanic Inferno
+3 Blaze Accelerator
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+3 Volcanic Recharge
+2 Blaze Accelerator Reload
+1 Volcanic Rimfire
+1 Volcanic Queen
+@staples
+--
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+@links
+
+## jesse
+# advanced Crystal Beasts
+3 Rainbow Dragon
+2 Crystal Beast Ruby Carbuncle
+3 Crystal Beast Amethyst Cat
+2 Crystal Beast Emerald Tortoise
+2 Crystal Beast Topaz Tiger
+2 Crystal Beast Amber Mammoth
+2 Crystal Beast Cobalt Eagle
+2 Crystal Beast Sapphire Pegasus
+2 Crystal Abundance
+2 Rare Value
+2 Ancient City - Rainbow Ruins
+2 Crystal Blessing
+1 Monster Reborn
+2 Pot of Greed
+2 Crystal Promise
+2 Crystal Beacon
+2 Crystal Raigeki
+2 Mirror Force
+2 Magic Cylinder
+1 Crystal Tree
+--
+# pro Crystal Beast Competitive
+3 Crystal Beast Sapphire Pegasus
+3 Crystal Beast Ruby Carbuncle
+2 Crystal Beast Rainbow Dragon
+3 Crystal Beast Amethyst Cat
+2 Crystal Beast Amber Mammoth
+2 Crystal Beast Cobalt Eagle
+2 Crystal Beast Emerald Tortoise
+1 Rainbow Dragon
+3 Crystal Bond
+2 Rainbow Bridge
+2 Rainbow Bridge of Salvation
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 Crystal Conclave
+@staples
+--
+1 Rainbow Overdragon
+1 Rainbow Neos
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Ultimate Crystal Rainbow Dragon Overdrive
+@links
+
+## yubel
+# advanced Yubel Nightmare
+3 Yubel
+1 Yubel - Terror Incarnate
+2 Yubel - The Ultimate Nightmare
+3 Spirit of Yubel
+2 Samsara Lotus
+3 Sinister Serpent
+2 Phantom Skyblaster
+2 Gorz the Emissary of Darkness
+2 Dark Grepher
+2 Ultimate Fusion
+2 Mystic Mine
+1 Monster Reborn
+2 Pot of Greed
+2 Dark Sanctuary
+2 Nightmare's Steelcage
+2 Call of the Haunted
+2 Mirror Force
+2 Magic Cylinder
+2 Ring of Destruction
+1 Torrential Tribute
+--
+1 Yubel - The Loving Defender Forever
+1 Phantom of Yubel
+# pro Yubel Competitive
+3 Yubel
+3 Yubel - Terror Incarnate
+2 Yubel - The Ultimate Nightmare
+3 Spirit of Yubel
+3 Samsara Lotus
+3 Opening of the Spirit Gates
+3 Nightmare Pain
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+3 Eternal Bond
+3 Unending Nightmare
+@staples
+--
+1 Underworld Goddess of the Closed World
+1 Yubel - The Loving Defender Forever
+1 Phantom of Yubel
+@links
+
+## jaden
+# advanced Elemental HEROes
+3 Elemental HERO Neos
+2 Elemental HERO Sparkman
+3 Elemental HERO Avian
+2 Elemental HERO Burstinatrix
+3 Elemental HERO Clayman
+2 Elemental HERO Bubbleman
+3 Elemental HERO Stratos
+2 Winged Kuriboh
+2 Neo-Spacian Grand Mole
+2 Neo-Spacian Air Hummingbird
+2 Polymerization
+2 Miracle Fusion
+2 E - Emergency Call
+1 Monster Reborn
+2 Pot of Greed
+2 Skyscraper
+2 Hero Signal
+2 Mirror Force
+1 Magic Cylinder
+--
+1 Elemental HERO Flame Wingman
+1 Elemental HERO Shining Flare Wingman
+1 Elemental HERO Thunder Giant
+1 Elemental HERO Mudballman
+1 Elemental HERO Rampart Blaster
+1 Elemental HERO Steam Healer
+1 Elemental HERO Sunrise
+# pro HERO Competitive
+3 Elemental HERO Stratos
+3 Elemental HERO Shadow Mist
+2 Elemental HERO Liquid Soldier
+3 Elemental HERO Solid Soldier
+2 Vision HERO Vyon
+2 Elemental HERO Neos
+3 Destiny HERO - Malicious
+3 Polymerization
+2 Fusion Destiny
+2 E - Emergency Call
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+1 Mask Change
+1 Elemental HERO Honest Neos
+@staples
+--
+1 Elemental HERO Sunrise
+1 Elemental HERO Shining Neos Wingman
+1 Masked HERO Dark Law
+1 Xtra HERO Dread Decimator
+1 Xtra HERO Wonder Driver
+2 Xtra HERO Cross Crusader
+1 Elemental HERO Brave Neos
+@links
+
+## leo
+# advanced Morphtronics
+3 Morphtronic Boomboxen
+2 Morphtronic Celfon
+3 Morphtronic Datatron
+2 Morphtronic Magnen
+3 Morphtronic Radion
+2 Morphtronic Scopen
+3 Morphtronic Remoten
+2 Morphtronic Videon
+2 Morphtronic Clocken
+2 Gadget Hauler
+2 Morphtransition
+2 Morphtronic Accelerator
+1 Monster Reborn
+2 Pot of Greed
+2 Morphtronic Map
+2 Morphtronic Repair Unit
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Power Tool Dragon
+1 Power Tool Mecha Dragon
+1 Life Stream Dragon
+# pro Morphtronic Competitive
+3 Morphtronic Scopen
+3 Morphtronic Remoten
+3 Morphtronic Celfon
+2 Morphtronic Magnen
+3 Morphtronic Smartfon
+2 Morphtronic Rusty Engine
+2 Morphtronic Cameran
+3 Morphtransition
+3 Morphtronic Monitron
+2 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+2 Morphtronic Accelerator
+1 Morphtronic Bind
+@staples
+--
+1 Power Tool Dragon
+1 Power Tool Braver Dragon
+1 Life Stream Dragon
+1 Baronne de Fleur
+@links
+
+## luna
+# advanced Fairy Dragon Guard
+3 Kuribon
+2 Sunny Pixie
+3 Fairy Archer
+2 Regulus
+3 Sunlight Unicorn
+2 Ancient Forest
+3 Marshmallon
+2 Dancing Fairy
+3 Shining Angel
+2 Fairy Wind
+3 Cards of Consonance
+1 Monster Reborn
+2 Pot of Greed
+2 Spiritual Forest
+2 Fairy Box
+2 Mirror Force
+2 Magic Cylinder
+1 Solemn Judgment
+--
+3 Ancient Fairy Dragon
+1 Fairy Cheer Girl
+# pro Ancient Fairy Competitive
+3 Sunny Pixie
+3 Sunlight Unicorn
+3 Fairy Tail - Snow
+2 Regulus
+3 Kuribon
+2 Mystical Fairy Elfuria
+3 Ancient Forest
+3 Cards of Consonance
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Forbidden Droplet
+2 Solemn Strike
+@staples
+--
+1 Ancient Fairy Dragon
+1 Fairy Cheer Girl
+1 Baronne de Fleur
+1 Ancient Pixie Dragon
+@links
+
+## trudge
+# advanced Security Force
+3 Jutte Fighter
+3 Gate Blocker
+3 Montage Dragon
+2 Assault Dog
+3 Handcuffs Dragon
+2 Search Striker
+3 Ironhammer the Giant
+2 Night Wing Sorceress
+3 Card Guard
+2 Mystical Space Typhoon
+1 Monster Reborn
+2 Pot of Greed
+3 Big Shield Gardna
+2 Mirror Force
+2 Sakuretsu Armor
+3 Magic Cylinder
+1 Torrential Tribute
+--
+3 Goyo Guardian
+1 Goyo Chaser
+1 Goyo Emperor
+2 Lightning Warrior
+# pro Goyo Competitive
+3 Jutte Fighter
+3 Handcuffs Dragon
+3 Search Striker
+3 Cyber Dragon
+3 Dragon Ravine
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+3 Solemn Strike
+3 Forbidden Droplet
+2 Assault Dog
+2 Ironhammer the Giant
+@staples
+--
+1 Goyo Guardian
+1 Goyo Chaser
+1 Goyo Emperor
+1 Goyo Predator
+1 Baronne de Fleur
+2 Goyo Defender
+2 Goyo King
+2 Lightning Warrior
+@links
+
+## crow
+# advanced Blackwings
+3 Blackwing - Gale the Whirlwind
+2 Blackwing - Bora the Spear
+3 Blackwing - Sirocco the Dawn
+2 Blackwing - Kalut the Moon Shadow
+3 Blackwing - Shura the Blue Flame
+2 Blackwing - Blizzard the Far North
+3 Blackwing - Elphin the Raven
+2 Blackwing - Vayu the Emblem of Honor
+2 Blackwing - Zephyros the Elite
+2 Blackwing - Gust the Backblast
+2 Black Whirlwind
+1 Monster Reborn
+2 Pot of Greed
+2 Delta Crow - Anti Reverse
+2 Icarus Attack
+2 Black Wing Revenge
+2 Mirror Force
+2 Blackwing - Bombardment
+1 Torrential Tribute
+--
+1 Blackwing Armor Master
+1 Blackwing Armed Wing
+1 Blackwing - Silverwind the Ascendant
+1 Blackwing Full Armor Master
+# pro Blackwing Competitive
+3 Blackwing - Simoon the Poison Wind
+3 Blackwing - Kalut the Moon Shadow
+3 Blackwing - Gale the Whirlwind
+2 Blackwing - Bora the Spear
+3 Blackwing - Zephyros the Elite
+2 Blackwing - Shura the Blue Flame
+2 Blackwing - Elphin the Raven
+3 Black Whirlwind
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Blackwing - Bombardment
+3 Icarus Attack
+@staples
+--
+1 Blackwing Full Armor Master
+1 Blackwing - Silverwind the Ascendant
+1 Blackwing Armor Master
+1 Blackwing - Nothung the Starlight
+1 Assault Blackwing - Onimaru the Divine Thunder
+1 Black-Winged Assault Dragon
+1 Crimson Blader
+@links
+
+## akiza
+# advanced Black Rose Plants
+3 Rose Fairy
+2 Twilight Rose Knight
+3 Lonefire Blossom
+2 Dandylion
+3 Spore
+2 Copy Plant
+3 Wall of Ivy
+2 Botanical Lion
+3 Witch of the Black Rose
+2 Blossom Bombardment
+3 Miracle Fertilizer
+1 Monster Reborn
+2 Pot of Greed
+2 Black Garden
+2 Seed Cannon
+2 Mirror Force
+2 Magic Cylinder
+1 Rose Bud
+--
+3 Black Rose Dragon
+1 Black Rose Moonlight Dragon
+1 Splendid Rose
+# pro Rose Plant Competitive
+3 Rose Shaman
+3 Lonefire Blossom
+3 Rose Witch
+3 Dandylion
+3 Spore
+3 Glow-Up Bulb
+1 Rose Princess
+3 Blooming of the Darkest Rose
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+3 Forbidden Droplet
+1 Harpie's Feather Duster
+@staples
+--
+1 Black Rose Dragon
+1 Black Rose Moonlight Dragon
+1 Garden Rose Maiden
+1 Baronne de Fleur
+1 Ruddy Rose Dragon
+1 Splendid Rose
+@links
+
+## kalin
+# advanced Infernity Hand
+3 Infernity Archfiend
+2 Infernity Necromancer
+3 Infernity Beetle
+2 Infernity Mirage
+3 Infernity Avenger
+2 Infernity Knight
+3 Stygian Street Patrol
+2 Dark Grepher
+3 Infernity Launcher
+2 Into the Void
+2 Card Destruction
+1 Monster Reborn
+3 Infernity Barrier
+2 Infernity Break
+2 Infernity Inferno
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+3 Infernity Doom Dragon
+1 Void Ogre Dragon
+# pro Infernity Competitive
+3 Infernity Archfiend
+3 Infernity Necromancer
+3 Infernity Mirage
+2 Infernity Beetle
+2 Infernity Avenger
+2 Infernity Wildcat
+3 Stygian Street Patrol
+3 Infernity Launcher
+2 Into the Void
+2 Pot of Prosperity
+1 Monster Reborn
+2 Infernity Barrier
+2 Infernity Break
+2 Triple Tactics Talent
+@staples
+--
+1 Infernity Doom Dragon
+1 Infernity Doom Archfiend
+1 Void Ogre Dragon
+1 Baronne de Fleur
+1 Black Rose Dragon
+@links
+
+## jack
+# advanced Red Dragon Archfiend
+3 Mad Archfiend
+3 Twin-Sword Marauder
+3 Big Piece Golem
+2 Dark Resonator
+3 Red Resonator
+2 Flare Resonator
+3 Synchron Explorer
+2 Battle Fader
+3 Vice Dragon
+2 Resonator Call
+1 Monster Reborn
+2 Pot of Greed
+3 Crimson Fire
+2 Red Screen
+2 Mirror Force
+3 Magic Cylinder
+1 Torrential Tribute
+--
+3 Red Dragon Archfiend
+1 Red Nova Dragon
+1 Scarlight Red Dragon Archfiend
+1 Hot Red Dragon Archfiend
+2 Red Rising Dragon
+# pro Resonator Competitive
+3 Red Resonator
+3 Dark Resonator
+3 Flare Resonator
+3 Red Dragon Vase
+2 Absolute King Back Jack
+3 Crimson Resonator
+3 Resonator Call
+3 Red Reboot
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Crimson Fire
+@staples
+--
+1 Red Dragon Archfiend
+1 Hot Red Dragon Archfiend
+1 Hot Red Dragon Archfiend King Calamity
+1 Red Nova Dragon
+1 Scarlight Red Dragon Archfiend
+1 Crimson Dragon
+1 Red Supernova Dragon
+2 Red Rising Dragon
+@links
+
+## yusei
+# advanced Synchron Stardust
+3 Junk Synchron
+2 Quickdraw Synchron
+3 Nitro Synchron
+2 Turbo Synchron
+3 Speed Warrior
+2 Quillbolt Hedgehog
+3 Tuningware
+2 Debris Dragon
+2 Doppelwarrior
+2 Level Eater
+2 Junk Converter
+2 Card of Safe Return
+1 Monster Reborn
+2 Pot of Greed
+2 Scrap-Iron Scarecrow
+2 Starlight Road
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Stardust Dragon
+1 Junk Warrior
+1 Nitro Warrior
+1 Turbo Warrior
+1 Junk Destroyer
+1 Shooting Star Dragon
+1 Formula Synchron
+# pro Synchron Competitive
+3 Junk Synchron
+3 Quickdraw Synchron
+3 Jet Synchron
+3 Doppelwarrior
+2 Junk Converter
+3 Glow-Up Bulb
+2 Quillbolt Hedgehog
+3 Synchro Overtake
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Starlight Road
+1 Harpie's Feather Duster
+@staples
+--
+1 Stardust Dragon
+1 Junk Warrior
+1 Shooting Quasar Dragon
+1 Stardust Charge Warrior
+1 Accel Synchron
+1 Formula Synchron
+2 Junk Speeder
+1 Baronne de Fleur
+1 Cosmic Blazar Dragon
+@links
+
+## yuma
+# advanced Utopia Gagaga
+3 Gagaga Magician
+2 Gogogo Golem
+3 Gagaga Girl
+2 Zubaba Knight
+3 Dodododo Warrior
+2 Kurivolt
+3 Ganbara Knight
+2 Achacha Archer
+3 Goblindbergh
+2 Tasuke Knight
+2 Gagagatag
+2 Double or Nothing!
+1 Monster Reborn
+2 Pot of Greed
+2 Xyz Revenge Shuffle
+2 Half Unbreak
+2 Mirror Force
+2 Magic Cylinder
+--
+1 Number 39: Utopia
+1 Number 39: Utopia Roots
+1 Number 39: Utopia Beyond
+1 Number 39: Utopia Double
+1 Number C39: Utopia Ray V
+1 Number 17: Leviathan Dragon
+1 Number C39: Utopia Ray
+# pro Utopia Competitive
+3 Zubaba Knight
+3 Gagaga Magician
+3 Gogogo Golem
+3 Dododo Bot
+3 Goblindbergh
+3 Kagetokage
+3 Rank-Up-Magic Raid Force
+2 Xyz Change Tactics
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+3 Utopia Buster
+@staples
+--
+2 Number 39: Utopia
+1 Number 39: Utopia Double
+1 Number S39: Utopia Prime
+1 Number S39: Utopia the Lightning
+1 Number 39: Utopia Beyond
+1 Number F0: Utopic Future
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+@links
+
+## shark
+# advanced Shark Drake Water
+3 Shark Stickers
+2 Big Jaws
+3 Hammer Shark
+2 Silent Angler
+3 Mermaid Shark
+2 Spear Shark
+3 Eagle Shark
+2 Skull Kraken
+3 Abyssal Kingshark
+2 Water Hazard
+3 Umi
+2 Salvage
+1 Monster Reborn
+2 Pot of Greed
+3 Torrential Tribute
+2 Mirror Force
+2 Magic Cylinder
+--
+1 Number 32: Shark Drake
+1 Number 37: Hope Woven Dragon Spider Shark
+1 Number 101: Silent Honor ARK
+1 Number 73: Abyss Splash
+1 Number 47: Nightmare Shark
+# pro Shark Competitive
+3 Shark Stickers
+3 Mermaid Shark
+3 Saber Shark
+3 Hammer Shark
+3 Silent Angler
+2 Gizmek Kaku, the Supreme Shining Sky Stag
+3 Xyz Slidolphin
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+3 Rank-Up-Magic Numeron Force
+2 Forbidden Droplet
+@staples
+--
+1 Number 32: Shark Drake
+1 Number C32: Shark Drake Veiss
+1 Number 37: Hope Woven Dragon Spider Shark
+1 Number 101: Silent Honor ARK
+1 Number C101: Silent Honor DARK
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+@links
+
+## trey
+# advanced Chronomaly
+3 Chronomaly Crystal Skull
+3 Chronomaly Crystal Bones
+3 Chronomaly Golden Jet
+2 Chronomaly Moai
+3 Chronomaly Nebra Disk
+2 Chronomaly Gordian Knot
+3 Chronomaly Colossal Head
+2 Chronomaly Tula Guardian
+3 Chronomaly Aztec Mask Golem
+2 Chronomaly Technology
+3 Chronomaly Pyramid Eye Tablet
+1 Monster Reborn
+2 Pot of Greed
+2 Chronomaly Mud Golem
+2 Mirror Force
+3 Magic Cylinder
+1 Torrential Tribute
+--
+1 Number 33: Chronomaly Machu Mech
+1 Number 36: Chronomaly Chateau Huyuk
+1 Number 6: Chronomaly Atlandis
+1 Number C6: Chronomaly Chaos Atlandis
+# pro Chronomaly Competitive
+3 Chronomaly Crystal Bones
+3 Chronomaly Crystal Skull
+3 Chronomaly Golden Jet
+3 Chronomaly Aztec Mask Golem
+3 Chronomaly Moai Carrier
+3 Chronomaly Tula Guardian
+2 Chronomaly Nebra Disk
+3 Chronomaly Technology
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+3 Chronomaly Pyramid Eye Tablet
+@staples
+--
+1 Number 33: Chronomaly Machu Mech
+1 Number 6: Chronomaly Atlandis
+1 Number C6: Chronomaly Chaos Atlandis
+1 Number 36: Chronomaly Chateau Huyuk
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+@links
+
+## quattro
+# advanced Gimmick Puppets
+3 Gimmick Puppet Magnet Doll
+2 Gimmick Puppet Humpty Dumpty
+3 Gimmick Puppet Twilight Joker
+2 Gimmick Puppet Bisque Doll
+3 Gimmick Puppet Des Troy
+2 Gimmick Puppet Egg Head
+3 Gimmick Puppet Dreary Doll
+2 Gimmick Puppet Scissor Arms
+3 Gimmick Puppet Cattle Scream
+2 Gimmick Puppet Shadow Feeler
+3 Junk Puppet
+2 Puppet Plant
+1 Monster Reborn
+2 Pot of Greed
+2 Puppet Ritual
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Number 15: Gimmick Puppet Giant Grinder
+1 Number 40: Gimmick Puppet of Strings
+1 Number 88: Gimmick Puppet of Leo
+1 Number 87: Queen of the Night
+# pro Gimmick Puppet Competitive
+3 Gimmick Puppet Nightmare
+3 Gimmick Puppet Humpty Dumpty
+3 Gimmick Puppet Magnet Doll
+3 Gimmick Puppet Twilight Joker
+3 Gimmick Puppet Des Troy
+3 Gimmick Puppet Terror Baby
+3 Gimmick Puppet Egg Head
+3 Junk Puppet
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+1 Gimmick Puppet Bisque Doll
+@staples
+--
+1 Number 15: Gimmick Puppet Giant Grinder
+1 Number C15: Gimmick Puppet Giant Hunter
+1 Number 40: Gimmick Puppet of Strings
+1 Number C40: Gimmick Puppet of Dark Strings
+1 Number 88: Gimmick Puppet of Leo
+1 Number C88: Gimmick Puppet Disaster Leo
+1 Number 41: Bagooska the Terribly Tired Tapir
+2 Gimmick Puppet Chimera Doll
+@links
+
+## kite
+# advanced Galaxy-Eyes Photon
+3 Galaxy-Eyes Photon Dragon
+3 Photon Thrasher
+3 Photon Crusher
+2 Photon Lizard
+3 Photon Orbital
+2 Galaxy Knight
+3 Galaxy Wizard
+2 Photon Vanisher
+3 Photon Sabre Tiger
+2 Galaxy Serpent
+3 Photon Lead
+2 Galaxy Expedition
+1 Monster Reborn
+2 Pot of Greed
+2 Mirror Force
+3 Magic Cylinder
+1 Torrential Tribute
+--
+1 Number 62: Galaxy-Eyes Prime Photon Dragon
+1 Galaxy-Eyes Full Armor Photon Dragon
+1 Number 90: Galaxy-Eyes Photon Lord
+1 Number 95: Galaxy-Eyes Dark Matter Dragon
+1 Neo Galaxy-Eyes Photon Dragon
+1 Starliege Paladynamo
+# pro Galaxy-Eyes Competitive
+3 Galaxy-Eyes Photon Dragon
+3 Galaxy-Eyes Afterglow Dragon
+3 Photon Orbital
+3 Galaxy Soldier
+3 Galaxy Wizard
+2 Photon Emperor
+3 Galaxy Expedition
+3 Photon Hand
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+3 Galaxy Cyclone
+@staples
+--
+1 Number 62: Galaxy-Eyes Prime Photon Dragon
+1 Number 90: Galaxy-Eyes Photon Lord
+1 Number 95: Galaxy-Eyes Dark Matter Dragon
+1 Galaxy-Eyes Full Armor Photon Dragon
+1 Number 100: Numeron Dragon
+1 Divine Arsenal AA-ZEUS - Sky Thunder
+1 Number 38: Hope Harbinger Dragon Titanic Galaxy
+1 Abyss Dweller
+1 Galaxy-Eyes Cipher Blade Dragon
+@links
+
+## vector
+# advanced Dark Numbers
+3 Vector Pendulum, the Dracoverlord
+2 Battlin' Boxer Switchitter
+3 Kagetokage
+2 Ghost Bird of Bewitchment
+3 Goblindbergh
+2 Fortune Lady Light
+3 Mystic Tomato
+2 Sangan
+3 Gagaga Magician
+2 Rank-Up-Magic Barian's Force
+3 Xyz Encore
+1 Monster Reborn
+2 Pot of Greed
+2 Mirror Force
+2 Magic Cylinder
+3 Torrential Tribute
+2 Call of the Haunted
+--
+1 Number 104: Masquerade
+1 Number C104: Umbral Horror Masquerade
+1 Number 43: Manipulator of Souls
+1 Number 66: Master Key Beetle
+# pro Barian Competitive
+3 Kagetokage
+3 Goblindbergh
+3 Gagaga Magician
+3 Gogogo Golem
+3 Zubaba Knight
+3 Mystic Tomato
+3 Rank-Up-Magic Barian's Force
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Forbidden Droplet
+3 Xyz Encore
+@staples
+--
+1 Number 104: Masquerade
+1 Number C104: Umbral Horror Masquerade
+1 Number 101: Silent Honor ARK
+1 Number C101: Silent Honor DARK
+1 Number 41: Bagooska the Terribly Tired Tapir
+1 Abyss Dweller
+@links
+
+## zuzu
+# advanced Melodious Fusion
+3 Aria the Melodious Diva
+2 Sonata the Melodious Diva
+3 Tamtam the Melodious Diva
+2 Soprano the Melodious Songstress
+3 Canon the Melodious Diva
+3 Mozarta the Melodious Maestra
+2 Score the Melodious Diva
+3 Elegy the Melodious Diva
+2 Shopina the Melodious Maestra
+3 Opera the Melodious Diva
+2 Polymerization
+2 Fusion Substitute
+1 Monster Reborn
+2 Pot of Greed
+2 Melodious Illusion
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Bloom Diva the Melodious Choir
+1 Bloom Prima the Melodious Choir
+1 Schuberta the Melodious Maestra
+# pro Melodious Competitive
+3 Aria the Melodious Diva
+3 Soprano the Melodious Songstress
+3 Mozarta the Melodious Maestra
+3 Canon the Melodious Diva
+3 Sonata the Melodious Diva
+3 Shopina the Melodious Maestra
+3 Polymerization
+3 Fusion Substitute
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Elegy the Melodious Diva
+@staples
+--
+1 Bloom Diva the Melodious Choir
+1 Bloom Prima the Melodious Choir
+1 Schuberta the Melodious Maestra
+1 Baronne de Fleur
+1 Bloom Harmonist the Melodious Composer
+@links
+
+## sora
+# advanced Frightfur Fusion
+3 Edge Imp Sabres
+2 Edge Imp Chain
+3 Edge Imp Saw
+2 Fluffal Bear
+3 Fluffal Dog
+2 Fluffal Owl
+3 Fluffal Penguin
+2 Fluffal Sheep
+3 Fluffal Cat
+2 Frightfur Fusion
+3 Toy Vendor
+1 Monster Reborn
+2 Pot of Greed
+2 Polymerization
+3 Frightfur Factory
+2 Mirror Force
+2 Magic Cylinder
+--
+1 Frightfur Sabre-Tooth
+1 Frightfur Bear
+1 Frightfur Wolf
+1 Frightfur Tiger
+1 Frightfur Chimera
+1 Frightfur Leo
+# pro Frightfur Competitive
+3 Fluffal Owl
+3 Edge Imp Sabres
+3 Fluffal Bear
+2 Fluffal Dog
+3 Edge Imp Chain
+2 Fluffal Penguin
+2 Fluffal Mouse
+3 Toy Vendor
+3 Frightfur Fusion
+2 Frightfur Patchwork
+3 Pot of Prosperity
+1 Monster Reborn
+2 Triple Tactics Talent
+@staples
+--
+1 Frightfur Sabre-Tooth
+1 Frightfur Daredevil
+1 Frightfur Chimera
+1 Frightfur Wolf
+1 Frightfur Leo
+1 Frightfur Kraken
+1 Frightfur Tiger
+@links
+
+## declan
+# advanced D/D/D Kings
+3 D/D Swirl Slime
+2 D/D Necro Slime
+3 D/D Savant Kepler
+2 D/D Savant Copernicus
+3 D/D Gryphon
+2 D/D Lilith
+3 D/D Orthros
+2 D/D Ghost
+3 D/D Berfomet
+2 Dark Contract with the Gate
+3 Dark Contract with the Swamp King
+1 Monster Reborn
+2 Pot of Greed
+2 Dark Contract with the Witch
+2 Dark Contract with the Eternal Darkness
+2 Mirror Force
+1 Torrential Tribute
+1 D/D/D Doom King Armageddon
+1 D/D/D Oblivion King Abyss Ragnarok
+--
+1 D/D/D Flame King Genghis
+1 D/D/D Wave King Caesar
+1 D/D/D Gust King Alexander
+1 D/D/D Duo-Dawn King Kali Yuga
+# pro D/D/D Competitive
+3 D/D Savant Kepler
+3 D/D Swirl Slime
+3 D/D Necro Slime
+2 D/D Gryphon
+3 D/D Orthros
+1 D/D Savant Copernicus
+2 D/D Lilith
+2 D/D/D Oblivion King Abyss Ragnarok
+3 Dark Contract with the Gate
+3 Dark Contract with the Swamp King
+2 Pot of Prosperity
+1 Monster Reborn
+2 Dark Contract with the Witch
+1 D/D/D Doom King Armageddon
+1 D/D/D Dragon King Pendragon
+@staples
+--
+1 D/D/D Flame King Genghis
+1 D/D/D Wave King Caesar
+1 D/D/D Gust King Alexander
+1 D/D/D Duo-Dawn King Kali Yuga
+1 D/D/D Wave Oblivion King Caesar Ragnarok
+1 D/D/D Abyss King Gilgamesh
+@links
+
+## shay
+# advanced Raidraptors
+3 Raidraptor - Vanishing Lanius
+2 Raidraptor - Mimicry Lanius
+3 Raidraptor - Tribute Lanius
+2 Raidraptor - Booster Strix
+3 Raidraptor - Napalm Dragonius
+2 Raidraptor - Last Strix
+3 Raidraptor - Fuzzy Lanius
+2 Raidraptor - Skull Eagle
+3 Raidraptor - Pain Lanius
+2 Raidraptor - Sharp Lanius
+3 Rank-Up-Magic Raid Force
+2 Raidraptor - Call
+1 Monster Reborn
+2 Pot of Greed
+2 Raidraptor - Readiness
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Raidraptor - Rise Falcon
+1 Raidraptor - Blaze Falcon
+1 Raidraptor - Force Strix
+1 Raidraptor - Revolution Falcon
+1 Raidraptor - Satellite Cannon Falcon
+1 Raidraptor - Arsenal Falcon
+# pro Raidraptor Competitive
+3 Raidraptor - Mimicry Lanius
+3 Raidraptor - Tribute Lanius
+3 Raidraptor - Vanishing Lanius
+3 Raidraptor - Booster Strix
+3 Raidraptor - Fuzzy Lanius
+3 Raidraptor - Skull Eagle
+3 Rank-Up-Magic Raid Force
+3 Raidraptor - Call
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Raidraptor - Napalm Dragonius
+@staples
+--
+1 Raidraptor - Rise Falcon
+1 Raidraptor - Force Strix
+1 Raidraptor - Revolution Falcon
+1 Raidraptor - Ultimate Falcon
+1 Raidraptor - Arsenal Falcon
+1 Raidraptor - Wise Strix
+1 Raidraptor - Final Fortress Falcon
+@links
+
+## yuto
+# advanced Phantom Knights
+3 The Phantom Knights of Ancient Cloak
+2 The Phantom Knights of Silent Boots
+3 The Phantom Knights of Ragged Gloves
+2 The Phantom Knights of Fragile Armor
+3 The Phantom Knights of Cloven Helm
+2 The Phantom Knights of Tomb Shield
+3 The Phantom Knights of Shade Brigandine
+2 The Phantom Knights of Stained Greaves
+3 Goblindbergh
+2 Kagetokage
+3 Phantom Knights' Fog Blade
+2 Phantom Knights' Spear
+1 Monster Reborn
+2 Pot of Greed
+2 The Phantom Knights of Wrong Magnetring
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Dark Rebellion Xyz Dragon
+1 The Phantom Knights of Break Sword
+1 Dark Requiem Xyz Dragon
+1 Dark Anthelion Dragon
+# pro Phantom Knights Competitive
+3 The Phantom Knights of Ancient Cloak
+3 The Phantom Knights of Silent Boots
+3 The Phantom Knights of Ragged Gloves
+3 The Phantom Knights of Cloven Helm
+3 The Phantom Knights of Fragile Armor
+3 Phantom Knights' Fog Blade
+3 The Phantom Knights of Shade Brigandine
+3 Phantom Knights' Rank-Up-Magic Force
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 The Phantom Knights of Tomb Shield
+@staples
+--
+1 Dark Rebellion Xyz Dragon
+1 The Phantom Knights of Break Sword
+1 The Phantom Knights of Rusty Bardiche
+1 Dark Requiem Xyz Dragon
+1 Dark Anthelion Dragon
+1 The Phantom Knights of Cursed Javelin
+@links
+
+## yuya
+# advanced Odd-Eyes Pendulum
+3 Odd-Eyes Pendulum Dragon
+2 Stargazer Magician
+3 Timegazer Magician
+2 Performapal Skullcrobat Joker
+3 Performapal Hip Hippo
+2 Performapal Trampolynx
+3 Performapal Monkeyboard
+2 Performapal Silver Claw
+3 Performapal Kaleidoscorp
+2 Odd-Eyes Mirage Dragon
+3 Pendulum Call
+2 Smile World
+1 Monster Reborn
+2 Pot of Greed
+2 Odd-Eyes Fusion
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Odd-Eyes Rebellion Dragon
+1 Odd-Eyes Meteorburst Dragon
+1 Odd-Eyes Vortex Dragon
+1 Odd-Eyes Venom Dragon
+1 Odd-Eyes Rebellion Xyz Dragon
+# pro Odd-Eyes Competitive
+3 Odd-Eyes Pendulum Dragon
+3 Odd-Eyes Wizard Dragon
+2 Odd-Eyes Pendulumgraph Dragon
+3 Performapal Skullcrobat Joker
+3 Performapal Pendulum Sorcerer
+3 Stargazer Magician
+1 Timegazer Magician
+2 Astrograph Sorcerer
+3 Pendulum Call
+3 Odd-Eyes Fusion
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+@staples
+--
+1 Odd-Eyes Rebellion Dragon
+1 Odd-Eyes Vortex Dragon
+1 Odd-Eyes Meteorburst Dragon
+1 Supreme King Z-ARC
+1 Odd-Eyes Venom Dragon
+1 Odd-Eyes Rebellion Xyz Dragon
+1 Odd-Eyes Raging Dragon
+@links
+
+## go
+# advanced Gouki Wrestlers
+3 Gouki Suprex
+3 Gouki Headbatt
+3 Gouki Twistcobra
+2 Gouki Octostretch
+3 Gouki Bearhug
+2 Gouki Moonsault
+3 Gouki Iron Claw
+3 Gouki Cage Match
+3 Gouki Re-Match
+2 Gouki Face Turn
+3 Gouki Riscorpio
+1 Monster Reborn
+2 Pot of Greed
+2 Mirror Force
+2 Magic Cylinder
+3 Torrential Tribute
+--
+1 Gouki The Great Ogre
+1 Gouki The Giant Ogre
+1 Gouki The Powerload Ogre
+2 Gouki Thunder Ogre
+# pro Gouki Competitive
+3 Gouki Suprex
+3 Gouki Twistcobra
+3 Gouki Headbatt
+3 Gouki Riscorpio
+3 Gouki Bearhug
+3 Gouki Octostretch
+2 Gouki Moonsault
+3 Gouki Cage Match
+3 Gouki Face Turn
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+@staples
+--
+1 Gouki The Great Ogre
+1 Gouki The Giant Ogre
+1 Gouki The Powerload Ogre
+1 Gouki Thunder Ogre
+@links
+
+## blueangel
+# advanced Trickstar Idols
+3 Trickstar Candina
+3 Trickstar Lycoris
+3 Trickstar Lilybell
+2 Trickstar Mandrake
+3 Trickstar Narkissus
+2 Trickstar Corobane
+3 Trickstar Light Stage
+3 Trickstar Reincarnation
+3 Trickstar Magical Laurel
+2 Trickstar Light Arena
+1 Monster Reborn
+2 Pot of Greed
+3 Trickstar Festival
+2 Mirror Force
+2 Magic Cylinder
+3 Torrential Tribute
+--
+1 Trickstar Holly Angel
+3 Trickstar Bella Madonna
+1 Trickstar Crimson Heart
+# pro Trickstar Competitive
+3 Trickstar Candina
+3 Trickstar Lycoris
+3 Trickstar Lilybell
+3 Trickstar Mandrake
+3 Trickstar Narkissus
+2 Trickstar Corobane
+3 Trickstar Light Stage
+3 Trickstar Light Arena
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+3 Trickstar Reincarnation
+@staples
+--
+1 Trickstar Holly Angel
+1 Trickstar Bella Madonna
+1 Trickstar Crimson Heart
+1 Trickstar Band Sweet Guitar
+@links
+
+## ghostgirl
+# advanced Altergeist Hackers
+3 Altergeist Multifaker
+3 Altergeist Silquitous
+3 Altergeist Marionetter
+2 Altergeist Meluseek
+3 Altergeist Pookuery
+2 Altergeist Kunquery
+3 Altergeist Fijialert
+3 Altergeist Manifestation
+3 Altergeist Camouflage
+2 Altergeist Protocol
+3 Personal Spoofing
+1 Monster Reborn
+2 Pot of Greed
+2 Mirror Force
+2 Solemn Strike
+3 Torrential Tribute
+--
+3 Altergeist Hexstia
+1 Altergeist Primebanshee
+1 Altergeist Dragvirion
+# pro Altergeist Competitive
+3 Altergeist Multifaker
+3 Altergeist Marionetter
+3 Altergeist Silquitous
+2 Altergeist Meluseek
+2 Altergeist Kunquery
+2 Altergeist Pookuery
+3 Personal Spoofing
+3 Altergeist Manifestation
+2 Altergeist Camouflage
+3 Altergeist Protocol
+2 Pot of Prosperity
+3 Solemn Strike
+1 Monster Reborn
+@staples
+--
+1 Altergeist Hexstia
+1 Altergeist Primebanshee
+1 Altergeist Dragvirion
+1 Altergeist Adminia
+@links
+
+## soulburner
+# advanced Salamangreat Flames
+3 Salamangreat Gazelle
+2 Salamangreat Falco
+3 Salamangreat Foxy
+2 Salamangreat Spinny
+3 Salamangreat Jack Jaguar
+2 Salamangreat Fowl
+3 Salamangreat Mole
+2 Salamangreat Raccoon
+3 Salamangreat Emerald Eagle
+2 Salamangreat Circle
+3 Fusion of Fire
+2 Salamangreat Rage
+1 Monster Reborn
+2 Pot of Greed
+2 Salamangreat Roar
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Salamangreat Heatleo
+1 Salamangreat Sunlight Wolf
+1 Salamangreat Almiraj
+1 Salamangreat Balelynx
+1 Salamangreat Pyro Phoenix
+1 Salamangreat Miragestallio
+# pro Salamangreat Competitive
+3 Salamangreat Gazelle
+3 Salamangreat Spinny
+3 Salamangreat Foxy
+3 Salamangreat Jack Jaguar
+3 Salamangreat Falco
+3 Salamangreat Circle
+3 Salamangreat Sanctuary
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+3 Salamangreat Rage
+1 Salamangreat Fowl
+@staples
+--
+1 Salamangreat Heatleo
+1 Salamangreat Sunlight Wolf
+1 Salamangreat Almiraj
+1 Salamangreat Balelynx
+1 Salamangreat Pyro Phoenix
+1 Salamangreat Miragestallio
+1 Salamangreat Raging Phoenix
+@links
+
+## revolver
+# advanced Rokket Borrel
+3 Absorouter Dragon
+2 Rokket Tracer
+3 Rokket Synchron
+2 Rokket Recharger
+3 Autorokket Dragon
+2 Magnarokket Dragon
+3 Exploderokket Dragon
+2 Silverrokket Dragon
+3 Shelrokket Dragon
+2 Metalrokket Dragon
+3 Quick Launch
+2 Borrel Supplier
+1 Monster Reborn
+2 Pot of Greed
+2 Borrel Cooling
+2 Mirror Force
+2 Magic Cylinder
+1 Torrential Tribute
+--
+1 Borreload Dragon
+1 Borrelsword Dragon
+1 Topologic Gumblar Dragon
+1 Borreload Savage Dragon
+1 Borreload eXcharge Dragon
+# pro Borrel Competitive
+3 Absorouter Dragon
+3 Rokket Tracer
+3 Rokket Recharger
+2 Rokket Synchron
+3 Silverrokket Dragon
+3 Exploderokket Dragon
+3 Rokket Caliber
+3 Quick Launch
+3 Triple Borrel Launch
+2 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+@staples
+--
+1 Borreload Dragon
+1 Borrelsword Dragon
+1 Borreload Savage Dragon
+1 Borreload Furious Dragon
+1 Borreload eXcharge Dragon
+1 Topologic Gumblar Dragon
+1 Borrelend Dragon
+1 Borreload Liberator Dragon
+@links
+
+## playmaker
+# advanced Code Talkers
+3 Cyberse Wizard
+3 Backup Secretary
+3 Cyberse Gadget
+2 Dual Assembwurm
+3 Bitron
+2 Draconnet
+3 Linkslayer
+2 Defect Compiler
+3 Cyberse White Hat
+2 Cynet Universe
+3 Cynet Mining
+1 Monster Reborn
+2 Pot of Greed
+2 Cynet Recovery
+2 Mirror Force
+3 Magic Cylinder
+1 Torrential Tribute
+--
+1 Decode Talker
+1 Encode Talker
+1 Powercode Talker
+1 Transcode Talker
+1 Firewall Dragon
+1 Link Spider
+1 Linkuriboh
+# pro Code Talker Competitive
+3 Cyberse Gadget
+3 Backup Secretary
+3 Bitron
+3 Draconnet
+3 Wizard @Ignister
+3 Ignister A.I.Land
+3 Cynet Mining
+3 Pot of Prosperity
+1 Monster Reborn
+3 Triple Tactics Talent
+2 Defect Compiler
+2 Linkslayer
+@staples
+--
+1 Decode Talker
+1 Encode Talker
+1 Powercode Talker
+1 Transcode Talker
+1 Accesscode Talker
+1 Decode Talker Heatsoul
+1 Firewall Dragon
+1 Firewall Dragon Darkfluid
+@links
