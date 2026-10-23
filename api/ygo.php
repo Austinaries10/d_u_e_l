@@ -399,6 +399,27 @@ if ($action === 'set') {
     exit;
 }
 
+// cards by number: ?action=byid&ids=1,2,3 -> {cards: [...]} (a player's collection is saved as numbers only)
+if ($action === 'byid') {
+    header('Cache-Control: public, max-age=86400');
+    $want = array_flip(array_slice(array_values(array_unique(array_filter(array_map('intval', explode(',', (string)($_GET['ids'] ?? '')))))), 0, 400));
+    $out = [];
+    foreach (cardDb() as $c) {
+        if (isset($want[$c['id']])) {
+            $out[] = $c;
+            unset($want[$c['id']]);
+        }
+    }
+    // numbers not in the trimmed database (alternate artworks): ask the card database itself
+    if ($want) {
+        foreach (cards(http_build_query(['id' => implode(',', array_keys($want))])) as $c) {
+            $out[] = $c;
+        }
+    }
+    echo json_encode(['cards' => $out]);
+    exit;
+}
+
 // card names and texts in another language: ?action=tr&lang=ja&ids=1,2,3 -> {id: {name, desc}}
 if ($action === 'tr') {
     header('Cache-Control: public, max-age=86400');

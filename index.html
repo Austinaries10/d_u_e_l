@@ -858,10 +858,11 @@ function mergeSave(server, local, dirty) {
     if (b == null) continue;
     if (k === "wallet" && a) { out[k] = { ...b }; for (const f of ["coins", "free"]) out[k][f] = Math.max(0, (a[f] || 0) + (b[f] || 0) - (o?.[f] ?? a[f] ?? 0)); continue; }
     if (k === "cards" && a) {
+      const cn_ = x => Array.isArray(x) ? x[0] : x?.n, cr = x => (Array.isArray(x) ? x[1] : x?.r) || "";
       out[k] = { ...a };
       for (const id of new Set([...Object.keys(b), ...Object.keys(o || {})])) {
-        const n = (a[id]?.n || 0) + (b[id]?.n || 0) - (o?.[id]?.n ?? a[id]?.n ?? 0);
-        if (n > 0) out[k][id] = { ...(a[id] || b[id]), n, r: b[id]?.r || a[id]?.r || "" }; else delete out[k][id];
+        const n = (cn_(a[id]) || 0) + (cn_(b[id]) || 0) - (cn_(o?.[id]) ?? cn_(a[id]) ?? 0);
+        if (n > 0) out[k][id] = [n, cr(b[id]) || cr(a[id])]; else delete out[k][id];
       }
       continue;
     }
@@ -897,7 +898,7 @@ document.addEventListener("visibilitychange", async () => {
   try { const j = await accountCall("load", { token: account.token }); if (j.rev !== account.rev) { applySave(mergeSave(j.state, collectSave(), dirtyKeys())); setBase(j.state); account.rev = j.rev; keepAccount(); location.reload(); } } catch {}
 });
 // after a merge, the screens showing coins, cards and progress need the combined values
-function refreshAfterMerge() { try { for (const [k, v] of Object.entries({ wallet, coll })) { const fresh = store.get(k === "coll" ? "cards" : k, null); if (fresh && typeof v === "object") { for (const x of Object.keys(v)) delete v[x]; Object.assign(v, fresh); } } if (!$("#start").hidden) renderHome(); } catch {} }
+function refreshAfterMerge() { try { const w = store.get("wallet", null); if (w) Object.assign(wallet, w); loadCollection(store.get("cards", {})).then(() => { if (!$("#start").hidden) renderHome(); }); } catch {} }
 let loginMode = "login", resetCode = null;
 function showLogin() { $("#login").hidden = false; setTimeout(() => (loginMode === "reset" ? $("#loginPass") : $("#loginName")).focus(), 50); }
 function setLoginMode(mode, text) {
@@ -2010,13 +2011,52 @@ const gameConfirm = (title, text, ok = "OK", danger = false) => gameDialog({ tit
 // ---------- Your cards, decks and coins, kept on this phone ----------
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem("arduel." + k)) ?? d; } catch { return d; } },
-  put(k, v) { try { localStorage.setItem("arduel." + k, JSON.stringify(v)); } catch {} onSaved(k); },
+  put(k, v) {
+    const text = JSON.stringify(v);
+    try { localStorage.setItem("arduel." + k, text); }
+    catch { try { localStorage.removeItem("arduel.base"); localStorage.setItem("arduel." + k, text); } catch { try { toast("This phone's storage for the game is full: progress may not be saved."); } catch {} } } // full: drop the sync copy and retry
+    onSaved(k);
+  },
 };
-const coll = store.get("cards", {});          // card id -> { card, n: copies owned, r: best rarity pulled }
+// ---------- Your collection ----------
+// Saved (on the phone and to the account) as just card number -> [copies, best rarity]; the card details are kept in
+// this phone's IndexedDB and fetched from the server when missing. Older saves kept the whole card in each entry.
+const cardStore = (() => {
+  let dbp = null;
+  const db = () => dbp ??= new Promise((ok, no) => { const r = indexedDB.open("arduel", 1); r.onupgradeneeded = () => r.result.createObjectStore("cards"); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); });
+  return {
+    async all() { const d = await db(); return new Promise(ok => { const out = new Map(), req = d.transaction("cards").objectStore("cards").openCursor(); req.onsuccess = () => { const c = req.result; if (!c) return ok(out); out.set(+c.key, c.value); c.continue(); }; req.onerror = () => ok(out); }); },
+    async put(cards) { const d = await db(); const st = d.transaction("cards", "readwrite").objectStore("cards"); for (const c of cards) st.put(c, +c.id); },
+  };
+})();
+const coll = {};                                 // card id -> { card, n: copies owned, r: best rarity pulled }
+const storedCards = new Set();                   // card ids whose details are in IndexedDB
+const unresolved = {};                           // saved entries whose card details couldn't be fetched yet: kept as they are
+const compactColl = () => ({ ...unresolved, ...Object.fromEntries(Object.entries(coll).map(([id, e]) => [id, [e.n, e.r || ""]])) });
+// fill the collection from a saved copy (compact or old style), fetching details of cards this phone hasn't seen
+async function loadCollection(raw, known = null) {
+  known ??= await cardStore.all().catch(() => new Map());
+  for (const [id, e] of Object.entries(coll)) known.set(+id, e.card);
+  for (const id of Object.keys(coll)) delete coll[id];
+  for (const id of Object.keys(unresolved)) delete unresolved[id];
+  const need = [], fresh = [];
+  for (const [id, e] of Object.entries(raw || {})) {
+    if (Array.isArray(e)) { const card = known.get(+id); if (card) { coll[id] = { card, n: e[0], r: e[1] || "" }; storedCards.add(+id); } else need.push([id, e]); }
+    else if (e?.card) { coll[id] = { card: e.card, n: e.n, r: e.r || "" }; fresh.push(e.card); }
+  }
+  for (let i = 0; i < need.length; i += 300) {
+    try { const { cards } = await api({ action: "byid", ids: need.slice(i, i + 300).map(x => x[0]).join(",") }); const by = new Map(cards.map(c => [String(c.id), c]));
+      for (const [id, e] of need.slice(i, i + 300)) { const card = by.get(id); if (card) { coll[id] = { card, n: e[0], r: e[1] || "" }; fresh.push(card); } else unresolved[id] = e; } }
+    catch { for (const [id, e] of need.slice(i, i + 300)) unresolved[id] = e; }
+  }
+  if (fresh.length) { cardStore.put(fresh).catch(() => {}); for (const c of fresh) storedCards.add(+c.id); }
+  return Object.values(raw || {}).some(e => !Array.isArray(e)); // true: an old-style save, to be rewritten compactly
+}
+if (await loadCollection(store.get("cards", {}))) try { localStorage.setItem("arduel.cards", JSON.stringify(compactColl())); onSaved("cards"); } catch {}
 let decks = store.get("decklist", []);        // [{ name, ids: [card ids] }]
 const wallet = store.get("wallet", { coins: 500, day: "", free: 0, starter: "" });
 const MAX_DECKS = 10, FREE_PACKS = 3, PACK_PRICE = 100;
-const saveColl = () => store.put("cards", coll), saveDecks = () => store.put("decklist", decks), saveWallet = () => store.put("wallet", wallet);
+const saveColl = () => { const fresh = Object.values(coll).filter(e => !storedCards.has(+e.card.id)).map(e => e.card); if (fresh.length) { cardStore.put(fresh).catch(() => {}); for (const c of fresh) storedCards.add(+c.id); } store.put("cards", compactColl()); }, saveDecks = () => store.put("decklist", decks), saveWallet = () => store.put("wallet", wallet);
 const today = () => new Date().toLocaleDateString("en-CA");
 function topUp() { if (wallet.day !== today()) { wallet.day = today(); wallet.free = Math.max(wallet.free || 0, FREE_PACKS); saveWallet(); } } // reward packs are kept
 const deckCards = d => (d?.ids || []).map(id => coll[id]?.card).filter(Boolean);

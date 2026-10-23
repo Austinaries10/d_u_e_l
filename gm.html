@@ -350,9 +350,16 @@ async function openPlayer(name) {
   const box = $("#playerEdit"); box.hidden = false; box.innerHTML = ""; box.append(el("p", { textContent: "Loading…" }));
   let u; try { u = await call("player", { name }); } catch (e) { box.innerHTML = ""; box.append(el("p", { className: "err", textContent: errText(e) })); return; }
   const st = u.state || {}; st.wallet ??= { coins: 0, free: 0 }; st.cards ??= {}; st.charWins ??= {};
+  // the game saves cards as number -> [copies, rarity]; look up the card details to show them here
+  const compact = Object.entries(st.cards).filter(([, e]) => Array.isArray(e)).map(([id]) => id);
+  for (let i = 0; i < compact.length; i += 300) {
+    let found = new Map(); try { found = new Map((await ygo({ action: "byid", ids: compact.slice(i, i + 300).join(",") })).cards.map(c => [String(c.id), c])); } catch {}
+    for (const id of compact.slice(i, i + 300)) { const e = st.cards[id]; st.cards[id] = { card: found.get(id) || { id: +id, name: "#" + id }, n: e[0], r: e[1] || "" }; }
+  }
   const save = async (extra = {}) => {
     const msg = box.querySelector(".pmsg"); msg.textContent = "Saving…";
-    try { await call("updatePlayer", { name: u.name, state: st, ...extra }); msg.textContent = "Saved. The player's game will load it the next time it opens or syncs."; }
+    const state = { ...st, cards: Object.fromEntries(Object.entries(st.cards).map(([id, e]) => [id, [e.n, e.r || ""]])) };
+    try { await call("updatePlayer", { name: u.name, state, ...extra }); msg.textContent = "Saved. The player's game will load it the next time it opens or syncs."; }
     catch (e) { msg.textContent = errText(e); }
   };
   const render = () => {

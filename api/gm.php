@@ -184,7 +184,7 @@ if ($action === 'players') {
         $cards = $u['state']['cards'] ?? [];
         $out[] = ['name' => $u['name'] ?? basename($f, '.json'), 'created' => $u['created'] ?? 0, 'seen' => $u['seen'] ?? 0, 'banned' => !empty($u['banned']),
             'coins' => $u['state']['wallet']['coins'] ?? 0, 'unique' => is_array($cards) ? count($cards) : 0,
-            'total' => is_array($cards) ? array_sum(array_map(fn($e) => (int)($e['n'] ?? 0), $cards)) : 0,
+            'total' => is_array($cards) ? array_sum(array_map(fn($e) => (int)(is_array($e) && array_is_list($e) ? ($e[0] ?? 0) : ($e['n'] ?? 0)), $cards)) : 0, // [copies, rarity], or an older { card, n, r }
             'wins' => array_sum(array_map('intval', (array)($u['state']['charWins'] ?? [])))];
     }
     usort($out, fn($a, $b) => $b['seen'] <=> $a['seen']);
