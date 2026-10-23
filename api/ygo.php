@@ -432,6 +432,41 @@ if ($action === 'tr') {
     exit;
 }
 
+// Cards that go with one card, for building a deck around it: cards that name it, its archetype, the cards it names,
+// and monsters of its type and attribute; plus well-known staples to fill the deck
+//   ?action=related&id=ID -> {seed, related: [card + score], staples: [card]}
+const STAPLES = ['Monster Reborn', 'Dark Hole', 'Mystical Space Typhoon', 'Swords of Revealing Light', 'Book of Moon', 'Pot of Duality',
+    'Upstart Goblin', 'Raigeki', 'Heavy Storm', 'Change of Heart', 'Mirror Force', 'Call of the Haunted', 'Torrential Tribute',
+    'Bottomless Trap Hole', 'Solemn Judgment', 'Magic Cylinder', 'Sakuretsu Armor', 'Compulsory Evacuation Device', 'Dimensional Prison',
+    'Trap Hole', 'Fissure', 'Shrink', 'Enemy Controller', 'Forbidden Lance', 'Effect Veiler', 'Ash Blossom & Joyous Spring',
+    'Sangan', 'Man-Eater Bug', 'Breaker the Magical Warrior', 'Exiled Force', 'Cyber Dragon', 'D.D. Warrior Lady'];
+if ($action === 'related') {
+    $id = (int)($_GET['id'] ?? 0);
+    $db = cardDb(); $seed = null;
+    foreach ($db as $c) if ($c['id'] === $id) { $seed = $c; break; }
+    $seed || fail(404, 'Card not found.');
+    $name = mb_strtolower($seed['name']); $arch = $seed['archetype'] ?? '';
+    preg_match_all('/"([^"]{3,60})"/', $seed['summary'] ?? '', $mm);
+    $named = array_map('mb_strtolower', $mm[1]);
+    $out = [];
+    foreach ($db as $c) {
+        if ($c['id'] === $id) continue;
+        $sum = mb_strtolower($c['summary'] ?? ''); $cn = mb_strtolower($c['name']); $score = 0;
+        if (str_contains($sum, '"' . $name . '"')) $score += 6;                       // it names this card
+        if (in_array($cn, $named, true)) $score += 5;                                 // this card names it
+        if ($arch !== '' && ($c['archetype'] ?? '') === $arch) $score += 4;           // same archetype
+        if ($arch !== '' && str_contains($sum, '"' . mb_strtolower($arch) . '"')) $score += 3; // supports the archetype
+        foreach ($named as $n) if ($n !== $cn && str_contains($sum, '"' . $n . '"')) { $score += 2; break; }
+        if ($seed['kind'] === 'monster' && $c['kind'] === 'monster' && $c['race'] === $seed['race'] && $c['attribute'] === $seed['attribute']) $score += 1;
+        if ($score > 0) $out[] = $c + ['score' => $score];
+    }
+    usort($out, fn($a, $b) => $b['score'] <=> $a['score'] ?: ($b['atk'] ?? 0) <=> ($a['atk'] ?? 0));
+    $byName = []; foreach ($db as $c) $byName[mb_strtolower($c['name'])] ??= $c;
+    $staples = array_values(array_filter(array_map(fn($n) => $byName[mb_strtolower($n)] ?? null, STAPLES)));
+    echo json_encode(['seed' => $seed, 'related' => array_slice($out, 0, 90), 'staples' => $staples]);
+    exit;
+}
+
 if ($action === 'names') {
     $names = array_slice(array_filter(array_map('trim', explode('|', (string)($_GET['n'] ?? '')))), 0, 60);
     if (!$names) {

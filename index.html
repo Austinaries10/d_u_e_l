@@ -546,7 +546,29 @@
   #cardMenu .cmi { flex: 0 0 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,.6); background: rgba(255,255,255,.08); color: #fff; font: italic 800 14px/22px Georgia, serif; cursor: pointer; }
   #cardMenu .btn { width: 100%; justify-content: center; text-align: center; white-space: normal; }
   @keyframes cmpop { from { opacity: 0; transform: scale(.9); } }
+  #hurt { position: absolute; inset: 0; pointer-events: none; opacity: 0; box-shadow: inset 0 0 90px 20px rgba(255,30,50,.75); }
+  #hurt.go { animation: hurt .7s ease-out; } @keyframes hurt { 15% { opacity: 1; } 100% { opacity: 0; } }
+  #oppHand { position: absolute; display: flex; align-items: flex-start; padding: 2px 6px; pointer-events: none; z-index: 4; }
+  #oppHand[hidden] { display: none; }
+  #oppHand img { width: 26px; aspect-ratio: 59 / 86; border-radius: 3px; margin-left: -11px; box-shadow: 0 3px 8px rgba(0,0,0,.6); transform-origin: 50% 0; border: 1px solid rgba(233,196,106,.6); }
+  #oppHand img:first-child { margin-left: 0; }
+  #oppHand #oppCount { order: 99; margin-left: 6px; align-self: center; min-width: 20px; height: 20px; border-radius: 10px; background: rgba(10,14,28,.85); border: 1px solid rgba(140,200,255,.5); font: 700 11px/18px var(--font); text-align: center; color: #cfe8ff; }
   /* ---------- Deck builder ---------- */
+  .buildview { max-width: 860px; width: calc(100vw - 24px); max-height: calc(100vh - 24px); display: grid; grid-template-rows: auto auto auto 1fr auto auto; gap: 6px; }
+  .buildview h2 { margin: 0; font-size: 20px; } .buildview .note { margin: 0; }
+  .bvgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; overflow-y: auto; min-height: 0; padding: 2px; }
+  #buildView { place-items: center; padding: 10px; } #buildView .sheet { overflow: hidden; margin-top: 0; height: calc(100vh - 20px); padding: 12px 14px; gap: 4px; }
+  .bvcard { position: relative; padding: 0; border: 0; background: none; cursor: pointer; }
+  .bvcard img { width: 100%; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 5px; display: block; background: #1c2230; }
+  .bvcard.miss img { filter: saturate(.35) brightness(.7); outline: 2px dashed rgba(255,181,71,.7); outline-offset: -2px; }
+  .bvcard .bvn { position: absolute; left: 2px; top: 2px; background: rgba(0,0,0,.75); color: #fff; font: 700 10px/16px var(--font); padding: 0 4px; border-radius: 5px; }
+  .bvcard .bvprice { position: absolute; left: 2px; right: 2px; bottom: 2px; background: rgba(60,40,0,.9); color: #ffd27a; font: 700 9px/15px var(--font); border-radius: 5px; text-align: center; }
+  .bvcard .bvown { position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; border-radius: 50%; background: #2f9e5a; color: #fff; font: 800 10px/16px var(--font); text-align: center; }
+  .bvcost { margin: 0; text-align: center; font-weight: 700; color: #ffd27a; }
+  .decklist .deckcard.want img, #editor .decklist .deckcard.want img { filter: saturate(.35) brightness(.75); outline: 2px dashed rgba(255,181,71,.8); outline-offset: -2px; }
+  .wantbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 12px; border: 1px dashed rgba(255,181,71,.6); background: rgba(80,55,0,.25); font-size: 12px; color: #ffd27a; }
+  .wantbar[hidden] { display: none; }
+
   .edkick { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #8fb4ff; }
   .deckstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .deckstats .st { border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; background: rgba(255,255,255,.04); display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 6px; }
@@ -628,6 +650,8 @@
     <div class="turn" id="turnLabel"><small id="turnNo">Turn 1</small><b id="turnWho">Your turn</b><span id="turnPhase"></span></div>
     <div class="lp p1 ui" id="lp1"><img id="lp1face" alt=""><div><small id="lp1name">Opponent</small><b><i>LP</i><span id="lp1v">8000</span></b><span class="lpfill"><span id="lp1fill"></span></span></div></div>
   </div>
+  <div id="hurt" aria-hidden="true"></div>
+  <div id="oppHand" aria-label="Rival's hand" hidden><span id="oppCount"></span></div>
   <div id="toast"></div>
   <div id="cardMenu" class="ui" hidden></div>
   <div id="announce" hidden></div>
@@ -731,6 +755,16 @@
   </div>
 </div>
 
+<div class="modal" id="buildView" hidden>
+  <div class="sheet buildview">
+    <small class="edkick">Deck around a card</small>
+    <h2 id="bvTitle"></h2>
+    <p class="note" id="bvInfo"></p>
+    <div class="bvgrid" id="bvGrid"></div>
+    <p class="bvcost" id="bvCost"></p>
+    <div class="row" style="justify-content:center"><button class="btn primary" id="bvBuy" type="button"></button><button class="btn" id="bvOwned" type="button">Create with cards I own</button><button class="btn" id="bvCancel" type="button">Cancel</button></div>
+  </div>
+</div>
 <div class="modal" id="cardView" hidden>
   <div class="sheet cardview">
     <button class="round close" id="cardViewClose" type="button" aria-label="Close">×</button>
@@ -847,6 +881,7 @@
     <div class="row" style="justify-content:space-between"><div><small class="edkick">Deck builder</small><h1 style="font-size:24px;overflow-wrap:anywhere;margin:0" id="edName"></h1></div><button class="btn small" id="edDone" type="button">Back</button></div>
     <div class="row"><b id="deckCount"></b><button class="btn small" id="edRename" type="button">Rename</button><button class="btn small danger" id="clearDeck" type="button">Clear</button><span class="note" id="deckStatus"></span></div>
     <div class="deckstats" id="deckStats"></div>
+    <div class="wantbar" id="wantBar" hidden></div>
     <div class="decklist" id="deckList"></div>
    </div>
    <div class="edAdd">
@@ -1457,20 +1492,22 @@ function hologram(card) {
   return g;
 }
 function statLabel() {
-  const c = document.createElement("canvas"); c.width = 256; c.height = 80;
+  const c = document.createElement("canvas"); c.width = 280; c.height = 96;
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true }));
-  s.scale.set(0.07, 0.022, 1); s.renderOrder = 5; s.userData = { c, t }; s.raycast = () => {}; // taps go to the card under it
+  s.scale.set(0.094, 0.032, 1); s.renderOrder = 5; s.userData = { c, t }; s.raycast = () => {}; // taps go to the card under it
   return s;
 }
 function drawLabel(s, slot) {
   const g = s.userData.c.getContext("2d"), c = s.userData.c, card = slot.card;
   g.clearRect(0, 0, c.width, c.height);
-  g.fillStyle = "rgba(10,14,20,.82)"; rrect(g, 4, 4, c.width - 8, c.height - 8, 18); g.fill();
-  g.font = "700 30px Sora, sans-serif"; g.textAlign = "center";
-  g.fillStyle = slot.pos === "atk" ? "#ffb547" : "#7a8796"; g.fillText(String(card.atk ?? "?"), 72, 52);
-  g.fillStyle = "#7a8796"; g.fillText("/", 128, 52);
-  g.fillStyle = slot.pos === "def" ? "#4cc9f0" : "#7a8796"; g.fillText(String(card.def ?? "-"), 184, 52);
+  g.fillStyle = "rgba(8,12,20,.9)"; rrect(g, 3, 3, c.width - 6, c.height - 6, 22); g.fill();
+  g.strokeStyle = slot.pos === "atk" ? "rgba(255,181,71,.8)" : "rgba(76,201,240,.8)"; g.lineWidth = 3; g.stroke();
+  g.font = "800 44px Sora, sans-serif"; g.textAlign = "center"; g.lineWidth = 6; g.strokeStyle = "rgba(0,0,0,.6)";
+  const txt = (t, x, col) => { g.strokeText(t, x, 64); g.fillStyle = col; g.fillText(t, x, 64); };
+  txt(String(card.atk ?? "?"), 76, slot.pos === "atk" ? "#ffc35c" : "#aab4c2");
+  txt("/", 140, "#7a8796");
+  txt(String(card.def ?? "-"), 204, slot.pos === "def" ? "#5fd6ff" : "#aab4c2");
   s.userData.t.needsUpdate = true;
 }
 
@@ -1580,12 +1617,73 @@ function sparks(pos, color) {
   const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size: 0.008, transparent: true, depthWrite: false })); board.add(pts);
   effects.push({ t: 0, dur: 0.9, step: (k, dt) => { const a = pts.geometry.attributes.position; for (let i = 0; i < n; i++) { vel[i].y -= dt * 1.2; a.setXYZ(i, a.getX(i) + vel[i].x * dt, a.getY(i) + vel[i].y * dt, a.getZ(i) + vel[i].z * dt); } a.needsUpdate = true; pts.material.opacity = 1 - k; }, done: () => board.remove(pts) });
 }
-// A card leaving the field: it bursts into sparks (destroyed, banished) or just fades
-function vanish(slot, burst) {
+// A card leaving the field: destroyed ones explode, banished ones are pulled up into a beam of light, others just fade
+function vanish(slot, how) {
   const g = slot?.obj?.group; if (!g) return;
   if (quiet) { board.remove(g); return; }
-  if (burst) { const pos = g.position.clone(); pos.y = 0.06; sparks(pos, ATTR_COLOR[slot.card.attribute] || 0xffffff); }
+  if (how === "destroy") return explode(slot);
+  if (how === "banish") return banishFx(slot);
   effects.push({ t: 0, dur: 0.5, step: k => { g.scale.setScalar(1 - k); g.rotation.y += 0.2; }, done: () => board.remove(g) });
+}
+let fireTex = null;
+const glowSprite = (inner, outer) => new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(128, 128, (g, w, h) => { const gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); gr.addColorStop(0, inner); gr.addColorStop(0.4, outer); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, w, h); }), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+// the board jolts for a moment
+function shakeBoard(power = 0.006, dur = 0.35) {
+  const base = board.position.clone();
+  effects.push({ t: 0, dur, step: k => { const a = power * (1 - k); board.position.set(base.x + (Math.random() - 0.5) * a, base.y, base.z + (Math.random() - 0.5) * a); }, done: () => board.position.copy(base) });
+}
+// destroyed: a fireball and a flash, a shockwave across the floor, and the card shattering into glowing shards
+function explode(slot) {
+  const g = slot.obj.group, pos = g.position.clone(), color = ATTR_COLOR[slot.card.attribute] || 0xff8a3d;
+  board.remove(g);
+  fireTex ??= glowSprite("rgba(255,250,220,1)", "rgba(255,120,30,.75)").material.map;
+  const fire = new THREE.Sprite(new THREE.SpriteMaterial({ map: fireTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); fire.position.set(pos.x, 0.04, pos.z); board.add(fire);
+  const wave = mesh(new THREE.RingGeometry(0.02, 0.03, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffb060, transparent: true, side: THREE.DoubleSide, depthWrite: false }), pos.x, 0.003, pos.z); board.add(wave);
+  const light = new THREE.PointLight(0xffa040, 2.5, 0.8, 2); light.position.set(pos.x, 0.08, pos.z); board.add(light);
+  const shards = [], shardMat = new THREE.MeshBasicMaterial({ color, transparent: true, side: THREE.DoubleSide });
+  for (let i = 0; i < 16; i++) {
+    const sh = mesh(new THREE.PlaneGeometry(0.008 + Math.random() * 0.012, 0.01 + Math.random() * 0.016), shardMat, pos.x + (Math.random() - 0.5) * CARD_W, 0.01, pos.z + (Math.random() - 0.5) * CARD_H);
+    sh.userData.v = new THREE.Vector3((Math.random() - 0.5) * 0.5, 0.25 + Math.random() * 0.45, (Math.random() - 0.5) * 0.5); sh.userData.r = new THREE.Vector3(Math.random() * 9, Math.random() * 9, 0);
+    board.add(sh); shards.push(sh);
+  }
+  const p2 = pos.clone(); p2.y = 0.05; sparks(p2, 0xffd27a); shakeBoard();
+  effects.push({ t: 0, dur: 1.1, step: (k, dt) => {
+    const f = Math.min(1, k * 3); fire.scale.setScalar(0.04 + f * 0.16); fire.material.opacity = k < 0.3 ? 1 : 1 - (k - 0.3) / 0.7;
+    wave.scale.setScalar(1 + k * 9); wave.material.opacity = 1 - k; light.intensity = 2.5 * (1 - k);
+    for (const sh of shards) { sh.userData.v.y -= dt * 1.4; sh.position.addScaledVector(sh.userData.v, dt); sh.rotation.x += sh.userData.r.x * dt; sh.rotation.y += sh.userData.r.y * dt; if (sh.position.y < 0.002) { sh.position.y = 0.002; sh.userData.v.multiplyScalar(0.3); } }
+    shardMat.opacity = 1 - k * k;
+  }, done: () => board.remove(fire, wave, light, ...shards) });
+}
+// banished: the card rises, spinning, into a beam of violet light over a swirling portal, and fades away
+function banishFx(slot) {
+  const g = slot.obj.group, pos = g.position.clone();
+  const beam = mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.5, 24, 1, true), new THREE.MeshBasicMaterial({ color: 0xc6a2ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }), pos.x, 0.25, pos.z); board.add(beam);
+  const portal = mesh(new THREE.RingGeometry(0.02, 0.05, 6, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x9a6bff, transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }), pos.x, 0.004, pos.z); board.add(portal);
+  const n = 40, geo = new THREE.BufferGeometry(), arr = new Float32Array(n * 3), sp = [];
+  for (let i = 0; i < n; i++) { const a = Math.random() * 6.3, r = Math.random() * 0.04; arr.set([pos.x + Math.cos(a) * r, Math.random() * 0.05, pos.z + Math.sin(a) * r], i * 3); sp.push(0.1 + Math.random() * 0.25); }
+  geo.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+  const motes = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xe6d6ff, size: 0.006, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); board.add(motes);
+  const mats = []; g.traverse(o => { if (o.material) for (const m of [].concat(o.material)) { m.transparent = true; mats.push(m); } });
+  effects.push({ t: 0, dur: 1.2, step: (k, dt) => {
+    g.position.y = pos.y + k * k * 0.25; g.rotation.y += dt * (2 + k * 10); for (const m of mats) m.opacity = 1 - k;
+    beam.material.opacity = Math.sin(k * Math.PI) * 0.32; beam.scale.x = beam.scale.z = 0.7 - k * 0.4;
+    portal.rotation.y += dt * 4; portal.scale.setScalar(1 + Math.sin(k * Math.PI) * 1.4); portal.material.opacity = 1 - k;
+    const a = geo.attributes.position; for (let i = 0; i < n; i++) a.setY(i, a.getY(i) + sp[i] * dt); a.needsUpdate = true; motes.material.opacity = 1 - k;
+  }, done: () => board.remove(g, beam, portal, motes) });
+}
+// a monster hurt by attacking something stronger: it's knocked back with a red flash
+function recoil(slot) {
+  if (quiet || !slot?.obj) return;
+  const g = slot.obj.holo || slot.obj.group, from = g.position.clone(), dir = slot.obj.group.position.z > 0 ? 1 : -1;
+  const ring = mesh(new THREE.RingGeometry(0.03, 0.04, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xff2a3d, transparent: true, side: THREE.DoubleSide, depthWrite: false }), 0, 0.005);
+  slot.obj.group.add(ring);
+  const p = slot.obj.group.position.clone(); p.y = 0.06; sparks(p, 0xff3a4a); shakeBoard(0.004, 0.25);
+  effects.push({ t: 0, dur: 0.6, step: k => { const f = Math.sin(Math.min(1, k * 2) * Math.PI); g.position.set(from.x, from.y, from.z + dir * f * 0.02); ring.scale.setScalar(1 + k * 3); ring.material.opacity = 1 - k; }, done: () => { g.position.copy(from); slot.obj?.group.remove(ring); } });
+}
+// the edge of the screen flashes red when you take damage
+function hurtFlash() {
+  if (quiet) return;
+  const v = $("#hurt"); v.classList.remove("go"); void v.offsetWidth; v.classList.add("go");
 }
 function lunge(slot, targetPos) {
   if (quiet || !slot?.obj) return;
@@ -1750,7 +1848,8 @@ async function play(m) {
       const f = m.from, t = m.to;
       if ((f.location === LOC.MZONE || f.location === LOC.SZONE) && !(f.location & LOC.OVERLAY)) {
         const p = side(f.controller), row = f.location === LOC.MZONE ? "m" : "s", s = S.zones[p][row]?.[f.sequence];
-        if (s && f.sequence < S.zones[p][row].length) { S.zones[p][row][f.sequence] = null; vanish(s, t.location === LOC.GRAVE || t.location === LOC.REMOVED); }
+        // (reason 1 = destroyed)
+        if (s && f.sequence < S.zones[p][row].length) { S.zones[p][row][f.sequence] = null; vanish(s, t.location === LOC.REMOVED ? "banish" : t.location === LOC.GRAVE && (m.reason == null || m.reason & 1) ? "destroy" : t.location === LOC.GRAVE ? "grave" : ""); }
       }
       if ((t.location === LOC.MZONE || t.location === LOC.SZONE) && t.sequence < (t.location === LOC.MZONE ? 7 : 6)) {
         const p = side(t.controller), row = t.location === LOC.MZONE ? "m" : "s";
@@ -1787,9 +1886,15 @@ async function play(m) {
       const target = m.target ? zonePos(side(m.target.controller), "m", m.target.sequence) : zonePos(1 - side(a.controller), "s", 2);
       const tg = m.target ? S.zones[side(m.target.controller)].m[m.target.sequence] : null;
       blog(side(a.controller), `${s?.card.name || "A monster"} attacked ${m.target ? (tg && !tg.faceDown ? tg.card.name : "a face-down monster") : "directly"}.`, [s?.card.id, tg && !tg.faceDown ? tg.card.id : 0].filter(Boolean));
+      ui.lastAttack = { p: side(a.controller), seq: a.sequence, target: !!m.target };
       toast(`${s?.card.name || "A monster"} attacks${m.target ? "" : " directly"}!`); swordStrike(side(a.controller), a.sequence, target); await wait(900); break;
     }
-    case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player); blog(p, m.type === MSG.PAY_LPCOST ? `${who(p)} paid ${m.amount} LP (${Math.max(0, S.lp[p] - m.amount)} LP left).` : `${who(p)} took ${m.amount} damage (${Math.max(0, S.lp[p] - m.amount)} LP left).`); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
+    case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player);
+      if (m.type === MSG.DAMAGE) {
+        if (p === 0) hurtFlash();
+        // battle damage to the attacker's own player: its attack bounced off something stronger
+        const la = ui.lastAttack; if (la?.target && la.p === p && S.phase >= 8 && S.phase <= 128) recoil(S.zones[p].m[la.seq]);
+      } blog(p, m.type === MSG.PAY_LPCOST ? `${who(p)} paid ${m.amount} LP (${Math.max(0, S.lp[p] - m.amount)} LP left).` : `${who(p)} took ${m.amount} damage (${Math.max(0, S.lp[p] - m.amount)} LP left).`); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
     case MSG.RECOVER: { const p = side(m.player); blog(p, `${who(p)} gained ${m.amount} LP.`); setLp(p, S.lp[p] + m.amount); toast(`${who(p)}: +${m.amount} LP`); await wait(450); break; }
     case MSG.LPUPDATE: setLp(side(m.player), m.lp); break;
     case MSG.CONFIRM_CARDS: case MSG.CONFIRM_DECKTOP: {
@@ -1862,7 +1967,8 @@ function askPlayer(m, retry) {
 function answer(r, record = true) {
   const mine = ui.last && side(ui.last.player) === 0;
   glowZones(null); ui.place = [];
-  ui.last = null; ui.mode = "idle"; ui.sel = null; ui.pick = []; hint("");
+  // (a card you're reading stays open through phase changes; only a card whose action menu you used is put away)
+  ui.last = null; ui.mode = "idle"; if (ui.selMenu) ui.sel = null; ui.selMenu = false; ui.pick = []; hint("");
   if (record) { S.log.push(r); if (mine && S.vs?.kind === "online") net.send({ t: "resp", r }); saveDuel(); }
   worker.postMessage({ t: "resp", r });
   refreshUI();
@@ -1934,6 +2040,7 @@ function startEngine(vs, setup, log = []) {
 // Against the computer. first: 0 if you go first. The engine doesn't shuffle (the last card added is the top
 // of the deck), so decks are shuffled here, except a lesson's, which is given in drawing order.
 function startDuel(vs, myCards, oppCards, first, opts = {}) {
+  ui.handN = 0; // the opening hand is dealt in
   const deal = cards => { const d = splitDeck(opts.fixed ? cards : shuffle([...cards])); if (opts.fixed) d.main.reverse(); return d; };
   const mine = deal(myCards), theirs = deal(oppCards), me = first === 0 ? 0 : 1;
   const lp = opts.lp ? (me === 0 ? opts.lp : [opts.lp[1], opts.lp[0]]) : undefined;
@@ -2072,7 +2179,7 @@ function onZone(z) {
     if (k >= 0) return togglePick(k);
     if (attackPick(m)) return toast("Tap one of the glowing monsters to attack it");
   }
-  ui.sel = S.zones[p][row][i] ? { p, row, i, loc } : null; ui.view = null;
+  ui.sel = S.zones[p][row][i] ? { p, row, i, loc, id: S.zones[p][row][i].card?.id } : null; ui.view = null;
   refreshUI();
 }
 function pick(clientX, clientY) {
@@ -2111,9 +2218,33 @@ function actionsFor(loc) {
 }
 let backImg = null; // the card back, as a picture for lists of cards
 const cardImg = (c, hidden) => el("img", { src: hidden ? (backImg ??= backTex.image.toDataURL("image/png")) : imgUrl(c, "small"), alt: hidden ? "" : c.name, className: hidden ? "back" : "" });
+// The rival's hand: card backs fanned under their banner; new ones fly in from their deck
+function renderOppHand() {
+  const box = $("#oppHand"), n = S.vs ? S.hand[1].length : 0, had = box.querySelectorAll("img").length;
+  box.hidden = !n;
+  for (let k = had - 1; k >= n; k--) box.querySelectorAll("img")[k].remove();
+  const dock = $(".dock").getBoundingClientRect(), banner = $("#lp1").getBoundingClientRect();
+  box.style.top = banner.bottom + 2 + "px"; box.style.right = (dock.left > innerWidth * 0.4 && dock.top < banner.bottom + 60 ? innerWidth - dock.left + 10 : innerWidth - banner.right + 60) + "px";
+  let deck = null;
+  if (n > had && !quiet && mode === "preview") { const v = pilePos(1, "DECK"); v.y = 0.02; board.localToWorld(v); v.project(camera); deck = [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }
+  for (let k = had; k < n; k++) box.insertBefore(el("img", { src: backImg ??= backTex.image.toDataURL("image/png"), alt: "" }), $("#oppCount"));
+  const imgs = [...box.querySelectorAll("img")];
+  imgs.forEach((im, k) => { im.style.transform = `rotate(${(k - (n - 1) / 2) * 5}deg) translateY(${Math.abs(k - (n - 1) / 2) * 1.5}px)`; });
+  $("#oppCount").textContent = n;
+  if (deck) imgs.slice(had).forEach((im, j) => {
+    const r = im.getBoundingClientRect(), dx = deck[0] - (r.left + r.width / 2), dy = deck[1] - (r.top + r.height / 2), end = im.style.transform;
+    im.animate([{ transform: `translate(${dx}px, ${dy}px) scale(1.6) rotate(-20deg)`, opacity: 0.2 }, { transform: end, opacity: 1 }], { duration: 520, delay: j * 140, easing: "cubic-bezier(.2,.8,.3,1)", fill: "backwards" });
+  });
+}
+// your new cards slide into your hand one after another
+function dealAnim() {
+  const n = S.hand[0].length, had = ui.handN ?? n; ui.handN = n;
+  if (n <= had || quiet || !S.vs) return;
+  requestAnimationFrame(() => [...$("#hand").children].slice(had).forEach((c, j) => c.animate([{ transform: "translate(60px, -120px) rotate(14deg) scale(.6)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 480, delay: j * 130, easing: "cubic-bezier(.2,.8,.3,1)", fill: "backwards" })));
+}
 // The actions for the card you tapped, in a small menu right next to it (on the board, or above it in your hand)
 function cardMenu(c, acts, btn) {
-  const menu = $("#cardMenu"); menu.innerHTML = ""; menu.hidden = false;
+  const menu = $("#cardMenu"); menu.innerHTML = ""; menu.hidden = false; ui.selMenu = true;
   const nm = el("b"); tset(nm, c);
   const info = el("button", { type: "button", className: "cmi", textContent: "i", title: "Read the card", "aria-label": "Read the card" }); info.onclick = () => openCard(c);
   menu.append(el("div", { className: "cmhead" }, nm, info));
@@ -2152,7 +2283,7 @@ function refreshUI() {
   holoView();
   { const bm = myPrompt(); showSwords(bm?.type === MSG.SELECT_BATTLECMD && !S.over ? bm.attacks.map(a => ({ p: side(a.controller), i: a.sequence })) : []); showTargets(attackPick(bm) ? bm.selects : []); }
   showLp(0); showLp(1);
-  $("#lp1name").textContent = `${who(1)} · ${S.hand[1].length} in hand`;
+  $("#lp1name").textContent = who(1);
   $("#lp0").classList.toggle("active", S.turn === 0); $("#lp1").classList.toggle("active", S.turn === 1);
   $("#turnNo").textContent = `Turn ${Math.max(1, S.turnCount)}`;
   $("#turnWho").textContent = S.over ? "Duel over" : S.turn === 0 ? "Your turn" : "Rival's turn";
@@ -2173,9 +2304,10 @@ function refreshUI() {
     const b = el("button", { type: "button", className: "hcard " + c.kind + (acts.length ? " can" : "") });
     b.setAttribute("aria-pressed", String(ui.sel?.hand === idx));
     b.append(el("img", { src: imgUrl(c, "small"), alt: "", loading: "lazy" }), el("b", { textContent: c.name }), el("small", { textContent: c.kind === "monster" ? `★${c.level ?? "?"} ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type }));
-    b.onclick = () => { ui.sel = { hand: idx, loc }; ui.view = null; refreshUI(); };
+    b.onclick = () => { ui.sel = { hand: idx, loc, id: c.id }; ui.view = null; refreshUI(); };
     hand.append(b);
   });
+  dealAnim(); renderOppHand();
   const panel = $("#panel"); panel.innerHTML = ""; panel.hidden = true; panel.classList.remove("slim", "acts", "ask"); $("#cardMenu").hidden = true;
   const btn = (label, fn, cls = "") => { const b = el("button", { type: "button", className: "btn small " + cls, textContent: label }); b.onclick = fn; return b; };
   const row = el("div", { className: "row" });
@@ -2184,8 +2316,12 @@ function refreshUI() {
   if (ui.view) return pileView(panel, ui.view, btn);
   if (ui.sel) {
     let c, hidden = false;
-    if (ui.sel.hand != null) c = S.hand[0][ui.sel.hand];
-    else { const s = S.zones[ui.sel.p][ui.sel.row][ui.sel.i]; if (!s) { ui.sel = null; return refreshUI(); } c = s.card; hidden = s.faceDown && ui.sel.p === 1; }
+    if (ui.sel.hand != null) {
+      // the hand may have changed since: follow the same card, or let go if it has been played
+      if (S.hand[0][ui.sel.hand]?.id !== ui.sel.id) { const k = S.hand[0].findIndex(x => x.id === ui.sel.id); if (k < 0) { ui.sel = null; return refreshUI(); } ui.sel.hand = k; ui.sel.loc = { ...ui.sel.loc, sequence: k }; }
+      c = S.hand[0][ui.sel.hand];
+    }
+    else { const s = S.zones[ui.sel.p][ui.sel.row][ui.sel.i]; if (!s || (ui.sel.id && s.card?.id && s.card.id !== ui.sel.id)) { ui.sel = null; return refreshUI(); } c = s.card; hidden = s.faceDown && ui.sel.p === 1; }
     if (!c) { ui.sel = null; return refreshUI(); }
     const acts = actionsFor(ui.sel.loc);
     if (acts.length) return cardMenu(c, acts, btn);
@@ -2762,6 +2898,7 @@ function openCard(c) {
     const id = editingDeck.ids.find(x => coll[x]?.card.name === c.name);
     if (id != null) btns.append(smallBtn("− Remove one", () => { editingDeck.ids.splice(editingDeck.ids.indexOf(id), 1); saveDecks(); renderDeck(); openCard(c); }));
   }
+  if ($("#overlay").hidden && c.id) btns.append(smallBtn("Build a deck around it", () => { m.hidden = true; buildAround(c); }));
   btns.append(smallBtn("Close", () => { m.hidden = true; }));
 }
 $("#cardViewClose").addEventListener("click", () => { $("#cardView").hidden = true; });
@@ -2775,9 +2912,103 @@ function cardRow(c, actions, rarity) {
   info.append(name, Object.assign(document.createElement("small"), { textContent: (c.kind === "monster" ? `${c.attribute} ${c.race || ""} ★${c.level ?? "?"} · ${c.atk ?? "?"}/${c.def ?? "-"}` : c.type) + (c.inText ? " · found in card text" : "") }));
   d.append(info);
   const row = document.createElement("div"); row.className = "row"; for (const a of actions) row.append(a); d.append(row);
-  d.firstChild.onclick = info.onclick = () => openCard(c);
+  d.firstChild.onclick = info.onclick = () => { if (d.dataset.long) { delete d.dataset.long; return; } openCard(c); };
+  // hold a card (or right-click it) to build a deck around it
+  let hold = null;
+  d.addEventListener("pointerdown", e => { if (e.target.closest("button")) return; hold = setTimeout(() => { hold = null; d.dataset.long = "1"; askBuild(c); }, 550); });
+  for (const ev of ["pointerup", "pointerleave", "pointercancel"]) d.addEventListener(ev, () => { clearTimeout(hold); hold = null; });
+  d.addEventListener("contextmenu", e => { e.preventDefault(); askBuild(c); });
   return d;
 }
+// ---------- Build a deck around a card ----------
+// What a card you don't own costs to buy on its own: by how strong and special it is; the well-known staples cost more
+const STAPLE_NAMES = new Set(["Monster Reborn", "Dark Hole", "Mystical Space Typhoon", "Swords of Revealing Light", "Book of Moon", "Pot of Duality", "Upstart Goblin", "Raigeki", "Heavy Storm", "Change of Heart",
+  "Mirror Force", "Call of the Haunted", "Torrential Tribute", "Bottomless Trap Hole", "Solemn Judgment", "Magic Cylinder", "Sakuretsu Armor", "Compulsory Evacuation Device", "Dimensional Prison", "Trap Hole",
+  "Fissure", "Shrink", "Enemy Controller", "Forbidden Lance", "Effect Veiler", "Ash Blossom & Joyous Spring", "Sangan", "Man-Eater Bug", "Breaker the Magical Warrior", "Exiled Force", "Cyber Dragon", "D.D. Warrior Lady"]);
+const isExtra = c => /Fusion|Synchro|XYZ|Link/.test(c.type || "");
+function cardPrice(c) {
+  if (STAPLE_NAMES.has(c.name)) return 150;
+  let p = c.kind === "monster" ? 30 + (c.level || 4) * 8 + ((c.atk || 0) >= 2500 ? 60 : (c.atk || 0) >= 2000 ? 30 : 0) : 60;
+  if (isExtra(c)) p += 50;
+  if (/Effect|Ritual|Pendulum/.test(c.type || "") && c.kind === "monster") p += 20;
+  return Math.round(p / 10) * 10;
+}
+async function askBuild(c) {
+  if (!await gameConfirm("Build a deck around this card?", `A 40-card deck built around ${cn(c)}: cards that work with it, its archetype and well-known staples. You'll see what you own and what the missing cards cost before you decide.`, "Build a deck")) return;
+  buildAround(c);
+}
+let built = null;
+async function buildAround(seed) {
+  let j; try { j = await api({ action: "related", id: seed.id }); } catch (e) { return gameAlert(errText(e), "Couldn't build the deck"); }
+  if (LANG) await trLoad([j.seed.id, ...j.related.map(c => c.id), ...j.staples.map(c => c.id)]);
+  const main = [], extra = [], count = new Map();
+  const n = c => count.get(c.name) || 0, mainN = () => main.length, mons = () => main.filter(c => c.kind === "monster").length;
+  let big = 0; // high-level monsters (7 and up) are kept to a few
+  const add = (c, copies) => {
+    const room = Math.min(copies, limitOf(c) - n(c));
+    for (let k = 0; k < room; k++) {
+      if (isExtra(c)) { if (extra.length >= 15) return; extra.push(c); }
+      else { if (mainN() >= 40) return; if (c.kind === "monster" && (c.level || 0) >= 7) { if (big >= 6) return; big++; } main.push(c); }
+      count.set(c.name, n(c) + 1);
+    }
+  };
+  add(j.seed, 3);
+  const rel = j.related, relMon = rel.filter(c => c.kind === "monster" && !isExtra(c)), relST = rel.filter(c => c.kind !== "monster"), relX = rel.filter(isExtra);
+  relMon.forEach((c, k) => { if (mons() < 18) add(c, k < 3 ? 3 : k < 7 ? 2 : 1); });
+  relST.forEach((c, k) => { if (main.length - mons() < 9) add(c, k < 3 ? 2 : 1); });
+  relX.slice(0, 8).forEach(c => add(c, 1));
+  // fill up with staples: monsters first if there are too few, then spells and traps
+  for (const c of j.staples) if (c.kind === "monster" && mons() < 16) add(c, 1);
+  for (const c of j.staples) if (c.kind === "trap" && main.filter(x => x.kind === "trap").length < 7) add(c, 1);
+  for (const c of j.staples) if (c.kind !== "monster" && mainN() < 40) add(c, 1);
+  for (const c of relMon) if (mainN() < 40) add(c, 3);
+  for (const c of j.staples) if (mainN() < 40) add(c, 2);
+  built = { seed: j.seed, cards: [...main, ...extra] };
+  showBuilt();
+}
+// what you'd own, what's missing and what it costs
+function builtSummary(cards) {
+  const need = new Map(); for (const c of cards) { const g = need.get(c.id) || { c, n: 0 }; g.n++; need.set(c.id, g); }
+  let cost = 0, missing = 0;
+  const rows = [...need.values()].map(g => { const own = Math.min(g.n, coll[g.c.id]?.n || 0), miss = g.n - own; cost += miss * cardPrice(g.c); missing += miss; return { ...g, own, miss }; });
+  return { rows, cost, missing };
+}
+function showBuilt() {
+  const v = $("#buildView"), { seed, cards } = built, { rows, cost, missing } = builtSummary(cards);
+  v.hidden = false;
+  const nm = el("span"); tset(nm, seed);
+  $("#bvTitle").innerHTML = ""; $("#bvTitle").append("Deck: ", nm);
+  const nExtra = cards.filter(isExtra).length, kinds = k => cards.filter(c => c.kind === k && !isExtra(c)).length;
+  $("#bvInfo").textContent = `Main ${cards.length - nExtra} (${kinds("monster")} monsters, ${kinds("spell")} spells, ${kinds("trap")} traps) · Extra ${nExtra} · You own ${cards.length - missing} of ${cards.length}`;
+  const grid = $("#bvGrid"); grid.innerHTML = "";
+  for (const r of rows.sort((a, b) => KIND_ORDER[a.c.kind] - KIND_ORDER[b.c.kind] || isExtra(a.c) - isExtra(b.c) || b.n - a.n)) {
+    const t = el("button", { type: "button", className: "bvcard" + (r.miss ? " miss" : "") });
+    t.append(el("img", { src: imgUrl(r.c, "small"), alt: "", loading: "lazy" }), el("span", { className: "bvn", textContent: `×${r.n}` }));
+    if (r.miss) t.append(el("span", { className: "bvprice", textContent: `${r.miss} × ${cardPrice(r.c)}` })); else t.append(el("span", { className: "bvown", textContent: "✓" }));
+    t.onclick = () => openCard(r.c); grid.append(t);
+  }
+  $("#bvCost").textContent = missing ? `${missing} cards you don't own · ${cost.toLocaleString()} coins (you have ${wallet.coins.toLocaleString()})` : "You own every card for this deck!";
+  const buy = $("#bvBuy"); buy.textContent = missing ? `Buy & create deck · ${cost.toLocaleString()} coins` : "Create deck"; buy.disabled = missing && wallet.coins < cost;
+  $("#bvOwned").hidden = !missing;
+}
+function makeBuiltDeck(buy) {
+  if (decks.length >= MAX_DECKS) return gameAlert(`You already have ${MAX_DECKS} decks. Delete one in Decks to make room.`, "No room for a new deck");
+  const { seed, cards } = built, { rows, cost } = builtSummary(cards);
+  if (buy) {
+    if (wallet.coins < cost) return gameAlert(`You need ${cost} coins.`, "Not enough coins");
+    wallet.coins -= cost; for (const r of rows) for (let k = 0; k < r.miss; k++) own({ ...r.c, rarities: [] }, "Common");
+    saveColl(); saveWallet();
+  }
+  const used = new Map(), ids = [];
+  for (const c of cards) { const u = used.get(c.id) || 0; if (u < (coll[c.id]?.n || 0)) { ids.push(c.id); used.set(c.id, u + 1); } }
+  decks.push({ name: `${seed.name} Deck`.slice(0, 40), ids }); saveDecks();
+  $("#buildView").hidden = true; $("#cardView").hidden = true;
+  openEditor(decks.length - 1);
+  $("#deckStatus").textContent = buy ? `Bought the missing cards and built the deck around ${seed.name}.` : `Built with the cards you own (${ids.length} cards).`;
+}
+$("#bvBuy").addEventListener("click", () => makeBuiltDeck(true));
+$("#bvOwned").addEventListener("click", () => makeBuiltDeck(false));
+$("#bvCancel").addEventListener("click", () => { $("#buildView").hidden = true; });
 const smallBtn = (label, fn, cls = "") => Object.assign(document.createElement("button"), { type: "button", className: "btn small " + cls, textContent: label, onclick: fn });
 const note = text => Object.assign(document.createElement("span"), { className: "note", textContent: text });
 function renderDeck() {
@@ -2799,15 +3030,36 @@ function renderDeck() {
   for (const { c, n } of [...groups.values()].sort((a, b) => KIND_ORDER[a.c.kind] - KIND_ORDER[b.c.kind] || a.c.name.localeCompare(b.c.name))) {
     list.append(cardRow(c, [note(`×${n}`), smallBtn("−", () => { deck.ids.splice(deck.ids.indexOf(c.id), 1); saveDecks(); renderDeck(); })], coll[c.id]?.r));
   }
+  // cards you want but don't own yet: faded, with what they cost, and a bar to buy them all
+  const want = deck.want || [], wg = new Map(); for (const c of want) { const g = wg.get(c.id) || { c, n: 0 }; g.n++; wg.set(c.id, g); }
+  for (const { c, n } of wg.values()) {
+    const r = cardRow(c, [note(`×${n}`), smallBtn("−", () => { want.splice(want.findIndex(x => x.id === c.id), 1); saveDecks(); renderDeck(); })]); r.classList.add("want"); list.append(r);
+  }
+  const cost = want.reduce((a, c) => a + cardPrice(c), 0), bar = $("#wantBar"); bar.hidden = !want.length; bar.innerHTML = "";
+  if (want.length) {
+    bar.append(el("span", { textContent: `${want.length} card${want.length === 1 ? "" : "s"} you don't own · ${cost.toLocaleString()} coins` }));
+    const b = smallBtn(`Buy · ${cost.toLocaleString()}`, () => {
+      if (wallet.coins < cost) return gameAlert(`You need ${cost} coins (you have ${wallet.coins}).`, "Not enough coins");
+      wallet.coins -= cost; for (const c of want) { own({ ...c, rarities: [] }, "Common"); deck.ids.push(c.id); }
+      deck.want = []; saveColl(); saveWallet(); saveDecks(); renderDeck(); $("#deckStatus").textContent = "Bought! The cards are in your collection and in this deck.";
+    }, "primary"); b.disabled = wallet.coins < cost; bar.append(b);
+  }
 }
 function addToDeck({ inText, ...c }) {
   const deck = decks[editing], inDeck = deck.ids.filter(id => id === c.id).length, owned = coll[c.id]?.n || 0;
-  if (!owned) return $("#deckStatus").textContent = "You don't own this card yet. Open packs in the Shop to get it.";
   const max = limitOf(c);
   if (max === 0) return $("#deckStatus").textContent = `${c.name} is Forbidden and can't be used in a deck.`;
+  // more copies than you own: it goes in as a card you want, to buy later
+  const named = deckCards(deck).filter(x => x.name === c.name).length + (deck.want || []).filter(x => x.name === c.name).length;
+  if (inDeck >= owned && named < max) {
+    const isX = isExtra(c), inPart = [...deckCards(deck), ...(deck.want || [])].filter(x => isExtra(x) === isX).length;
+    if (inPart >= (isX ? 15 : 60)) return $("#deckStatus").textContent = isX ? "The Extra Deck holds up to 15 cards." : "The Main Deck holds up to 60 cards.";
+    const { rarities, ...card } = c; (deck.want ??= []).push(card); saveDecks(); renderDeck();
+    return $("#deckStatus").textContent = `${c.name} added as a card you don't own yet (${cardPrice(c)} coins). Buy it below to duel with it.`;
+  }
   if (inDeck >= Math.min(max, owned)) return $("#deckStatus").textContent = max < 3 && max <= owned ? `${c.name} is ${LIMIT_NAME[max]}: at most ${max} per deck.` : owned < 3 ? `You own ${owned} ${owned === 1 ? "copy" : "copies"} of ${c.name}.` : "A deck can hold up to 3 copies of a card.";
-  const isExtra = /Fusion|Synchro|XYZ|Link/.test(c.type || ""), inPart = deckCards(deck).filter(x => /Fusion|Synchro|XYZ|Link/.test(x.type || "") === isExtra).length;
-  if (inPart >= (isExtra ? 15 : 60)) return $("#deckStatus").textContent = isExtra ? "The Extra Deck holds up to 15 cards." : "The Main Deck holds up to 60 cards.";
+  const toExtra = isExtra(c), inPart = deckCards(deck).filter(x => isExtra(x) === toExtra).length;
+  if (inPart >= (toExtra ? 15 : 60)) return $("#deckStatus").textContent = toExtra ? "The Extra Deck holds up to 15 cards." : "The Main Deck holds up to 60 cards.";
   deck.ids.push(c.id); saveDecks(); $("#deckStatus").textContent = `${c.name} added.`; renderDeck();
 }
 $("#clearDeck").addEventListener("click", async () => { if (!await gameConfirm("Clear this deck?", "Every card will be removed from it.", "Clear", true)) return; decks[editing].ids = []; saveDecks(); renderDeck(); });
@@ -2871,7 +3123,7 @@ async function search(more = false) {
   }
   for (const c of cards) {
     const n = coll[c.id]?.n || 0;
-    box.append(cardRow(c, n ? [note(`own ×${n}`), smallBtn("+ Add", () => addToDeck(c), "primary")] : [note("not owned")], coll[c.id]?.r));
+    box.append(cardRow(c, n ? [note(`own ×${n}`), smallBtn("+ Add", () => addToDeck(c), "primary")] : [note(`${cardPrice(c)} coins`), smallBtn("+ Want", () => addToDeck(c))], coll[c.id]?.r));
   }
   found.offset += cards.length;
   info.textContent = found.total ? `Showing ${found.offset} of ${found.total} cards` : src === "mine" && !Object.keys(coll).length ? "You don't own any cards yet. Open packs in the Shop." : "No cards match. Try fewer filters.";
@@ -4224,7 +4476,7 @@ showInstall();
   $("#rotateSkip").addEventListener("click", () => { skipped = true; try { sessionStorage.setItem("arduel.portrait", "1"); } catch {} check(); });
 }
 
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, get arena() { return arena; }, aimPreview }; // for testing
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, get arena() { return arena; }, aimPreview }; // for testing
 </script>
 </body>
 </html>
