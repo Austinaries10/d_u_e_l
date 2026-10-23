@@ -38,11 +38,55 @@ function baseUrl(): string
     $host = preg_replace('/[^A-Za-z0-9.:-]/', '', (string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
     return ((($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' ? 'https' : 'http') . "://$host" . rtrim(dirname(dirname((string)$_SERVER['SCRIPT_NAME'])), '/') . '/';
 }
+// Email goes out through a real mailbox when server/config.php has 'smtp' settings (much more likely to reach
+// Gmail and others), otherwise through PHP's mail():
+//   'smtp' => ['host' => 'mail.example.com', 'port' => 465, 'user' => 'noreply@example.com', 'pass' => '...']
 function sendMail(string $to, string $subject, string $text): bool
 {
+    $cfg = is_file(__DIR__ . '/../server/config.php') ? (require __DIR__ . '/../server/config.php') : [];
     $host = preg_replace('/^www\./', '', preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? 'localhost')));
-    $headers = "From: AR Duel <noreply@$host>\r\nContent-Type: text/plain; charset=utf-8\r\n";
-    return @mail($to, $subject, $text, $headers);
+    $smtp = is_array($cfg['smtp'] ?? null) ? $cfg['smtp'] : null;
+    $from = (string)($smtp['user'] ?? '') ?: "noreply@$host";
+    if ($smtp && !empty($smtp['host'])) {
+        return smtpSend($smtp, $from, $to, $subject, $text);
+    }
+    $headers = "From: AR Duel <$from>\r\nReply-To: $from\r\nContent-Type: text/plain; charset=utf-8\r\n";
+    return @mail($to, $subject, $text, $headers, "-f$from");
+}
+// A small SMTP client: SSL on port 465, or STARTTLS on 587/25, with AUTH LOGIN
+function smtpSend(array $c, string $from, string $to, string $subject, string $text): bool
+{
+    $port = (int)($c['port'] ?? 465);
+    $fp = @stream_socket_client(($port === 465 ? 'ssl://' : 'tcp://') . $c['host'] . ":$port", $errno, $err, 15);
+    if (!$fp) {
+        error_log("AR Duel mail: cannot connect to {$c['host']}:$port ($err)");
+        return false;
+    }
+    stream_set_timeout($fp, 15);
+    $read = function () use ($fp) { $out = ''; while (($line = fgets($fp, 1024)) !== false) { $out .= $line; if (isset($line[3]) && $line[3] === ' ') break; } return $out; };
+    $cmd = function (string $line, string $want) use ($fp, $read) { fwrite($fp, $line . "\r\n"); $r = $read(); if (strncmp($r, $want, 3) !== 0) throw new RuntimeException(trim($r)); return $r; };
+    try {
+        $r = $read(); if (strncmp($r, '220', 3) !== 0) throw new RuntimeException(trim($r));
+        $me = preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
+        $cmd("EHLO $me", '250');
+        if ($port !== 465) {
+            $cmd('STARTTLS', '220');
+            stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) || throw new RuntimeException('TLS failed');
+            $cmd("EHLO $me", '250');
+        }
+        $cmd('AUTH LOGIN', '334'); $cmd(base64_encode((string)$c['user']), '334'); $cmd(base64_encode((string)$c['pass']), '235');
+        $cmd("MAIL FROM:<$from>", '250'); $cmd("RCPT TO:<$to>", '25'); $cmd('DATA', '354');
+        $body = preg_replace('/^\./m', '..', str_replace(["\r\n", "\n"], ["\n", "\r\n"], $text));
+        $msg = "From: AR Duel <$from>\r\nTo: <$to>\r\nSubject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\nDate: " . date('r') . "\r\nMessage-ID: <" . bin2hex(random_bytes(8)) . "@$me>\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n$body\r\n.";
+        $cmd($msg, '250');
+        fwrite($fp, "QUIT\r\n");
+        return true;
+    } catch (Throwable $e) {
+        error_log('AR Duel mail: ' . $e->getMessage());
+        return false;
+    } finally {
+        fclose($fp);
+    }
 }
 function sendConfirmation(array $u): bool
 {

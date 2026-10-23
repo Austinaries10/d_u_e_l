@@ -351,6 +351,24 @@
   .chest { width: 54px; height: 40px; border-radius: 8px 8px 6px 6px; background: linear-gradient(180deg, #c27a2c 0 40%, #7a4515 40% 100%); box-shadow: inset 0 0 0 3px #ffd36b, 0 0 16px rgba(255,211,107,.6); position: relative; }
   .chest::after { content: ""; position: absolute; left: 50%; top: 34%; width: 10px; height: 12px; margin-left: -5px; background: #ffd36b; border-radius: 3px; }
   .badge { position: absolute; top: 8px; right: 10px; min-width: 24px; height: 24px; border-radius: 12px; background: #ff3d6e; font-weight: 700; display: grid; place-items: center; animation: pulse 1.2s infinite; }
+  .calhead { position: relative; margin: 0 -4px 6px; padding: 18px 16px; border-radius: 16px; overflow: hidden; background: linear-gradient(160deg, #3a1d7a, #1b1142); }
+  .calhead::before { content: ""; position: absolute; left: -10%; right: -10%; top: 46%; height: 34px; background: linear-gradient(90deg, #6ee7ff, #ffffff); transform: rotate(-12deg); opacity: .9; }
+  .calhead b { position: relative; font: 900 30px/1 var(--font); font-style: italic; color: #fff; -webkit-text-stroke: 1px #2a0f5c; text-shadow: 3px 3px 0 #c77dff; }
+  .calhead .chest { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 46px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.5)); }
+  .cal { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px 6px; padding: 10px 2px 4px; background: radial-gradient(120% 80% at 50% 0%, #3b1f86, #1a1240); border-radius: 16px; margin-bottom: 8px; }
+  .calt { position: relative; display: grid; justify-items: center; padding: 6px 0 16px; border-radius: 12px; }
+  .calt::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: 6px; height: 10px; border-radius: 50%; background: radial-gradient(#4cc9f0aa, transparent 70%); }
+  .calt.gold::after { background: radial-gradient(#ffb547cc, transparent 70%); }
+  .calt i { position: absolute; right: 4px; bottom: 10px; font: 800 13px var(--font); font-style: normal; color: #fff; text-shadow: 0 1px 3px #000, 0 0 2px #000; }
+  .calt em { position: absolute; bottom: -12px; font: 800 12px var(--font); font-style: normal; color: #e9a8ff; text-shadow: 0 1px 2px #000; }
+  .calt em.next { color: #d9b6ff; }
+  .calt.today { background: rgba(255,255,255,.12); box-shadow: 0 0 0 2px #fff inset, 0 0 18px rgba(255,255,255,.5); }
+  .calt.done > span { filter: grayscale(.8) brightness(.55); } .calt.done::before { content: "✓"; position: absolute; top: 2px; left: 50%; transform: translateX(-50%); z-index: 2; font: 900 22px var(--font); color: #7bd88f; text-shadow: 0 1px 3px #000; }
+  .gem { width: 40px; height: 40px; border-radius: 50%; margin: 1px 0; background: radial-gradient(circle at 35% 30%, #fff6c2, #ffcf3a 45%, #c98a00 80%); box-shadow: inset 0 0 0 3px #ffe58a, inset 0 -3px 6px rgba(120,70,0,.5), 0 3px 8px rgba(0,0,0,.4); position: relative; }
+  .gem::after { content: "★"; position: absolute; inset: 0; display: grid; place-items: center; color: #9a6500; font-size: 18px; }
+  .tix { width: 44px; height: 30px; border-radius: 4px; transform: rotate(-12deg); margin: 5px 0; display: grid; place-items: center; font: 900 14px var(--font); color: #fff; -webkit-text-stroke: .6px #3a2000; box-shadow: 0 3px 8px rgba(0,0,0,.4), inset 0 0 0 2px rgba(255,255,255,.6); }
+  .tix.sr { background: linear-gradient(135deg, #ffe08a, #f2a900); } .tix.ur { background: linear-gradient(135deg, #ff7ab6, #c77dff, #4cc9f0, #7bd88f); } .tix.pk { background: linear-gradient(135deg, #7fd6ff, #3a7bff); font-size: 10px; }
+  .calt.gold .tix, .calt.gold .gem { box-shadow: 0 0 0 2px #ffb547, 0 0 14px rgba(255,181,71,.7); }
   .days { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .day { border: 2px solid rgba(255,255,255,.15); border-radius: 14px; padding: 8px 4px; text-align: center; display: grid; gap: 4px; justify-items: center; background: rgba(255,255,255,.04); position: relative; }
   .day small { font-size: 10px; color: var(--muted); } .day b { font-size: 12px; }
@@ -538,7 +556,6 @@
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
     <div class="row center"><button class="btn small" id="installBtn" type="button" hidden>📲 Install the app</button><button class="btn small danger" id="logoutBtn" type="button">Log out</button></div>
-    <p class="about">Duel rules: EDOPro's ocgcore and Project Ignis card scripts (AGPL-3.0). Card data and images: YGOPRODeck and Project Ignis. Character pictures: Yugipedia. Yu-Gi-Oh! © Kazuki Takahashi / Konami. This game is free software under the AGPL-3.0: <a class="link" href="https://github.com/Austinaries10/d_u_e_l" target="_blank" rel="noopener">source code</a></p>
   </div>
 </div>
 
@@ -724,29 +741,72 @@ const keepAccount = () => { try { localStorage.setItem("arduel.account", JSON.st
 // On start: bring this browser's copy up to date with the account
 if (account) {
   try {
-    const j = await accountCall("load", { token: account.token });
-    if (j.rev !== account.rev) { if (j.state) applySave(j.state); account.rev = j.rev; }
+    const j = await accountCall("load", { token: account.token }), dirty = (() => { try { return JSON.parse(localStorage.getItem("arduel.dirty") || "[]"); } catch { return []; } })();
+    // keep changes this phone made but never got to send (the app was closed right after a duel, say)
+    const changed = j.rev !== account.rev;
+    if (changed && j.state) { const local = collectSave(); applySave(dirty.length ? mergeSave(j.state, local, dirty) : j.state); account.rev = j.rev; }
+    if (j.state && (changed || !localStorage.getItem("arduel.base"))) localStorage.setItem("arduel.base", JSON.stringify(j.state));
+    if (dirty.length) setTimeout(() => syncSave(), 2000);
     account.email = j.email; account.verified = j.verified; keepAccount();
   } catch (e) { if (e.status === 401 || e.status === 404) { account = null; localStorage.removeItem("arduel.account"); } }
 }
 let syncTimer = null, syncing = false;
+// Settings changed on this phone and not yet saved to the account (kept across reloads, so nothing is lost if the
+// app is closed right after a duel)
+const dirtyKeys = () => { try { return new Set(JSON.parse(localStorage.getItem("arduel.dirty") || "[]")); } catch { return new Set(); } };
+const setDirty = set => { try { localStorage.setItem("arduel.dirty", JSON.stringify([...set])); } catch {} };
+// Combine the account's save (changed elsewhere, e.g. by the game master) with this phone's unsent changes:
+// progress counts keep the higher number, lists are joined, and other changed settings keep this phone's version
+// The account's copy as this phone last saw it: coins and cards are merged as "their value plus what this phone changed"
+const baseSave = () => { try { return JSON.parse(localStorage.getItem("arduel.base") || "null") || {}; } catch { return {}; } };
+const setBase = state => { try { localStorage.setItem("arduel.base", JSON.stringify(state)); } catch {} };
+function mergeSave(server, local, dirty) {
+  const out = { ...server }, base = baseSave();
+  for (const k of dirty) {
+    const a = server?.[k], b = local?.[k], o = base[k];
+    if (b == null) continue;
+    if (k === "wallet" && a) { out[k] = { ...b }; for (const f of ["coins", "free"]) out[k][f] = Math.max(0, (a[f] || 0) + (b[f] || 0) - (o?.[f] ?? a[f] ?? 0)); continue; }
+    if (k === "cards" && a) {
+      out[k] = { ...a };
+      for (const id of new Set([...Object.keys(b), ...Object.keys(o || {})])) {
+        const n = (a[id]?.n || 0) + (b[id]?.n || 0) - (o?.[id]?.n ?? a[id]?.n ?? 0);
+        if (n > 0) out[k][id] = { ...(a[id] || b[id]), n, r: b[id]?.r || a[id]?.r || "" }; else delete out[k][id];
+      }
+      continue;
+    }
+    if (k === "charWins" || k === "noAce") { out[k] = { ...(a || {}) }; for (const [id, n] of Object.entries(b)) out[k][id] = Math.max(out[k][id] || 0, n); }
+    else if (k === "seenChars") out[k] = [...new Set([...(a || []), ...b])];
+    else if (k === "training") out[k] = { ...(a || {}), ...b, done: [...new Set([...(a?.done || []), ...(b.done || [])])] };
+    else out[k] = b;
+  }
+  return out;
+}
 // Called whenever a saved setting changes: the save is sent to the account a moment later
-function onSaved(key) { if (account && SAVE_KEYS.includes(key)) { clearTimeout(syncTimer); syncTimer = setTimeout(syncSave, 1500); } }
+function onSaved(key) { if (account && SAVE_KEYS.includes(key)) { const d = dirtyKeys(); d.add(key); setDirty(d); clearTimeout(syncTimer); syncTimer = setTimeout(syncSave, 1500); } }
 async function syncSave() {
   if (!account || syncing) return; syncing = true;
-  try { const j = await accountCall("save", { token: account.token, rev: account.rev, state: collectSave() }); account.rev = j.rev; keepAccount(); }
+  const sending = dirtyKeys();
+  const state = collectSave();
+  try { const j = await accountCall("save", { token: account.token, rev: account.rev, state }); account.rev = j.rev; keepAccount(); setBase(state); const d = dirtyKeys(); for (const k of sending) d.delete(k); setDirty(d); }
   catch (e) {
-    if (e.status === 409) { applySave(e.data.state); account.rev = e.data.rev; keepAccount(); await gameAlert("Your save was updated somewhere else (another phone, or the game master). The game will reload with the latest save.", "Save updated"); location.reload(); }
+    if (e.status === 409) {
+      // changed somewhere else meanwhile: keep both, then save the combined copy
+      applySave(mergeSave(e.data.state, collectSave(), dirtyKeys())); setBase(e.data.state); account.rev = e.data.rev; keepAccount();
+      syncing = false; syncTimer = setTimeout(syncSave, 300); refreshAfterMerge(); return;
+    }
     else if (e.status === 401) { account = null; localStorage.removeItem("arduel.account"); showLogin(); }
     else syncTimer = setTimeout(syncSave, 10000); // offline: try again later
   }
   syncing = false;
 }
-// Coming back to the game: pick up changes made elsewhere (outside a duel)
+// Coming back to the game: pick up changes made elsewhere (outside a duel), keeping this phone's unsent ones
 document.addEventListener("visibilitychange", async () => {
-  if (document.hidden || !account || !$("#overlay").hidden) return;
-  try { const j = await accountCall("load", { token: account.token }); if (j.rev !== account.rev) { applySave(j.state); account.rev = j.rev; keepAccount(); location.reload(); } } catch {}
+  if (document.hidden) { if (account && dirtyKeys().size) { clearTimeout(syncTimer); syncSave(); } return; } // leaving: send what's waiting
+  if (!account || !$("#overlay").hidden) return;
+  try { const j = await accountCall("load", { token: account.token }); if (j.rev !== account.rev) { applySave(mergeSave(j.state, collectSave(), dirtyKeys())); setBase(j.state); account.rev = j.rev; keepAccount(); location.reload(); } } catch {}
 });
+// after a merge, the screens showing coins, cards and progress need the combined values
+function refreshAfterMerge() { try { for (const [k, v] of Object.entries({ wallet, coll })) { const fresh = store.get(k === "coll" ? "cards" : k, null); if (fresh && typeof v === "object") { for (const x of Object.keys(v)) delete v[x]; Object.assign(v, fresh); } } if (!$("#start").hidden) renderHome(); } catch {} }
 let loginMode = "login", resetCode = null;
 function showLogin() { $("#login").hidden = false; setTimeout(() => (loginMode === "reset" ? $("#loginPass") : $("#loginName")).focus(), 50); }
 function setLoginMode(mode, text) {
@@ -2861,7 +2921,7 @@ function openProfile() {
       catch (e) { gameAlert(e.message, "Couldn't save the email"); }
     };
     if (account.email && !account.verified) er.append(el("button", { type: "button", className: "btn small primary", textContent: "Resend confirmation", onclick: async () => {
-      try { await accountCall("resend", { token: account.token }); gameAlert(`We sent the link to ${account.email} again.`, "Check your email"); } catch (e) { gameAlert(e.message, "Couldn't send it"); }
+      try { const j = await accountCall("resend", { token: account.token }); gameAlert(j.mailed ? `We sent the link to ${account.email} again. If it isn't in your inbox in a few minutes, look in Spam.` : "The game couldn't send the email right now. Please try again later.", j.mailed ? "Check your email" : "Email not sent"); } catch (e) { gameAlert(e.message, "Couldn't send it"); }
     } }));
     er.append(el("button", { type: "button", className: "btn small", textContent: account.email ? "Change email" : "Add email", onclick: setEmail }));
   }
@@ -3005,7 +3065,12 @@ $("#roomLeave").addEventListener("click", () => {
 });
 
 // ---------- Rewards: daily login streak, daily quests, story milestones ----------
-const LOGIN_REWARDS = [{ coins: 100 }, { free: 1 }, { coins: 150 }, { free: 1 }, { coins: 200 }, { free: 2 }, { coins: 500, free: 2 }];
+// The login calendar: one prize for each day you log in (days don't have to be in a row); after day 20 a new card starts.
+// sr / ur: a ticket for a random Super Rare / Ultra Rare card from the packs on sale
+const LOGIN_REWARDS = [{ coins: 100 }, { free: 1 }, { sr: 1 }, { coins: 200 }, { ur: 1 },
+  { coins: 100 }, { sr: 1 }, { free: 2 }, { coins: 300 }, { sr: 1 },
+  { coins: 150 }, { ur: 1 }, { coins: 200 }, { sr: 1 }, { free: 2 },
+  { ur: 1 }, { sr: 1 }, { coins: 500 }, { ur: 1 }, { coins: 1000, free: 3 }];
 const STREAK_BONUS = { 7: { coins: 300 }, 14: { coins: 600, free: 2 }, 30: { coins: 1500, free: 5 } };
 const QUESTS = [
   { id: "duel", text: "Duel once", key: "duels", need: 1, reward: { coins: 50 } },
@@ -3018,8 +3083,21 @@ const QUESTS = [
 const STORY_STEPS = [{ n: 3, reward: { coins: 200 } }, { n: 6, reward: { coins: 500, free: 1 } }, { n: "all", reward: { coins: 1500, free: 3 } }];
 const dayKey = (ms = nowMs()) => new Date(ms).toLocaleDateString("en-CA");
 const rewards = () => { const r = store.get("rewards", {}); r.quests ??= {}; r.story ??= []; return r; };
-const rewardText = r => [r.coins && `${r.coins} coins`, r.free && `${r.free} free pack${r.free === 1 ? "" : "s"}`].filter(Boolean).join(" + ");
-function grant(r) { wallet.coins += r.coins || 0; wallet.free = (wallet.free || 0) + (r.free || 0); saveWallet(); renderHome(); }
+const rewardText = r => [r.coins && `${r.coins} coins`, r.free && `${r.free} free pack${r.free === 1 ? "" : "s"}`, r.sr && "a Super Rare card", r.ur && "an Ultra Rare card"].filter(Boolean).join(" + ");
+function grant(r) { wallet.coins += r.coins || 0; wallet.free = (wallet.free || 0) + (r.free || 0); saveWallet(); renderHome(); if (r.sr) cardTicket("Super Rare"); if (r.ur) cardTicket("Ultra Rare"); }
+// A card ticket: a random card of that rarity from a pack on sale (or coins if the shop can't be reached)
+async function cardTicket(rarity) {
+  try {
+    const { packs } = await api({ action: "packs" }), pool = shuffle([...packs]).slice(0, 4);
+    for (const pk of pool) {
+      const { cards } = await api({ action: "set", code: pk.code }), hits = cards.filter(c => (c.rarities || []).includes(rarity));
+      if (!hits.length) continue;
+      const c = any(hits); own(c, rarity); saveColl();
+      await gameAlert(`Your ${rarity} ticket became ${c.name}!`, `${rarity === "Ultra Rare" ? "UR" : "SR"} card!`); openCard(c); return;
+    }
+  } catch {}
+  const coins = rarity === "Ultra Rare" ? 500 : 200; wallet.coins += coins; saveWallet(); renderHome(); toastHome(`No ${rarity} card could be found right now, so you got ${coins} coins instead.`);
+}
 // daily quest progress, which starts again each day
 function questTick(key, n = 1) {
   const r = rewards(); if (r.quests.day !== dayKey()) r.quests = { day: dayKey(), claimed: [] };
@@ -3042,21 +3120,25 @@ function openRewards(tab) {
   for (const b of $("#rewardTabs").children) b.setAttribute("aria-pressed", String(b.dataset.tab === rewardTab));
   const body = $("#rewardBody"), r = rewards(); body.innerHTML = "";
   if (rewardTab === "login") {
-    // the streak continues if you logged in yesterday; it runs in a cycle of 7 days
+    // a calendar of 20 prizes, like a stamp card; the streak (days in a row) also earns bonuses
     const claimedToday = r.loginClaimed === dayKey(), streak = claimedToday ? r.streak || 1 : r.loginClaimed === dayKey(nowMs() - 864e5) ? (r.streak || 0) + 1 : 1;
-    const todayIdx = (streak - 1) % 7, days = el("div", { className: "days" });
+    const got = r.calDay || 0, todayIdx = claimedToday ? (got - 1) % 20 : got % 20;
+    const banner = el("div", { className: "calhead" }); banner.append(el("b", { textContent: "Login Bonus" }), el("span", { className: "chest", textContent: "🎁" }));
+    const grid = el("div", { className: "cal" });
     LOGIN_REWARDS.forEach((rw, k) => {
-      const d = el("div", { className: "day" + (k < todayIdx || (k === todayIdx && claimedToday) ? " done" : k === todayIdx ? " today" : "") });
-      d.append(el("small", { textContent: `Day ${k + 1}` }), el("span", { className: rw.free && !rw.coins ? "ticket" : "coin" }), el("b", { textContent: rewardText(rw) }));
-      days.append(d);
+      const done = k < todayIdx || (k === todayIdx && claimedToday), t = el("div", { className: "calt" + (k >= 15 ? " gold" : "") + (done ? " done" : "") + (k === todayIdx && !claimedToday ? " today" : "") });
+      const icon = rw.ur ? el("span", { className: "tix ur", textContent: "UR" }) : rw.sr ? el("span", { className: "tix sr", textContent: "SR" }) : rw.free && !rw.coins ? el("span", { className: "tix pk", textContent: "FREE" }) : el("span", { className: "gem" });
+      t.append(icon, el("i", { textContent: rw.coins && rw.free ? `${rw.coins}+${rw.free}` : String(rw.coins || rw.free || 1) }));
+      if (k === todayIdx) t.append(el("em", { textContent: claimedToday ? "Claimed" : "Today" })); else if (k === todayIdx + 1) t.append(el("em", { className: "next", textContent: "Next" }));
+      grid.append(t);
     });
-    body.append(el("p", { className: "note center", textContent: `Login streak: ${streak} day${streak === 1 ? "" : "s"} in a row. Log in every day for bigger rewards; a missed day starts the week again.` }), days);
+    body.append(banner, el("p", { className: "note center", textContent: `Day ${todayIdx + 1} of 20 · log in on any day to collect the next prize. ${streak} day${streak === 1 ? "" : "s"} in a row.` }), grid);
     const next = Object.keys(STREAK_BONUS).map(Number).find(n => n >= streak);
-    if (next) body.append(el("p", { className: "note center", textContent: `${next === streak ? "Today" : `In ${next - streak} day${next - streak === 1 ? "" : "s"}`}: ${next}-day streak bonus of ${rewardText(STREAK_BONUS[next])}` }));
+    if (next) body.append(el("p", { className: "note center", textContent: `${next === streak ? "Today" : `In ${next - streak} day${next - streak === 1 ? "" : "s"} in a row`}: ${next}-day streak bonus of ${rewardText(STREAK_BONUS[next])}` }));
     const b = el("button", { type: "button", className: "btn primary big", textContent: claimedToday ? "Come back tomorrow!" : `Claim ${rewardText(LOGIN_REWARDS[todayIdx])}` });
     b.disabled = claimedToday;
     b.onclick = () => {
-      const rr = rewards(); rr.streak = streak; rr.loginClaimed = dayKey(); store.put("rewards", rr);
+      const rr = rewards(); rr.streak = streak; rr.loginClaimed = dayKey(); rr.calDay = (rr.calDay || 0) + 1; store.put("rewards", rr);
       grant(LOGIN_REWARDS[todayIdx]); if (STREAK_BONUS[streak]) { grant(STREAK_BONUS[streak]); toastHome(`${streak}-day streak bonus: ${rewardText(STREAK_BONUS[streak])}!`); }
       rewardBadge(); openRewards();
     };
