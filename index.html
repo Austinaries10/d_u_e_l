@@ -526,7 +526,7 @@
   /* wide screens: life-point banners don't stretch forever, and the hand and buttons stand in a column on the right */
   @media (orientation: landscape) and (min-width: 700px) {
     .lpbar { grid-template-columns: minmax(0, 380px) auto minmax(0, 380px); justify-content: space-between; }
-    .dock { left: auto; width: min(380px, 40vw); top: calc(env(safe-area-inset-top, 0px) + 78px); align-content: end; }
+    .dock { left: auto; width: min(330px, 36vw); top: calc(env(safe-area-inset-top, 0px) + 78px); align-content: end; pointer-events: none; } .dock > * { pointer-events: auto; }
     #hand { height: auto; max-height: 150px; } #hand .hcard { flex: 0 0 auto; }
   }
   /* a phone held sideways: the home screen puts the gates on the left and the town on the right; in a duel a question
@@ -579,7 +579,7 @@
   .hcard[aria-pressed="true"] { background: rgba(70,214,255,.2); border-color: #7fe3ff; }
   /* sideways or a computer: the hand fanned at the bottom like cards held in front of you, the icon buttons down the left */
   @media (orientation: landscape) and (min-width: 640px) {
-    #hand { position: fixed; left: 64px; right: calc(min(380px, 40vw) + 20px); bottom: 0; height: auto; max-height: none; display: flex; justify-content: center; align-items: flex-end; overflow: visible; padding: 0; gap: 0; pointer-events: none; z-index: 3; }
+    #hand { position: fixed; left: 64px; right: calc(min(330px, 36vw) + 16px); bottom: 0; height: auto; max-height: none; display: flex; justify-content: center; align-items: flex-end; overflow: visible; padding: 0; gap: 0; pointer-events: none; z-index: 3; }
     #hand .hcard { pointer-events: auto; width: clamp(62px, 15vh, 112px); margin: 0 var(--ov, -8px); padding: 0; background: none; border: 0; border-radius: 7px; transform-origin: 50% 140%;
       transform: translateY(var(--dy, 38%)) rotate(var(--r, 0deg)); transition: transform .18s ease-out; box-shadow: 0 8px 18px rgba(0,0,0,.55); }
     #hand .hcard img { margin: 0; border-radius: 7px; } #hand .hcard b, #hand .hcard small { display: none; }
@@ -1273,8 +1273,33 @@ const ROW_Z = { m: 0.1, s: 0.2 }; // far enough apart that the shared Extra Mons
 const zoneZ = (p, row) => (p === 0 ? 1 : -1) * ROW_Z[row];
 // The Field Zone and the piles sit in a row of their own beyond each player's Spell & Trap Zones, a little smaller,
 // so the five card columns get the whole width of the screen
-const PILE_S = 0.82, PILE_Z = ROW_Z.s + 0.093, PILE_COL = { EXTRA: -2, FIELD: -1, BANISHED: 0, GY: 1, DECK: 2 };
-const pilePos = (p, kind, y = 0) => new THREE.Vector3((p === 0 ? 1 : -1) * PILE_COL[kind] * PITCH, y, (p === 0 ? 1 : -1) * PILE_Z);
+// Held upright, the piles sit in a row of their own; sideways (a wide screen) they stand at the sides of the zones
+// like on a real mat (Field and Extra Deck on the left, GY, banished and Deck on the right), so the board is wide and short
+let PILE_S = 0.82, PILE_Z = ROW_Z.s + 0.093, layoutSide = null, BOARD_X = 0, BOARD_Z = 0;
+const PILE_COL = { EXTRA: -2, FIELD: -1, BANISHED: 0, GY: 1, DECK: 2 }, SIDE_COL = 3.25;
+const SIDE_POS = { FIELD: [-SIDE_COL, ROW_Z.m], EXTRA: [-SIDE_COL, ROW_Z.s], GY: [SIDE_COL, ROW_Z.m], DECK: [SIDE_COL, ROW_Z.s], BANISHED: [SIDE_COL, 0] };
+const pilePos = (p, kind, y = 0) => { const k = p === 0 ? 1 : -1, [c, z] = layoutSide ? SIDE_POS[kind] : [PILE_COL[kind], PILE_Z]; return new THREE.Vector3(k * c * PITCH, y, k * z); };
+function setLayout(side) {
+  layoutSide = side; PILE_S = side ? 0.9 : 0.82;
+  // half the board's width and depth, piles included
+  BOARD_X = side ? SIDE_COL * PITCH + CARD_W * 0.5 * PILE_S + 0.008 : 2 * PITCH + CARD_W * 0.59 + 0.004;
+  BOARD_Z = side ? ROW_Z.s + CARD_H * 0.56 + 0.004 : PILE_Z + CARD_H * 0.56 * PILE_S + 0.004;
+}
+// lay the board out again when the screen turns between upright and sideways
+let baseObjs = [];
+function layoutBoard() {
+  const side = innerWidth > innerHeight; if (side === layoutSide) return;
+  setLayout(side);
+  const re = baseObjs.length > 0;
+  if (re) {
+    board.remove(...baseObjs); if (extraAura) board.remove(extraAura); extraAura = null;
+    zoneMeshes.length = 0; boardDeco.length = 0; glowing.clear();
+    for (const t of pileTops) for (const m of Object.values(t || {})) if (m) board.remove(m);
+    pileTops.length = 0; fieldShown = -1;
+  }
+  const before = new Set(board.children); buildBoard(); baseObjs = board.children.filter(o => !before.has(o));
+  if (re && S.vs) { renderAll(); refreshUI(); }
+}
 
 // ---------- Scene ----------
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -1287,7 +1312,7 @@ scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnviron
 scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 0.9));
 const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(0.3, 1, 0.4); scene.add(sun);
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.01, 50);
-addEventListener("resize", () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); if (mode === "preview") aimPreview(); });
+addEventListener("resize", () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); layoutBoard(); if (mode === "preview") aimPreview(); });
 const board = new THREE.Group(); board.visible = false; scene.add(board);
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, ...o });
 function canvasTex(w, h, draw) { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }
@@ -4514,7 +4539,6 @@ async function startXR() {
   refreshUI();
 }
 // The board seen straight from above, fixed, and as big as the free space between the life points and your hand allows
-const BOARD_X = 2 * PITCH + CARD_W * 0.59 + 0.004, BOARD_Z = PILE_Z + CARD_H * 0.56 * PILE_S + 0.004; // half the board's width and depth, piles included
 // Arena view tilts the camera so the ruins rise behind the opponent; top-down is the flat, biggest board
 let viewTilt = 0; const _pq = new THREE.Quaternion(), _ax = new THREE.Vector3(1, 0, 0);
 const topDown = () => { try { return localStorage.getItem("arduel.view") === "top"; } catch { return false; } };
@@ -4523,7 +4547,7 @@ function aimPreview() {
   const W = innerWidth, H = innerHeight, top = $("#lp0").getBoundingClientRect().bottom + 6, dock = $(".dock").getBoundingClientRect();
   // on a wide screen the hand sits in a column on the right and the board gets everything to its left
   // (sideways: the icon buttons on the left, and the fanned hand peeking up from the bottom, overlapping the board's near edge a little)
-  const beside = dock.left > W * 0.4, left = beside ? 60 : 0, right = beside ? dock.left - 6 : W;
+  const beside = dock.left > W * 0.4, left = beside ? 60 : 0, right = beside ? W - 10 : W;
   const bottom = beside ? H - Math.min(70, H * 0.17) : Math.max(top + 120, $("#hand").getBoundingClientRect().top - 6 - (S.vs?.lesson ? 70 : 0));
   const tilt = topDown() ? 0 : W > H ? (H > 600 ? 1.05 : 0.95) : 0.6; // radians away from straight down: more on a wide screen, where there's room
   viewTilt = tilt;
@@ -4665,8 +4689,8 @@ renderer.setAnimationLoop((time, frame) => {
   renderer.render(scene, camera);
 });
 
-buildBoard();
 loadDuel();
+layoutBoard();
 loadModels().then(() => renderAll());
 updatePiles();
 renderHome();
