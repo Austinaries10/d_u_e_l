@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "my.cck8.duel",
+      "sha256_cert_fingerprints": [
+        "EC:54:51:E2:F9:35:E2:32:12:24:8D:B0:F7:AC:ED:03:95:29:7E:E5:55:18:46:75:97:50:FF:CE:F9:37:52:09"
+      ]
+    }
+  }
+]

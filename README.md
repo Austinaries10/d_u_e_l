@@ -89,3 +89,11 @@ The home screen is a small world: **gates** for each Yu-Gi-Oh! series, and the *
 Every push to `main` uploads the site to the hosting through `.github/workflows/deploy.yml` (FTPS, using the `FTP_SERVER`, `FTP_USERNAME` and `FTP_PASSWORD` repository secrets). Only changed files are sent.
 
 The camera only works over `https://`. `server/` holds the PHP setup for Claude Haiku (the API key lives in `server/config.php` on the hosting only); its `.htaccess` blocks web access to it.
+
+## Android app (Trusted Web Activity)
+
+AR Duel is also an Android app (package `my.cck8.duel`): a Trusted Web Activity that opens this site full screen,
+built with Bubblewrap. `.well-known/assetlinks.json` tells Android the app and the site belong together; it lists
+the SHA-256 fingerprint of the key the app is signed with. When the app is on Google Play with Play App Signing,
+add the fingerprint Play Console shows under *Setup → App signing* to that list too, or the app opens with a
+browser bar. The signing key (keystore) is never put in this repository.
