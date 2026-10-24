@@ -4634,7 +4634,8 @@ const duelArena = vs => vs?.char ? arenaFor(vs.char, CHARS[vs.char]?.gate) : "ru
 function startPreview() {
   mode = "preview"; board.position.set(0, 0, 0); board.rotation.set(0, 0, 0); board.visible = true; table.visible = true;
   useArena(duelArena(S.vs)); scene.background = new THREE.Color(0x1d1a22); scene.fog = arena.fog;
-  useArt(ART_FOR[S.vs?.char] || (ARENA_ART[arena.theme] ? arena.theme : null));
+  // every duel is painted for now: the rival's own painting, else their place's, else the desert terrace
+  useArt(ART_FOR[S.vs?.char] || (ARENA_ART[arena.theme] ? arena.theme : "egypt"));
   show(""); $("#overlay").hidden = false; renderAll(); refreshUI(); aimPreview();
 }
 function resumeDuel() {
