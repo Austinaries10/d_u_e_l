@@ -34,6 +34,8 @@
   [hidden] { display: none !important; }
   html, body { height: 100%; margin: 0; background: var(--ink); color: var(--text); font-family: var(--font); overflow: hidden; -webkit-user-select: none; user-select: none; }
   #gl { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  /* a painted arena behind the board (the canvas is see-through over it) */
+  #backdrop { position: fixed; inset: 0; background: #0b0f1c no-repeat; } #backdrop[hidden] { display: none; }
   .btn { font: inherit; font-size: 14px; font-weight: 600; color: var(--text); background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 10px 15px; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   .btn.primary { background: var(--accent); color: #241703; border-color: transparent; }
   .btn.small { padding: 7px 11px; font-size: 12px; }
@@ -691,6 +693,7 @@
 </style>
 </head>
 <body>
+<div id="backdrop" hidden></div>
 <canvas id="gl"></canvas>
 <div id="rotate" hidden><div><div class="phone" aria-hidden="true"></div><h2>Turn your phone sideways</h2><p>AR Duel is made for a phone held sideways: a bigger board and the arena around it.</p><button class="btn primary" id="rotateGo" type="button">Play full screen</button><button class="btn small" id="rotateSkip" type="button">Stay upright</button></div></div>
 
@@ -4541,6 +4544,7 @@ function aimPreview() {
   let lo = 0.2, hi = 12;
   for (let k = 0; k < 40; k++) { const d = (lo + hi) / 2, b = frame(d); if (b.x1 - b.x0 <= right - left - 8 && b.y1 - b.y0 <= maxH) hi = d; else lo = d; }
   const b = frame(hi);
+  setTimeout(placeArt);
   camera.setViewOffset(W, H, (b.x0 + b.x1) / 2 - (left + right) / 2, (b.y0 + b.y1) / 2 - (bottom - maxH / 2), W, H); // centred in the free space (the lower part of a big screen)
 }
 {
@@ -4575,10 +4579,38 @@ function useArena(theme) {
   if (arena) table.remove(arena.group);
   arena = arenas[theme] ??= buildArena(theme); table.add(arena.group);
 }
+// Painted arenas: a picture behind the board instead of the 3D scenery. cx, cy: where the circle in the middle of
+// its floor is (as a share of the picture's width and height); fit: how much of the picture's width the board covers
+const ARENA_ART = {
+  egypt: { src: "arena/egypt.jpg", w: 1672, h: 941, cx: 0.487, cy: 0.65, fit: 0.42 },
+  "egypt-palace": { src: "arena/egypt-palace.jpg", w: 1536, h: 1024, cx: 0.5, cy: 0.69, fit: 0.4 },
+};
+const ART_FOR = { yami: "egypt-palace", pegasus: "egypt-palace" }; // rivals with a painting of their own
+let art = null;
+function useArt(key) {
+  art = key && ARENA_ART[key] || null;
+  const bd = $("#backdrop"); bd.hidden = !art || mode !== "preview";
+  if (art) bd.style.backgroundImage = `url("${art.src}?v=__BUILD__")`;
+  if (arena) arena.group.visible = !art;
+  if (art && mode === "preview") { scene.background = null; scene.fog = null; }
+  placeArt();
+}
+// the painting is moved and sized so its circle sits under the board's centre and the board fills it
+function placeArt() {
+  if (!art || mode !== "preview") return;
+  const v = new THREE.Vector3(), px = p => { v.copy(p).project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; };
+  const [cx, cy] = px(new THREE.Vector3(0, 0, 0)), [lx] = px(new THREE.Vector3(-BOARD_X, 0, 0)), [rx] = px(new THREE.Vector3(BOARD_X, 0, 0));
+  let w = (rx - lx) / art.fit; const h = () => w * art.h / art.w;
+  // always cover the screen, whatever its shape
+  const need = () => Math.max(cx / art.cx, (innerWidth - cx) / (1 - art.cx), cy / art.cy * art.w / art.h, (innerHeight - cy) / (1 - art.cy) * art.w / art.h);
+  w = Math.max(w, need());
+  const bd = $("#backdrop"); bd.style.backgroundSize = `${w}px ${h()}px`; bd.style.backgroundPosition = `${cx - art.cx * w}px ${cy - art.cy * h()}px`;
+}
 const duelArena = vs => vs?.char ? arenaFor(vs.char, CHARS[vs.char]?.gate) : "ruins";
 function startPreview() {
   mode = "preview"; board.position.set(0, 0, 0); board.rotation.set(0, 0, 0); board.visible = true; table.visible = true;
   useArena(duelArena(S.vs)); scene.background = new THREE.Color(0x1d1a22); scene.fog = arena.fog;
+  useArt(ART_FOR[S.vs?.char] || (ARENA_ART[arena.theme] ? arena.theme : null));
   show(""); $("#overlay").hidden = false; renderAll(); refreshUI(); aimPreview();
 }
 function resumeDuel() {
@@ -4588,7 +4620,7 @@ function resumeDuel() {
 let lastMode = null;
 function exitDuel() {
   const s = renderer.xr.getSession(); if (s) s.end();
-  mode = null; board.visible = false; table.visible = false; scene.background = null; scene.fog = null;
+  mode = null; board.visible = false; table.visible = false; scene.background = null; scene.fog = null; $("#backdrop").hidden = true;
   $("#overlay").hidden = true; show("start"); renderHome();
 }
 // Leaving a running duel means surrendering (a lesson can just be left)
@@ -4684,7 +4716,7 @@ showInstall();
   $("#rotateSkip").addEventListener("click", () => { skipped = true; try { sessionStorage.setItem("arduel.portrait", "1"); } catch {} check(); });
 }
 
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, bigSummon, showExtraAura, openReader, get arena() { return arena; }, aimPreview }; // for testing
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, bigSummon, showExtraAura, openReader, useArt, get arena() { return arena; }, aimPreview }; // for testing
 </script>
 </body>
 </html>
