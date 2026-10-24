@@ -801,6 +801,7 @@
 "Union": "ユニオン",
 "Unnamed card": "名前のないカード",
 "Use its effect": "効果を使う",
+"Use its effect ({0})": "効果を使う({0})",
 "Use the Graveyard": "墓地を使う",
 "Used and destroyed cards go to the Graveyard (GY). Activate Foolish Burial to send Blue-Eyes White Dragon from your Deck to the GY, then activate Monster Reborn to bring it back to the field!": "使い終わったカードや破壊されたカードは墓地へ。「おろかな埋葬」で「青眼の白龍」をデッキから墓地へ送り、「死者蘇生」でフィールドに呼び戻そう!",
 "Vector": "ベクター",
@@ -810,6 +811,7 @@
 "Waiting for {0}…": "{0}を待っています…",
 "Wanna see my cute monsters? They're pretty scary too!": "ボクのかわいいモンスター見たい?結構こわいんだよ!",
 "Warrior": "戦士族",
+"Watch an ad for coins": "広告を見てコインをもらう",
 "Watch an ad · +{0}": "広告を見る・+{0}",
 "Watch the ad to the end to get the coins.": "最後まで見るとコインがもらえます。",
 "We sent a confirmation link to {0}. Check your inbox (and spam folder).": "{0}に確認リンクを送りました。受信トレイ(迷惑メールも)を確認してください。",
@@ -1009,6 +1011,7 @@
 "{0} · Gen {1}": "{0} · 第{1}世代",
 "{0} · coming soon": "{0} · 近日公開",
 "{0} · released {1}": "{0} · {1}年発売",
+"{0} · you already have this card": "{0} · 所持済み",
 "{0} · you have {1} of {2} cards": "{0} · {2}枚中{1}枚所持",
 "{0} · {1} in hand": "{0} · 手札{1}枚",
 "{0}! You win the toss. Go first or second?": "{0}!あなたの勝ち。先攻・後攻を選んでください。",
@@ -1040,6 +1043,7 @@
 "‹ {0}'s decks": "‹ {0}のデッキ",
 "− Remove one": "− 1枚外す",
 "⚔ Tap the glowing monster you want to attack": "⚔ 攻撃したい光っているモンスターをタップ",
+"✓ = you already have this card": "✓ = 持っているカード",
 "📲 Install the app": "📲 アプリをインストール",
 "🔒 Beat {0} {1} more time{2} to unlock": "🔒 {0}にあと{1}回勝つと解放"
 }

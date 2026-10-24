@@ -801,6 +801,7 @@
 "Union": "同盟",
 "Unnamed card": "未命名的卡",
 "Use its effect": "使用效果",
+"Use its effect ({0})": "使用效果({0})",
 "Use the Graveyard": "利用墓地",
 "Used and destroyed cards go to the Graveyard (GY). Activate Foolish Burial to send Blue-Eyes White Dragon from your Deck to the GY, then activate Monster Reborn to bring it back to the field!": "使用过和被破坏的卡会送去墓地。发动「愚蠢的埋葬」把「青眼白龙」从卡组送去墓地,再发动「死者苏生」把它特殊召唤到场上!",
 "Vector": "维克多",
@@ -810,6 +811,7 @@
 "Waiting for {0}…": "等待{0}…",
 "Wanna see my cute monsters? They're pretty scary too!": "想看看我可爱的怪兽吗?它们也很可怕哦!",
 "Warrior": "战士族",
+"Watch an ad for coins": "看广告赚金币",
 "Watch an ad · +{0}": "看广告 · +{0}",
 "Watch the ad to the end to get the coins.": "看完广告才能获得金币。",
 "We sent a confirmation link to {0}. Check your inbox (and spam folder).": "我们已向 {0} 发送验证链接。请查看收件箱(以及垃圾邮件)。",
@@ -1009,6 +1011,7 @@
 "{0} · Gen {1}": "{0} · 第 {1} 代",
 "{0} · coming soon": "{0} · 即将推出",
 "{0} · released {1}": "{0} · {1} 年发售",
+"{0} · you already have this card": "{0} · 已拥有",
 "{0} · you have {1} of {2} cards": "{0} · 你拥有 {1}/{2} 张",
 "{0} · {1} in hand": "{0} · 手牌 {1}",
 "{0}! You win the toss. Go first or second?": "{0}!你猜中了。要先攻还是后攻?",
@@ -1040,6 +1043,7 @@
 "‹ {0}'s decks": "‹ {0}的卡组",
 "− Remove one": "− 移除一张",
 "⚔ Tap the glowing monster you want to attack": "⚔ 点击发光的怪兽进行攻击",
+"✓ = you already have this card": "✓ = 你已拥有这张卡",
 "📲 Install the app": "📲 安装应用",
 "🔒 Beat {0} {1} more time{2} to unlock": "🔒 再击败{0} {1} 次即可解锁"
 }

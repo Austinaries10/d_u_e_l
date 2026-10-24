@@ -315,6 +315,7 @@
   .bubble { position: relative; background: #fff; color: #1b1d2a; border-radius: 18px; padding: 12px 14px; font-size: 14px; line-height: 1.45; font-weight: 600; }
   .bubble::before { content: ""; position: absolute; top: -9px; left: 50%; margin-left: -9px; border: 9px solid transparent; border-top: 0; border-bottom-color: #fff; }
   .rewards { display: grid; gap: 6px; } .rewards small { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); text-align: center; }
+  .rewnote { display: block; text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px; }
   #meetRewards { display: flex; gap: 8px; justify-content: center; }
   .rew { position: relative; width: 58px; } .rew img { width: 58px; border-radius: 5px; aspect-ratio: 59 / 86; object-fit: cover; background: #1c2230; display: block; }
   .rew.ace img { box-shadow: 0 0 0 2px #ffd36b, 0 0 14px rgba(255,211,107,.8); }
@@ -556,7 +557,8 @@
   @keyframes cmpop { from { opacity: 0; transform: scale(.9); } }
   #hurt { position: absolute; inset: 0; pointer-events: none; opacity: 0; box-shadow: inset 0 0 90px 20px rgba(255,30,50,.75); }
   #hurt.go { animation: hurt .7s ease-out; } @keyframes hurt { 15% { opacity: 1; } 100% { opacity: 0; } }
-  #oppHand { position: absolute; display: flex; align-items: flex-start; padding: 2px 6px; pointer-events: none; z-index: 4; }
+  #oppHand { position: absolute; display: flex; align-items: flex-start; padding: 2px 6px; pointer-events: none; z-index: 1; }
+  #overlay .dock { z-index: 5; }
   #oppHand[hidden] { display: none; }
   #oppHand img { width: 26px; aspect-ratio: 59 / 86; border-radius: 3px; margin-left: -11px; box-shadow: 0 3px 8px rgba(0,0,0,.6); transform-origin: 50% 0; border: 1px solid rgba(233,196,106,.6); }
   #oppHand img:first-child { margin-left: 0; }
@@ -3882,13 +3884,14 @@ async function openMeet(ch, story = true) {
   const t = duelTier(ch), first = ch.name.split(" ")[0], left = winsToUnlock(ch, t), tierEl = $("#meetTier");
   tierEl.innerHTML = ""; tierEl.append(`${first}'s deck: `, el("b", { textContent: `${t + 1} · ${TIERS[t][1]}` }), el("br"),
     tiersUnlocked(ch) >= TIER_WINS.length ? "You've unlocked all 4 of their decks!" : `Win ${left} more time${left === 1 ? "" : "s"} to unlock this deck in Decks → Character decks.`);
-  const box = $("#meetRewards"); box.innerHTML = "";
-  const rew = (c, ace) => { const d = el("div", { className: "rew" + (ace ? " ace" : "") + (coll[c.id] ? " owned" : "") }); d.append(el("img", { src: imgUrl(c, "small"), alt: c.name, title: c.name })); if (ace) d.append(el("span", { textContent: "ACE" })); return d; };
+  const box = $("#meetRewards"); box.innerHTML = ""; $("#rewNote")?.remove();
+  const rew = (c, ace) => { const d = el("div", { className: "rew" + (ace ? " ace" : "") + (coll[c.id] ? " owned" : ""), title: coll[c.id] ? `${c.name} · you already have this card` : c.name }); d.append(el("img", { src: imgUrl(c, "small"), alt: c.name })); if (c.id) { d.style.cursor = "pointer"; d.onclick = () => openCard(c); } if (ace) d.append(el("span", { textContent: "ACE" })); return d; };
   box.append(rew(ch.ace, true));
   try {
     const deck = await npcDeck(ch), picks = [...new Map(deck.filter(c => c.id !== ch.ace.id && c.name !== ch.ace.name).map(c => [c.id, c])).values()].slice(0, 3);
     if (meeting?.ch === ch) for (const c of picks) box.append(rew(c));
   } catch {}
+  if (box.querySelector(".owned")) box.after(Object.assign(el("small", { className: "rewnote", textContent: "✓ = you already have this card" }), { id: "rewNote" }));
 }
 $("#meetClose").addEventListener("click", () => { $("#meet").hidden = true; });
 $("#meet").addEventListener("click", e => { if (e.target.id === "meet") $("#meet").hidden = true; });
@@ -4379,7 +4382,9 @@ let adBusy = false, adWaitUntil = 0;
 function renderAdSlots() {
   const a = gm.ads, on = !!a?.enabled;
   for (const id of ["#shopAd", "#topupAd"]) {
-    const box = $(id); if (!box) continue; box.innerHTML = ""; box.hidden = !on; if (!on) continue;
+    const box = $(id); if (!box) continue; box.innerHTML = ""; box.hidden = false;
+    // (until the GM switches ads on, the button is there but says it's coming)
+    if (!on) { const b = el("button", { type: "button", className: "btn adbtn", disabled: true }); b.append(el("span", { className: "adplay", textContent: "▶" }), el("span", {}, el("b", { textContent: "Watch an ad for coins" }), el("small", { textContent: "Coming soon" }))); box.append(b); continue; }
     const left = adDay()?.left ?? a.perDay, wait = Math.max(0, Math.ceil((adWaitUntil - Date.now()) / 1000));
     const b = el("button", { type: "button", className: "btn primary adbtn" });
     b.append(el("span", { className: "adplay", textContent: "▶" }), el("span", {}, el("b", { textContent: `Watch an ad · +${a.coins}` }), el("small", { textContent: left <= 0 ? "No more ads today: come back tomorrow" : wait ? `Next ad in ${wait}s` : `${left} left today` })));
