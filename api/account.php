@@ -350,6 +350,26 @@ if ($action === 'save') {
     exit;
 }
 
+// A rewarded ad watched to the end: counted per player per day, within the GM's limits (daily number and the wait
+// between two). The coins themselves are added by the game, like every other reward.
+//   POST ?action=adReward {token} -> {coins, left, wait}
+if ($action === 'adReward') {
+    $gmFile = __DIR__ . '/../server/data/gm.json';
+    $ads = (is_file($gmFile) ? (json_decode((string)file_get_contents($gmFile), true)['ads'] ?? null) : null) ?: [];
+    !empty($ads['enabled']) || fail(400, 'Ads are switched off.');
+    echo json_encode(withUser($name, function (array $u) use ($hash, $ads) {
+        checkToken($u, $hash);
+        $day = gmdate('Y-m-d'); $a = $u['ads'] ?? []; if (($a['day'] ?? '') !== $day) $a = ['day' => $day, 'n' => 0, 'last' => 0];
+        $gap = (int)$ads["gap"]; $per = (int)$ads["perDay"];
+        $a['n'] < $per || fail(429, "That's all the ads for today. Come back tomorrow!");
+        time() - $a['last'] >= $gap || fail(429, 'Please wait a moment before the next ad.');
+        $a['n']++; $a['last'] = time(); $a['total'] = ($u['ads']['total'] ?? 0) + 1; $u['ads'] = $a;
+        ulog($u['name'], ['ev' => 'server.adReward', 'n' => $a['n']]);
+        return ['save' => $u, 'reply' => ['coins' => (int)$ads['coins'], 'left' => $per - $a['n'], 'wait' => $gap]];
+    }));
+    exit;
+}
+
 if ($action === 'log') {
     $entries = $in['entries'] ?? [];
     is_array($entries) && strlen((string)json_encode($entries)) <= 40000 || fail(400, 'Too much.');

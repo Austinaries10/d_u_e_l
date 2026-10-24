@@ -113,7 +113,13 @@ function clean(array $c): array
             $starters[] = ['code' => (string)$l['code'], 'price' => max(0, min(100000, (int)($l['price'] ?? 800))), 'enabled' => !empty($l['enabled'])];
         }
     }
+    // rewarded ads: watch an ad for coins (off until the GM picks a network and enters its ID)
+    $a = (array)($c['ads'] ?? []);
+    $prov = in_array($a['provider'] ?? '', ['test', 'adinplay', 'gamedistribution', 'h5'], true) ? $a['provider'] : 'test';
+    $ads = ['enabled' => !empty($a['enabled']), 'provider' => $prov, 'id' => preg_replace('/[^A-Za-z0-9_.\/-]/', '', (string)($a['id'] ?? '')),
+        'coins' => max(1, min(10000, (int)($a['coins'] ?? 100))), 'perDay' => max(1, min(50, (int)($a['perDay'] ?? 5))), 'gap' => max(0, min(3600, (int)($a['gap'] ?? 60)))];
     return [
+        'ads' => $ads,
         'shop' => $shop,
         'starterShop' => $starters,
         'banlist' => ['name' => mb_substr(trim((string)($c['banlist']['name'] ?? '')), 0, 60), 'cards' => (object)$cards],
@@ -131,7 +137,7 @@ if ($action === 'config') {
     $now = time();
     // events that are switched on and have not ended yet (upcoming ones show as "coming soon")
     $events = array_values(array_map('publicEvent', array_filter($c['events'], fn($e) => $e['enabled'] && strtotime($e['end']) > $now)));
-    echo json_encode(['banlist' => $c['banlist'], 'disabledPacks' => $c['disabledPacks'], 'events' => $events, 'now' => gmdate('c', $now)]);
+    echo json_encode(['banlist' => $c['banlist'], 'disabledPacks' => $c['disabledPacks'], 'events' => $events, 'ads' => $c['ads'] ?? null, 'now' => gmdate('c', $now)]);
     exit;
 }
 

@@ -97,3 +97,17 @@ built with Bubblewrap. `.well-known/assetlinks.json` tells Android the app and t
 the SHA-256 fingerprint of the key the app is signed with. When the app is on Google Play with Play App Signing,
 add the fingerprint Play Console shows under *Setup → App signing* to that list too, or the app opens with a
 browser bar. The signing key (keystore) is never put in this repository.
+
+## Watch ads for coins
+
+Players can watch a rewarded video ad for coins (a button in the Shop and in the coin top-up sheet). It is off until
+the GM switches it on in **GM → Packs → Watch ads for coins**, picks the ad network and enters its ID:
+
+- **AdinPlay**: the publisher ID from AdinPlay (the tag is loaded for this site's domain)
+- **GameDistribution**: the game ID
+- **Google H5 Games Ads** (AdSense): the `ca-pub-…` client ID
+- **Test**: a pretend 5-second ad, to try it out
+
+The GM also sets the coins per ad, how many ads a player may watch per day and the seconds between two. The
+server (`api/account.php?action=adReward`) counts each player's ads per day within those limits. `ads.js` talks to
+the networks.

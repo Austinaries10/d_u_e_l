@@ -96,6 +96,18 @@
       <p>Players buy these whole (every card in the deck, saved as a ready-to-duel deck). Switch each one on or off and set its price.</p>
       <div class="row"><button class="btn small" id="startersOn" type="button">All on</button><button class="btn small" id="startersOff" type="button">All off</button><span class="note" id="starterCount"></span></div>
       <div class="list" id="starterList" style="gap:8px"></div>
+      <h2 style="margin-top:24px">Watch ads for coins</h2>
+      <p>Players tap "Watch an ad" in the Shop and get coins when the ad finishes. Pick the ad network you were approved by and enter its ID; "Test" shows a pretend 5-second ad so you can try it first.</p>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="adsOn"> Ads on</label>
+        <label class="field">Network<select id="adsProv"><option value="test">Test (pretend ad)</option><option value="adinplay">AdinPlay</option><option value="gamedistribution">GameDistribution</option><option value="h5">Google H5 Games (AdSense)</option></select></label>
+        <label class="field" style="flex:1 1 220px">ID <input id="adsId" placeholder="AdinPlay publisher ID · GameDistribution game ID · ca-pub-…"></label>
+      </div>
+      <div class="row">
+        <label class="field">Coins per ad<input type="number" id="adsCoins" min="1" max="10000" style="width:110px"></label>
+        <label class="field">Ads per player per day<input type="number" id="adsPerDay" min="1" max="50" style="width:110px"></label>
+        <label class="field">Seconds between ads<input type="number" id="adsGap" min="0" max="3600" style="width:110px"></label>
+      </div>
     </section>
 
     <section class="card" data-panel="players" hidden style="margin-top:16px">
@@ -161,7 +173,7 @@ async function open() {
     $("#setNames").innerHTML = ""; for (const s of sets) $("#setNames").append(el("option", { value: `${s.name} (${s.code})` }));
     try { sessionStorage.setItem("gmPass", password); } catch {}
     $("#login").hidden = true; $("#gm").hidden = false; $("#bar").hidden = false;
-    renderBan(); renderPacks(); renderStarters(); renderEvents();
+    renderBan(); renderPacks(); renderStarters(); renderAds(); renderEvents();
   } catch (e) { $("#loginStatus").textContent = errText(e); $("#loginStatus").className = "note err"; }
 }
 $("#loginBtn").addEventListener("click", open);
@@ -257,6 +269,12 @@ function renderStarters() {
       el("label", { className: "field", style: "flex:0 0 auto" }, "Price", price)));
   }
 }
+function renderAds() {
+  const a = cfg.ads ??= { enabled: false, provider: "test", id: "", coins: 100, perDay: 5, gap: 60 };
+  $("#adsOn").checked = a.enabled; $("#adsProv").value = a.provider; $("#adsId").value = a.id; $("#adsCoins").value = a.coins; $("#adsPerDay").value = a.perDay; $("#adsGap").value = a.gap;
+}
+for (const [id, k, num] of [["#adsOn", "enabled"], ["#adsProv", "provider"], ["#adsId", "id"], ["#adsCoins", "coins", 1], ["#adsPerDay", "perDay", 1], ["#adsGap", "gap", 1]])
+  $(id).addEventListener(id === "#adsOn" || id === "#adsProv" ? "change" : "input", () => { const e = $(id); cfg.ads[k] = id === "#adsOn" ? e.checked : num ? +e.value || 0 : e.value.trim(); changed(); });
 $("#startersOn").addEventListener("click", () => { STARTER_CODES.forEach(c => starterRow(c).enabled = true); changed(); renderStarters(); });
 $("#startersOff").addEventListener("click", () => { STARTER_CODES.forEach(c => starterRow(c).enabled = false); changed(); renderStarters(); });
 
@@ -418,7 +436,7 @@ $("#save").addEventListener("click", async () => {
     const j = await call("save", { config: cfg });
     cfg = j.config; cfg.banlist.cards = Array.isArray(cfg.banlist.cards) ? {} : cfg.banlist.cards;
     dirty = false; $("#saveStatus").textContent = "Saved. Players get the changes the next time they open the game or the Shop.";
-    renderBan(); renderPacks(); renderStarters(); renderEvents();
+    renderBan(); renderPacks(); renderStarters(); renderAds(); renderEvents();
   } catch (e) { $("#saveStatus").className = "err"; $("#saveStatus").textContent = errText(e); }
 });
 </script>

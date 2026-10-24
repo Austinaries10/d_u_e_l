@@ -68,6 +68,9 @@
   #hand { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; height: 158px; align-items: stretch; }
   .dock > .row { flex-wrap: nowrap; gap: 6px; } .dock > .row .btn { flex: 1 1 0; min-width: 0; padding: 10px 6px; font-size: 14px; white-space: nowrap; }
   .dock > .row #holoBtn, .dock > .row #exitBtn, .dock > .row #logBtn, .dock > .row #muteBtn { flex: 0 0 auto; padding: 10px 12px; }
+  .adslot { display: flex; justify-content: center; margin: 4px 0 10px; } .adslot[hidden] { display: none; }
+  .adbtn { display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 16px; } .adbtn b { display: block; font-size: 14px; } .adbtn small { display: block; font-size: 11px; opacity: .8; font-weight: 400; }
+  .adplay { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: rgba(0,0,0,.25); font-size: 12px; }
   .vols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .vols input[type=range] { padding: 0; accent-color: var(--accent); }
   #reveal, #logView { z-index: 40; }
   .revealcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; margin: 8px 0 14px; }
@@ -894,8 +897,8 @@
   <div class="sheet">
     <button class="round close" id="topupClose" type="button" aria-label="Close">×</button>
     <h2>Top up coins</h2>
-    <div class="topups" id="topups"></div>
-    <p class="note center">Coin top-ups are coming soon. Until then, earn coins from duels, daily quests and login rewards.</p>
+    <div class="adslot" id="topupAd"></div>
+    <p class="note center">Earn coins by winning duels, finishing daily quests and collecting login rewards.</p>
   </div>
 </div>
 
@@ -963,6 +966,7 @@
 <section class="screen npcscreen" id="shop" hidden>
   <header class="gatebar"><button class="round" id="shopDone" type="button" aria-label="Back">‹</button><h1>Shop</h1><div class="cur small"><span class="coin" aria-hidden="true"></span><b id="shopCoins">0</b></div><div class="cur small"><span class="ticket" aria-hidden="true"></span><b id="shopFree">0</b></div></header>
   <div class="host"><img data-face="Solomon_Muto" alt=""><div class="bubble" id="shopLine">Welcome to the Kame Game shop! What are you looking for today?</div></div>
+  <div class="adslot" id="shopAd"></div>
   <div class="tabs row center" id="shopTabs"><button class="btn small" type="button" data-tab="events" aria-pressed="true">Limited</button><button class="btn small" type="button" data-tab="packs" aria-pressed="false">Booster packs</button><button class="btn small" type="button" data-tab="decks" aria-pressed="false">Starter decks</button></div>
   <input id="packFind" class="find" placeholder="Find a pack" autocomplete="off" aria-label="Find a pack">
   <div class="packs" id="packs"></div>
@@ -1043,6 +1047,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { buildArena, arenaFor } from "./arena.js?v=__BUILD__";
 import { sound } from "./sound.js?v=__BUILD__";
+import { showRewarded } from "./ads.js?v=__BUILD__";
 
 const $ = s => document.querySelector(s);
 const canvas = $("#gl");
@@ -2829,7 +2834,7 @@ async function loadGm() {
     const r = await fetch("api/gm.php?action=config"), j = await r.json();
     if (!r.ok || j.error) return;
     clockSkew = Date.parse(j.now) - Date.now();
-    Object.assign(gm, { banlist: j.banlist, disabledPacks: j.disabledPacks, events: j.events }); store.put("gm", gm);
+    Object.assign(gm, { banlist: j.banlist, disabledPacks: j.disabledPacks, events: j.events, ads: j.ads || null }); store.put("gm", gm); renderAdSlots();
     if (!$("#shop").hidden) renderShop();
     if (!$("#decks").hidden) renderSlots();
     if (!$("#editor").hidden) renderDeck();
@@ -3582,7 +3587,7 @@ function renderOpenAgain() {
 $("#openAgain").addEventListener("click", () => { $("#opening").hidden = true; openPack(lastPack, lastPack.event ? "event" : wallet.free > 0 ? "free" : "coins"); });
 $("#openDone").addEventListener("click", () => { $("#opening").hidden = true; sound.music("menu"); });
 $("#freeBtn").addEventListener("click", () => $("#openShop").click());
-$("#openShop").addEventListener("click", () => { show("shop"); $("#shopLine").textContent = any(SHOP_LINES); packList = null; renderShop(); loadGm(); });
+$("#openShop").addEventListener("click", () => { show("shop"); renderAdSlots(); $("#shopLine").textContent = any(SHOP_LINES); packList = null; renderShop(); loadGm(); });
 setInterval(() => { if (!$("#shop").hidden && $("#opening").hidden) renderShop(); }, 60000); // keep event countdowns current
 $("#shopDone").addEventListener("click", () => { show("start"); renderHome(); });
 
@@ -4364,11 +4369,42 @@ function openRewards(tab) {
 for (const b of $("#rewardTabs").children) b.addEventListener("click", () => openRewards(b.dataset.tab));
 $("#openRewards").addEventListener("click", () => openRewards());
 $("#rewardsClose").addEventListener("click", () => { $("#rewards").hidden = true; rewardBadge(); });
-$("#topupBtn").addEventListener("click", () => {
-  const box = $("#topups"); box.innerHTML = "";
-  for (const [coins, price] of [[1000, "RM 4.90"], [5500, "RM 19.90"], [12000, "RM 39.90"], [30000, "RM 89.90"]]) box.append(el("div", {}, el("span", { className: "coin" }), el("b", { textContent: coins.toLocaleString() }), el("small", { textContent: `${price} · coming soon` })));
-  $("#topup").hidden = false;
-});
+$("#topupBtn").addEventListener("click", () => { renderAdSlots(); $("#topup").hidden = false; });
+// ---------- Watch an ad for coins ----------
+// The GM switches it on and picks the ad network (gm.ads); the server counts each player's ads per day
+const adDay = () => { try { const a = JSON.parse(localStorage.getItem("arduel.ads") || "null"); return a?.day === new Date().toISOString().slice(0, 10) ? a : null; } catch { return null; } };
+let adBusy = false, adWaitUntil = 0;
+function renderAdSlots() {
+  const a = gm.ads, on = !!a?.enabled;
+  for (const id of ["#shopAd", "#topupAd"]) {
+    const box = $(id); if (!box) continue; box.innerHTML = ""; box.hidden = !on; if (!on) continue;
+    const left = adDay()?.left ?? a.perDay, wait = Math.max(0, Math.ceil((adWaitUntil - Date.now()) / 1000));
+    const b = el("button", { type: "button", className: "btn primary adbtn" });
+    b.append(el("span", { className: "adplay", textContent: "▶" }), el("span", {}, el("b", { textContent: `Watch an ad · +${a.coins}` }), el("small", { textContent: left <= 0 ? "No more ads today: come back tomorrow" : wait ? `Next ad in ${wait}s` : `${left} left today` })));
+    b.disabled = adBusy || left <= 0 || wait > 0; b.onclick = watchAd; box.append(b);
+  }
+}
+async function watchAd() {
+  const a = gm.ads; if (!a?.enabled || adBusy) return;
+  if (!account) return showLogin();
+  adBusy = true; renderAdSlots(); sound.music(null);
+  const res = await showRewarded(a);
+  sound.music($("#overlay").hidden ? "menu" : "duel", true);
+  try {
+    if (res === "done") {
+      const j = await accountCall("adReward", { token: account.token });
+      wallet.coins += j.coins; saveWallet(); sfx("coin"); toast(`+${j.coins} coins! Thanks for watching.`);
+      try { localStorage.setItem("arduel.ads", JSON.stringify({ day: new Date().toISOString().slice(0, 10), left: j.left })); } catch {}
+      adWaitUntil = Date.now() + j.wait * 1000;
+      if (!$("#shop").hidden) renderShop(); renderHome();
+    } else toast(res === "skipped" ? "Watch the ad to the end to get the coins." : "No ad available right now. Try again in a little while.");
+  } catch (e) {
+    if (e.status === 429 && /today/.test(e.message)) try { localStorage.setItem("arduel.ads", JSON.stringify({ day: new Date().toISOString().slice(0, 10), left: 0 })); } catch {}
+    toast(errText(e));
+  }
+  adBusy = false; renderAdSlots();
+}
+setInterval(() => { if (adWaitUntil > Date.now() - 1500 && (!$("#shop").hidden || !$("#topup").hidden)) renderAdSlots(); }, 1000);
 $("#topupClose").addEventListener("click", () => { $("#topup").hidden = true; });
 
 // ---------- End of a duel: coins, a card from the character's deck, and sometimes their ace ----------
