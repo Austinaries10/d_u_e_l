@@ -112,4 +112,4 @@ The GM also sets the coins per ad, how many ads a player may watch per day and t
 server (`api/account.php?action=adReward`) counts each player's ads per day within those limits. `ads.js` talks to
 the networks.
 
-The privacy policy is `privacy.html` (linked from the login screen and the profile); its contact address is support@duel.cck8.my.
+The privacy policy is `privacy.html` (linked from the login screen and the profile); its contact address is admin@cck8.my.
