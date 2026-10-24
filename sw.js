@@ -14,7 +14,7 @@ self.addEventListener("activate", e => {
 // files that are the same forever at their address
 function keep(u) {
   if (u.pathname.includes("/engine/ocgcore/") || u.pathname.includes("/icons/")) return true;
-  if (/\/(engine\/worker\.js|data\/recipes\.txt|arena\.js)$/.test(u.pathname) && u.searchParams.has("v")) return true; // a new release changes ?v=
+  if (/\/(engine\/worker\.js|data\/recipes\.txt|arena\.js|sound\.js)$/.test(u.pathname) && u.searchParams.has("v")) return true; // a new release changes ?v=
   return /\/api\/ygo\.php$/.test(u.pathname) && ["img", "face"].includes(u.searchParams.get("action"));
 }
 

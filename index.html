@@ -67,7 +67,8 @@
   #panel p { margin: 0 0 10px; font-size: 13px; line-height: 1.45; }
   #hand { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; height: 158px; align-items: stretch; }
   .dock > .row { flex-wrap: nowrap; gap: 6px; } .dock > .row .btn { flex: 1 1 0; min-width: 0; padding: 10px 6px; font-size: 14px; white-space: nowrap; }
-  .dock > .row #holoBtn, .dock > .row #exitBtn, .dock > .row #logBtn { flex: 0 0 auto; padding: 10px 12px; }
+  .dock > .row #holoBtn, .dock > .row #exitBtn, .dock > .row #logBtn, .dock > .row #muteBtn { flex: 0 0 auto; padding: 10px 12px; }
+  .vols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .vols input[type=range] { padding: 0; accent-color: var(--accent); }
   #reveal, #logView { z-index: 40; }
   .revealcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; margin: 8px 0 14px; }
   .revealcards button { background: none; border: 0; padding: 0; color: var(--text); font: inherit; cursor: pointer; display: grid; gap: 4px; text-align: center; }
@@ -587,8 +588,8 @@
     #hand .hcard[aria-pressed="true"] { box-shadow: 0 0 0 2px #7fe3ff, 0 0 22px rgba(70,214,255,.8); background: none; }
     #hand .empty-hand { display: none; }
     .dock { bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
-    #logBtn, #holoBtn, #exitBtn { position: fixed; left: max(10px, env(safe-area-inset-left, 0px)); width: 44px; height: 44px; padding: 0 !important; }
-    #logBtn { top: calc(env(safe-area-inset-top, 0px) + 84px); } #holoBtn { top: calc(env(safe-area-inset-top, 0px) + 134px); } #exitBtn { top: calc(env(safe-area-inset-top, 0px) + 184px); }
+    #logBtn, #holoBtn, #muteBtn, #exitBtn { position: fixed; left: max(10px, env(safe-area-inset-left, 0px)); width: 44px; height: 44px; padding: 0 !important; }
+    #logBtn { top: calc(env(safe-area-inset-top, 0px) + 84px); } #holoBtn { top: calc(env(safe-area-inset-top, 0px) + 134px); } #muteBtn { top: calc(env(safe-area-inset-top, 0px) + 184px); } #exitBtn { top: calc(env(safe-area-inset-top, 0px) + 234px); }
   }
   @media (max-width: 500px) { .lp b, .lp.p0 b, .lp.p1 b { font-size: 21px; } .lp { padding-left: 52px; padding-right: 14px; } .lp.p1 { padding-right: 52px; padding-left: 14px; } }
   #reader { position: absolute; z-index: 7; left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 78px); max-height: 46vh;
@@ -719,6 +720,7 @@
       <button class="btn primary" id="endBtn" type="button">End turn</button>
       <button class="btn" id="logBtn" type="button" aria-label="Duel log" title="Duel log">📜</button>
       <button class="btn" id="holoBtn" type="button" aria-label="Hide holograms" title="Hide holograms">👁</button>
+      <button class="btn" id="muteBtn" type="button" aria-label="Sound off" title="Sound">🔊</button>
       <button class="btn" id="exitBtn" type="button" aria-label="Surrender" title="Surrender">🏳</button>
     </div>
   </div>
@@ -856,6 +858,7 @@
     <div class="row center" id="emailRow"></div>
     <label class="field">Name<input id="myName" maxlength="20" placeholder="Duelist" autocomplete="nickname"></label>
     <label class="field">Board view<select id="viewSel"><option value="">Arena (3D ruins)</option><option value="top">Top-down (biggest cards)</option></select></label>
+    <div class="vols"><label class="field">Music<input type="range" id="vol_music" min="0" max="100"></label><label class="field">Sound effects<input type="range" id="vol_sfx" min="0" max="100"></label></div>
     <label class="field notr">Language · 语言 · 言語<select id="langSel"><option value="">English</option><option value="zh">简体中文</option><option value="ja">日本語</option></select></label>
     <small class="note">Avatar</small>
     <div class="avatars" id="avatars"></div>
@@ -1039,6 +1042,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { buildArena, arenaFor } from "./arena.js?v=__BUILD__";
+import { sound } from "./sound.js?v=__BUILD__";
 
 const $ = s => document.querySelector(s);
 const canvas = $("#gl");
@@ -1746,6 +1750,7 @@ function summonEffect(slot) {
 const circleTex = {};
 function bigSummon(card, at) {
   if (quiet) return;
+  sfx("bigSummon");
   const t = card?.type || "", style = /Ritual/.test(t) ? "ritual" : /Fusion/.test(t) ? "fusion" : /Synchro/.test(t) ? "synchro" : /XYZ/.test(t) ? "xyz" : /Link/.test(t) ? "link" : "hex";
   circleTex[style] ??= canvasTex(1024, 1024, (g, w) => {
     const m = w / 2, ring = (r, lw, blur = 24) => { g.lineWidth = lw; g.shadowBlur = blur; g.beginPath(); g.arc(m, m, r, 0, 7); g.stroke(); };
@@ -1821,6 +1826,7 @@ function shakeBoard(power = 0.006, dur = 0.35) {
 }
 // destroyed: a fireball and a flash, a shockwave across the floor, and the card shattering into glowing shards
 function explode(slot) {
+  sfx("explode");
   const g = slot.obj.group, pos = g.position.clone(), color = ATTR_COLOR[slot.card.attribute] || 0xff8a3d;
   board.remove(g);
   fireTex ??= glowSprite("rgba(255,250,220,1)", "rgba(255,120,30,.75)").material.map;
@@ -1843,6 +1849,7 @@ function explode(slot) {
 }
 // banished: the card rises, spinning, into a beam of violet light over a swirling portal, and fades away
 function banishFx(slot) {
+  sfx("banish");
   const g = slot.obj.group, pos = g.position.clone();
   const beam = mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.5, 24, 1, true), new THREE.MeshBasicMaterial({ color: 0xc6a2ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }), pos.x, 0.25, pos.z); board.add(beam);
   const portal = mesh(new THREE.RingGeometry(0.02, 0.05, 6, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x9a6bff, transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }), pos.x, 0.004, pos.z); board.add(portal);
@@ -1919,6 +1926,7 @@ function showSwords(list) {
 // the attack: the sword flies from the attacker to its target (or at the opponent) and vanishes after the hit
 function swordStrike(p, i, target) {
   if (quiet) return;
+  sfx("attack"); setTimeout(() => sfx("hit"), 520);
   const k = `${p}:${i}`, from = zonePos(p, "m", i); let sw = readySwords.get(k);
   if (sw) readySwords.delete(k); else { sw = swordMesh(); board.add(sw); }
   const to = target.clone(); from.y = to.y = 0.05;
@@ -2028,9 +2036,9 @@ function showCards(title, codes) {
 
 async function play(m) {
   switch (m.type) {
-    case MSG.NEW_TURN: S.turn = side(m.player); S.turnCount++; blog(null, S.turn === 0 ? "Your turn begins." : `${who(1)}'s turn begins.`); S.lastPhase = null; refreshUI(); await announce(S.turn === 0 ? "Your turn" : `${who(1)}'s turn`, 1000); break;
+    case MSG.NEW_TURN: S.turn = side(m.player); S.turnCount++; blog(null, S.turn === 0 ? "Your turn begins." : `${who(1)}'s turn begins.`); S.lastPhase = null; refreshUI(); sfx("turn"); await announce(S.turn === 0 ? "Your turn" : `${who(1)}'s turn`, 1000); break;
     case MSG.NEW_PHASE: S.phase = m.phase; { const ph = { "Main 1": "Main Phase 1", Battle: "Battle Phase", "Main 2": "Main Phase 2", End: "End Phase" }[PHASES[m.phase]]; if (ph && ph !== S.lastPhase) blog(null, ph); S.lastPhase = ph; } refreshUI(); if (m.phase === 8) await announce("Battle Phase", 700); break;
-    case MSG.DRAW: blog(side(m.player), side(m.player) === 0 && m.drawn?.length && m.drawn.every(c => c.code) ? `You drew ${m.drawn.map(c => cname(c.code)).join(", ")}.` : `${who(side(m.player))} drew ${m.drawn?.length || 1} card${(m.drawn?.length || 1) === 1 ? "" : "s"}.`, side(m.player) === 0 ? (m.drawn || []).map(c => c.code) : []); toast(`${who(side(m.player))} drew ${m.drawn?.length || 1} card${(m.drawn?.length || 1) === 1 ? "" : "s"}`); await wait(250); break;
+    case MSG.DRAW: sfx("draw"); blog(side(m.player), side(m.player) === 0 && m.drawn?.length && m.drawn.every(c => c.code) ? `You drew ${m.drawn.map(c => cname(c.code)).join(", ")}.` : `${who(side(m.player))} drew ${m.drawn?.length || 1} card${(m.drawn?.length || 1) === 1 ? "" : "s"}.`, side(m.player) === 0 ? (m.drawn || []).map(c => c.code) : []); toast(`${who(side(m.player))} drew ${m.drawn?.length || 1} card${(m.drawn?.length || 1) === 1 ? "" : "s"}`); await wait(250); break;
     case MSG.MOVE: {
       const f = m.from, t = m.to;
       if ((f.location === LOC.MZONE || f.location === LOC.SZONE) && !(f.location & LOC.OVERLAY)) {
@@ -2051,11 +2059,12 @@ async function play(m) {
       const line = m.type === MSG.FLIPSUMMONING ? `${who(p)} Flip Summoned ${name}.` : m.type === MSG.SPSUMMONING ? `${who(p)} Special Summoned ${name}.` : `${who(p)} Normal Summoned ${name}.`;
       blog(p, line, [m.code]); toast(line);
       if (s) summonEffect(s);
+      if (m.type === MSG.FLIPSUMMONING) sfx("flip");
       const info = CI.get(m.code), bigOne = m.type === MSG.SPSUMMONING || (m.type === MSG.SUMMONING && (info?.level || 0) >= 7);
-      if (bigOne) { bigSummon(info, zonePos(p, "m", m.sequence)); await wait(1300); } else await wait(700);
+      if (bigOne) { bigSummon(info, zonePos(p, "m", m.sequence)); await wait(1300); } else { sfx("summon"); await wait(700); }
       break;
     }
-    case MSG.SET: blog(side(m.controller), `${who(side(m.controller))} Set a card.`); toast(`${who(side(m.controller))} set a card`); await wait(300); break;
+    case MSG.SET: sfx("set"); blog(side(m.controller), `${who(side(m.controller))} Set a card.`); toast(`${who(side(m.controller))} set a card`); await wait(300); break;
     case MSG.POS_CHANGE: {
       const p = side(m.controller), row = m.location === LOC.MZONE ? "m" : "s", cur = S.zones[p][row]?.[m.sequence];
       if (cur) { cur.pos = m.position & 3 ? "atk" : "def"; cur.faceDown = !!(m.position & 10); cur.key = ""; renderSlot(p, row, m.sequence); if (!(m.prev_position & 10) || !cur.faceDown) summonEffect(cur); }
@@ -2064,7 +2073,7 @@ async function play(m) {
     case MSG.CHAINING: {
       S.chain.push(m); const c = cardOf(m.code);
       blog(side(m.controller), S.chain.length > 1 ? `${who(side(m.controller))} activated ${c.name} (Chain Link ${S.chain.length}).` : `${who(side(m.controller))} activated ${c.name}.`, [m.code]);
-      flash(side(m.controller), m.location === LOC.MZONE ? "m" : "s", m.sequence);
+      flash(side(m.controller), m.location === LOC.MZONE ? "m" : "s", m.sequence); sfx(c.kind === "trap" ? "trap" : "activate");
       await announce(side(m.controller) === 0 ? `You activate ${c.name}` : `${who(1)} activates ${c.name}`, 1300, c); break;
     }
     case MSG.CHAIN_SOLVED: S.chain.pop(); break;
@@ -2081,11 +2090,11 @@ async function play(m) {
     }
     case MSG.DAMAGE: case MSG.PAY_LPCOST: { const p = side(m.player);
       if (m.type === MSG.DAMAGE) {
-        if (p === 0) hurtFlash();
+        sfx("damage"); if (p === 0) hurtFlash();
         // battle damage to the attacker's own player: its attack bounced off something stronger
         const la = ui.lastAttack; if (la?.target && la.p === p && S.phase >= 8 && S.phase <= 128) recoil(S.zones[p].m[la.seq]);
       } blog(p, m.type === MSG.PAY_LPCOST ? `${who(p)} paid ${m.amount} LP (${Math.max(0, S.lp[p] - m.amount)} LP left).` : `${who(p)} took ${m.amount} damage (${Math.max(0, S.lp[p] - m.amount)} LP left).`); setLp(p, S.lp[p] - m.amount); toast(`${who(p)}: −${m.amount} LP`); await wait(450); break; }
-    case MSG.RECOVER: { const p = side(m.player); blog(p, `${who(p)} gained ${m.amount} LP.`); setLp(p, S.lp[p] + m.amount); toast(`${who(p)}: +${m.amount} LP`); await wait(450); break; }
+    case MSG.RECOVER: { const p = side(m.player); sfx("heal"); blog(p, `${who(p)} gained ${m.amount} LP.`); setLp(p, S.lp[p] + m.amount); toast(`${who(p)}: +${m.amount} LP`); await wait(450); break; }
     case MSG.LPUPDATE: setLp(side(m.player), m.lp); break;
     case MSG.CONFIRM_CARDS: case MSG.CONFIRM_DECKTOP: {
       // the top of a Deck is revealed to both players; other cards only to the player looking at them
@@ -2115,7 +2124,7 @@ async function play(m) {
 function win(w, why) {
   if (S.over) return;
   S.over = true; S.winner = w; saveDuel();
-  if (!quiet) setTimeout(() => finishDuel(w, why), 900);
+  if (!quiet) { setTimeout(() => finishDuel(w, why), 900); sound.music(null); setTimeout(() => sfx(w === 0 ? "win" : "lose"), 400); }
 }
 
 // ---------- Talking to the engine ----------
@@ -2414,7 +2423,8 @@ function renderOppHand() {
   box.hidden = !n;
   for (let k = had - 1; k >= n; k--) box.querySelectorAll("img")[k].remove();
   const dock = $(".dock").getBoundingClientRect(), banner = $("#lp1").getBoundingClientRect();
-  box.style.top = banner.bottom + 2 + "px"; box.style.right = Math.max(8, dock.left > innerWidth * 0.4 && dock.top < banner.bottom + 60 ? innerWidth - dock.left + 10 : innerWidth - banner.right + 60) + "px";
+  // at the right edge under the rival's banner, clear of their side of the board
+  box.style.top = banner.bottom + 4 + "px"; box.style.right = Math.max(8, innerWidth - banner.right + 4) + "px";
   let deck = null;
   if (n > had && !quiet && mode === "preview") { const v = pilePos(1, "DECK"); v.y = 0.02; board.localToWorld(v); v.project(camera); deck = [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }
   for (let k = had; k < n; k++) box.append(el("img", { src: backImg ??= backTex.image.toDataURL("image/png"), alt: "" }));
@@ -3508,7 +3518,7 @@ function sumCircleSvg() {
 function ceremony(pk, shown) {
   const o = $("#opening"), order = shown.map((p, k) => ({ ...p, k })).sort((a, b) => rank(a.r) - rank(b.r) || a.k - b.k);
   if (!$("#sumCircle").firstChild) $("#sumCircle").innerHTML = sumCircleSvg();
-  rev = { pk, shown, order, i: -1, busy: false };
+  rev = { pk, shown, order, i: -1, busy: false }; sound.music("pack"); setTimeout(() => sfx("burst"), 1150);
   o.style.setProperty("--rc", RCOL[0]); o.className = "hot"; o.hidden = false;
   $("#stage").hidden = true; $("#openBody").hidden = true;
   $("#tearImg").src = packImg(pk); $("#tear").hidden = false; $("#tear").classList.remove("go"); void $("#tear").offsetWidth; $("#tear").classList.add("go");
@@ -3532,7 +3542,7 @@ function nextCard() {
 }
 function flipCard() {
   const p = rev.order[rev.i], st = $("#stage"); if (st.classList.contains("open")) return;
-  st.classList.add("open"); if (rank(p.r) >= 2) { st.classList.add("foil"); const f = el("span", { className: "flash" }); $("#revCard").append(f); setTimeout(() => f.remove(), 900); }
+  st.classList.add("open"); sfx(rank(p.r) >= 3 ? "rare" : "flip"); if (rank(p.r) >= 2) { st.classList.add("foil"); const f = el("span", { className: "flash" }); $("#revCard").append(f); setTimeout(() => f.remove(), 900); }
 }
 function showSummary() {
   const o = $("#opening"); o.className = ""; o.style.setProperty("--rc", rcol(rev.order.at(-1)?.r));
@@ -3561,7 +3571,7 @@ function renderOpenAgain() {
   $("#openAgain").textContent = ev ? (ev.price ? `Open another (${ev.price} coins)` : "Open another") : wallet.free > 0 ? "Open another (free)" : `Open another (${lastPack?.price ?? PACK_PRICE} coins)`;
 }
 $("#openAgain").addEventListener("click", () => { $("#opening").hidden = true; openPack(lastPack, lastPack.event ? "event" : wallet.free > 0 ? "free" : "coins"); });
-$("#openDone").addEventListener("click", () => { $("#opening").hidden = true; });
+$("#openDone").addEventListener("click", () => { $("#opening").hidden = true; sound.music("menu"); });
 $("#freeBtn").addEventListener("click", () => $("#openShop").click());
 $("#openShop").addEventListener("click", () => { show("shop"); $("#shopLine").textContent = any(SHOP_LINES); packList = null; renderShop(); loadGm(); });
 setInterval(() => { if (!$("#shop").hidden && $("#opening").hidden) renderShop(); }, 60000); // keep event countdowns current
@@ -3935,7 +3945,7 @@ async function flipCoin(plan, me, them, call) {
   $("#coin").hidden = false; $("#diceRow").hidden = true; $("#coinBtns").innerHTML = "";
   const f = $("#coinFace"); f.hidden = false;
   tossText(`${plan.caller === me ? "You" : them} called ${call ? "heads" : "tails"}.`);
-  f.className = "coinflip"; void f.offsetWidth; f.className = "coinflip spin" + (plan.heads ? "" : " tails");
+  f.className = "coinflip"; void f.offsetWidth; f.className = "coinflip spin" + (plan.heads ? "" : " tails"); sfx("coin");
   await pause(1800);
 }
 
@@ -4636,7 +4646,7 @@ function startPreview() {
   useArena(duelArena(S.vs)); scene.background = new THREE.Color(0x1d1a22); scene.fog = arena.fog;
   // every duel is painted for now: the rival's own painting, else their place's, else the desert terrace
   useArt(ART_FOR[S.vs?.char] || (ARENA_ART[arena.theme] ? arena.theme : "egypt"));
-  show(""); $("#overlay").hidden = false; renderAll(); refreshUI(); aimPreview();
+  show(""); $("#overlay").hidden = false; renderAll(); refreshUI(); aimPreview(); sound.music(S.over ? null : "duel");
 }
 function resumeDuel() {
   if (lastMode === "xr") { show("start"); $("#status").textContent = "Tap Continue on the table to go back to your duel."; renderHome(); }
@@ -4646,7 +4656,7 @@ let lastMode = null;
 function exitDuel() {
   const s = renderer.xr.getSession(); if (s) s.end();
   mode = null; board.visible = false; table.visible = false; scene.background = null; scene.fog = null; $("#backdrop").hidden = true;
-  $("#overlay").hidden = true; show("start"); renderHome();
+  $("#overlay").hidden = true; show("start"); renderHome(); sound.music("menu");
 }
 // Leaving a running duel means surrendering (a lesson can just be left)
 async function askSurrender() {
@@ -4704,6 +4714,24 @@ if (account) {
 }
 loadGm();
 if (net.room) net.open(net.room); // back into an online duel after the page reloads
+// ---------- Sound ----------
+// effects are skipped while a duel is being replayed silently (after a reload)
+function sfx(name) { if (!quiet) sound.play(name); }
+sound.music($("#overlay").hidden ? "menu" : "duel");
+document.addEventListener("pointerdown", () => sound.unlock(), { capture: true });
+document.addEventListener("click", e => { if (e.target.closest("button, .btn")) sound.play("click"); }, { capture: true });
+for (const k of ["music", "sfx"]) {
+  const r = $("#vol_" + k); r.value = Math.round(sound.volumes[k] * 100);
+  r.addEventListener("input", () => { sound.setVolume(k, r.value / 100); if (k === "sfx") sound.play("coin"); });
+}
+$("#muteBtn").addEventListener("click", () => {
+  const off = sound.volumes.music > 0 || sound.volumes.sfx > 0;
+  if (off) { try { localStorage.setItem("arduel.vols", JSON.stringify(sound.volumes)); } catch {} sound.setVolume("music", 0); sound.setVolume("sfx", 0); }
+  else { let v = { music: 0.35, sfx: 0.7 }; try { v = JSON.parse(localStorage.getItem("arduel.vols")) || v; } catch {} sound.setVolume("music", v.music || 0.35); sound.setVolume("sfx", v.sfx || 0.7); }
+  muteIcon(); for (const k of ["music", "sfx"]) $("#vol_" + k).value = Math.round(sound.volumes[k] * 100);
+});
+const muteIcon = () => { const on = sound.volumes.music > 0 || sound.volumes.sfx > 0; $("#muteBtn").textContent = on ? "🔊" : "🔇"; $("#muteBtn").setAttribute("aria-label", on ? "Sound off" : "Sound on"); };
+muteIcon();
 // ---------- Installable app (PWA) ----------
 // Android/desktop Chrome offer an install prompt we can show from a button; on iPhone it's Share → Add to Home Screen
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js?v=__BUILD__").catch(() => {});
@@ -4741,7 +4769,7 @@ showInstall();
   $("#rotateSkip").addEventListener("click", () => { skipped = true; try { sessionStorage.setItem("arduel.portrait", "1"); } catch {} check(); });
 }
 
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, bigSummon, showExtraAura, openReader, useArt, get arena() { return arena; }, aimPreview }; // for testing
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, bigSummon, showExtraAura, openReader, useArt, sound, get arena() { return arena; }, aimPreview }; // for testing
 </script>
 </body>
 </html>
