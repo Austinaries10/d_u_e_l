@@ -2165,6 +2165,8 @@ function askPlayer(m, retry) {
 }
 function answer(r, record = true) {
   const mine = ui.last && side(ui.last.player) === 0;
+  // a summon or activation you start can be taken back until the rival answers anything (see undoMove)
+  if (record) ui.undoAt = mine && ui.last.type === MSG.SELECT_IDLECMD ? S.log.length : mine ? ui.undoAt : null;
   glowZones(null); ui.place = [];
   // (a card you're reading stays open through phase changes; only a card whose action menu you used is put away)
   ui.last = null; ui.mode = "idle"; if (ui.selMenu) ui.sel = null; ui.selMenu = false; ui.pick = []; hint("");
@@ -2228,6 +2230,10 @@ function resetBoard() {
   showLp(0, true); showLp(1, true);
 }
 // setup: { seed, decks: [engine player 0's deck, player 1's], me: which engine player you are }
+// Cancel a summon or activation while choosing its zone, position or Tributes: the duel is rebuilt from its start
+// without that choice (the engine itself can't go back), which returns you to where you chose it
+const canUndo = () => ui.undoAt != null && S.vs && S.vs.kind !== "online" && !S.over;
+function undoMove() { if (!canUndo()) return; const log = S.log.slice(0, ui.undoAt); ui.undoAt = null; ui.sel = null; startEngine(S.vs, S.setup, log); }
 function startEngine(vs, setup, log = []) {
   resetBoard(); newWorker();
   Object.assign(S, { vs, setup, me: setup.me, log: [], history: [] });
@@ -2633,6 +2639,7 @@ function askPanel(panel, m, btn) {
       panel.classList.add("slim");
       panel.append(el("div", { className: "meta", textContent: `${sys(Number(ui.hint || 0n)) || "Choose a zone"}: tap a glowing zone${m.count > 1 ? ` (${m.count - ui.place.length} more)` : ""}` }));
       row.append(btn("Auto", () => answer({ type: 10, places: freePlaces(m) })));
+      if (canUndo()) row.append(btn("Cancel", undoMove));
       break;
     }
     case MSG.SELECT_CARD: case MSG.SELECT_TRIBUTE: {
@@ -2646,6 +2653,7 @@ function askPanel(panel, m, btn) {
       panel.append(el("h3", { textContent: titleFor(m) }), el("div", { className: "meta", textContent: m.min === m.max ? `Choose ${m.min}` : `Choose ${m.min} to ${m.max}` }), cardsGrid(m.selects, k => ui.pick.includes(k)));
       const ok = btn("OK", () => answer({ type: m.type === MSG.SELECT_CARD ? 5 : 12, indicies: ui.pick }), "primary"); ok.disabled = ui.pick.length < m.min || ui.pick.length > m.max; row.append(ok);
       if (m.can_cancel) row.append(btn("Cancel", () => answer({ type: m.type === MSG.SELECT_CARD ? 5 : 12, indicies: null })));
+      else if (canUndo()) row.append(btn("Cancel", undoMove));
       break;
     }
     case MSG.SELECT_UNSELECT_CARD: {
@@ -2701,6 +2709,7 @@ function askPanel(panel, m, btn) {
     case MSG.SELECT_POSITION: {
       const c = cardOf(m.code); cardInfo(panel, c, false);
       for (const [bit, name] of [[1, "Attack"], [4, "Defence"], [8, "Face-down defence"], [2, "Face-down attack"]]) if (m.positions & bit) row.append(btn(name, () => answer({ type: 11, position: bit }), "primary"));
+      if (canUndo()) row.append(btn("Cancel", undoMove));
       break;
     }
     case MSG.ANNOUNCE_RACE: case MSG.ANNOUNCE_ATTRIB: {
@@ -4727,7 +4736,7 @@ for (const k of ["music", "sfx"]) {
 $("#muteBtn").addEventListener("click", () => {
   const off = sound.volumes.music > 0 || sound.volumes.sfx > 0;
   if (off) { try { localStorage.setItem("arduel.vols", JSON.stringify(sound.volumes)); } catch {} sound.setVolume("music", 0); sound.setVolume("sfx", 0); }
-  else { let v = { music: 0.35, sfx: 0.7 }; try { v = JSON.parse(localStorage.getItem("arduel.vols")) || v; } catch {} sound.setVolume("music", v.music || 0.35); sound.setVolume("sfx", v.sfx || 0.7); }
+  else { let v = { music: 0.6, sfx: 0.9 }; try { v = JSON.parse(localStorage.getItem("arduel.vols")) || v; } catch {} sound.setVolume("music", v.music || 0.6); sound.setVolume("sfx", v.sfx || 0.9); }
   muteIcon(); for (const k of ["music", "sfx"]) $("#vol_" + k).value = Math.round(sound.volumes[k] * 100);
 });
 const muteIcon = () => { const on = sound.volumes.music > 0 || sound.volumes.sfx > 0; $("#muteBtn").textContent = on ? "🔊" : "🔇"; $("#muteBtn").setAttribute("aria-label", on ? "Sound off" : "Sound on"); };
