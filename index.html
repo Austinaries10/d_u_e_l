@@ -527,7 +527,6 @@
   /* a phone held sideways: the home screen puts the gates on the left and the town on the right; in a duel a question
      from the game gets the whole side column (the hand comes back once it's answered) */
   @media (orientation: landscape) and (max-height: 560px) {
-    .dock:has(#panel.ask:not([hidden])) #hand { display: none; }
     #panel { max-height: calc(100vh - 150px - env(safe-area-inset-top, 0px)); overflow-y: auto; } #panel .pickwrap { max-height: none; overflow: visible; }
     #panel.ask { padding-bottom: 0; } #panel.ask > .row:last-child { position: sticky; bottom: 0; padding: 8px 0 10px; background: linear-gradient(180deg, rgba(14,18,26,0), rgba(14,18,26,.97) 30%); }
     .pickcards { grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; } .pc small { font-size: 9px; }
@@ -553,6 +552,40 @@
   #oppHand img { width: 26px; aspect-ratio: 59 / 86; border-radius: 3px; margin-left: -11px; box-shadow: 0 3px 8px rgba(0,0,0,.6); transform-origin: 50% 0; border: 1px solid rgba(233,196,106,.6); }
   #oppHand img:first-child { margin-left: 0; }
   #oppHand #oppCount { order: 99; margin-left: 6px; align-self: center; min-width: 20px; height: 20px; border-radius: 10px; background: rgba(10,14,28,.85); border: 1px solid rgba(140,200,255,.5); font: 700 11px/18px var(--font); text-align: center; color: #cfe8ff; }
+  /* ---------- Duel look: one cyan-and-steel scheme, red only for the rival ---------- */
+  /* life points: angled banners with a bright edge (blue for you, red for the rival), the portrait breaking out */
+  .lp::before { inset: 8px 0 2px 22px; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 50%, calc(100% - 22px) 100%, 0 100%); background: linear-gradient(90deg, #9cecff, #2f86ff); box-shadow: none; }
+  .lp::after { left: 24px; right: 3px; top: 10px; bottom: 4px; height: auto; clip-path: polygon(0 0, calc(100% - 21px) 0, 100% 50%, calc(100% - 21px) 100%, 0 100%);
+    background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 10px), linear-gradient(100deg, #041633 0%, #0a3478 55%, #1458c4 100%); }
+  .lp.p1::before { inset: 8px 22px 2px 0; clip-path: polygon(22px 0, 100% 0, 100% 100%, 22px 100%, 0 50%); background: linear-gradient(270deg, #ffb0b0, #e0283f); }
+  .lp.p1::after { left: 3px; right: 24px; clip-path: polygon(21px 0, 100% 0, 100% 100%, 21px 100%, 0 50%);
+    background: repeating-linear-gradient(65deg, rgba(255,255,255,.05) 0 2px, transparent 2px 10px), linear-gradient(260deg, #2e0710 0%, #7a1024 55%, #c01e3a 100%); }
+  .lp img { border-color: #7fdcff; } .lp.p1 img { border-color: #ff8a9a; }
+  .lp .lpfill span { background: linear-gradient(90deg, #bff4ff, #46d6ff); } .lp.p1 .lpfill span { background: linear-gradient(270deg, #ffd0d6, #ff5a72); }
+  .lp.active { filter: drop-shadow(0 0 10px rgba(70,214,255,.8)); } .lp.p1.active { filter: drop-shadow(0 0 10px rgba(255,80,100,.8)); }
+  .turn { border-color: rgba(70,214,255,.55); box-shadow: 0 0 14px rgba(70,214,255,.2), 0 4px 14px rgba(0,0,0,.4); } .turn span { color: #7fe3ff; }
+  /* buttons and panels in the duel */
+  #overlay .btn { background: rgba(8,20,38,.85); border-color: rgba(70,214,255,.4); color: #e4f7ff; }
+  #overlay .btn.primary { background: linear-gradient(180deg, #6fe6ff, #1b93d6); color: #021a2a; border-color: rgba(190,245,255,.8); text-shadow: none; box-shadow: 0 0 14px rgba(70,214,255,.35); }
+  #overlay .btn.danger { border-color: rgba(255,93,93,.6); color: #ffb3b3; }
+  #overlay #panel, #cardMenu { background: rgba(5,15,30,.9); border-color: rgba(70,214,255,.45); box-shadow: 0 0 20px rgba(70,214,255,.12), 0 8px 26px rgba(0,0,0,.5); }
+  #overlay #panel h3 { color: #dff6ff; }
+  .hcard.can { box-shadow: 0 0 0 2px rgba(70,214,255,.95), 0 0 16px rgba(70,214,255,.6); }
+  .hcard[aria-pressed="true"] { background: rgba(70,214,255,.2); border-color: #7fe3ff; }
+  /* sideways or a computer: the hand fanned at the bottom like cards held in front of you, the icon buttons down the left */
+  @media (orientation: landscape) and (min-width: 640px) {
+    #hand { position: fixed; left: 64px; right: calc(min(380px, 40vw) + 20px); bottom: 0; height: auto; max-height: none; display: flex; justify-content: center; align-items: flex-end; overflow: visible; padding: 0; gap: 0; pointer-events: none; z-index: 3; }
+    #hand .hcard { pointer-events: auto; width: clamp(62px, 15vh, 112px); margin: 0 var(--ov, -8px); padding: 0; background: none; border: 0; border-radius: 7px; transform-origin: 50% 140%;
+      transform: translateY(var(--dy, 38%)) rotate(var(--r, 0deg)); transition: transform .18s ease-out; box-shadow: 0 8px 18px rgba(0,0,0,.55); }
+    #hand .hcard img { margin: 0; border-radius: 7px; } #hand .hcard b, #hand .hcard small { display: none; }
+    #hand .hcard:hover, #hand .hcard[aria-pressed="true"] { --dy: 4%; z-index: 2; }
+    #hand .hcard[aria-pressed="true"] { box-shadow: 0 0 0 2px #7fe3ff, 0 0 22px rgba(70,214,255,.8); background: none; }
+    #hand .empty-hand { display: none; }
+    .dock { bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
+    #logBtn, #holoBtn, #exitBtn { position: fixed; left: max(10px, env(safe-area-inset-left, 0px)); width: 44px; height: 44px; padding: 0 !important; }
+    #logBtn { top: calc(env(safe-area-inset-top, 0px) + 84px); } #holoBtn { top: calc(env(safe-area-inset-top, 0px) + 134px); } #exitBtn { top: calc(env(safe-area-inset-top, 0px) + 184px); }
+  }
+  @media (max-width: 500px) { .lp b, .lp.p0 b, .lp.p1 b { font-size: 21px; } .lp { padding-left: 52px; padding-right: 14px; } .lp.p1 { padding-right: 52px; padding-left: 14px; } }
   /* ---------- Deck builder ---------- */
   .buildview { max-width: 860px; width: calc(100vw - 24px); max-height: calc(100vh - 24px); display: grid; grid-template-rows: auto auto auto 1fr auto auto; gap: 6px; }
   .buildview h2 { margin: 0; font-size: 20px; } .buildview .note { margin: 0; }
@@ -1273,26 +1306,59 @@ function updateFieldArt() {
   const w = 2 * BOARD_X, d = 2 * BOARD_Z; fieldArt.scale.set(w, 1, d);
   effects.push({ t: 0, dur: 0.8, step: k => { fieldArt.material.opacity = 0.32 * k; } });
 }
+// A zone: a faint glass panel with a thin glowing outline and brighter corners, so the ground shows through
+const BOARD_COLOR = 0x46d6ff;
 function zoneTexture(color, label) {
   return canvasTex(128, 184, (g, w, h) => {
-    const c = "#" + color.toString(16).padStart(6, "0");
-    g.shadowColor = c; g.shadowBlur = 18; g.strokeStyle = c; g.lineWidth = 5; rrect(g, 10, 10, w - 20, h - 20, 10); g.stroke();
-    g.shadowBlur = 0; g.fillStyle = c + "22"; rrect(g, 10, 10, w - 20, h - 20, 10); g.fill();
-    if (label) { label = T(label); g.fillStyle = c; g.font = `700 ${label.length > 6 ? 14 : 18}px Sora, sans-serif`; g.textAlign = "center"; g.fillText(label, w / 2, h / 2 + 6); }
+    const c = "#" + color.toString(16).padStart(6, "0"), x0 = 12, y0 = 12, x1 = w - 12, y1 = h - 12, L = 18;
+    g.fillStyle = c + "24"; g.fillRect(x0, y0, x1 - x0, y1 - y0);
+    g.shadowColor = c; g.shadowBlur = 8; g.strokeStyle = c + "cc"; g.lineWidth = 2; g.strokeRect(x0, y0, x1 - x0, y1 - y0);
+    g.shadowBlur = 14; g.strokeStyle = c; g.lineWidth = 4; g.beginPath();
+    for (const [x, y, dx, dy] of [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]]) { g.moveTo(x + dx * L, y); g.lineTo(x, y); g.lineTo(x, y + dy * L); }
+    g.stroke();
+    if (label) { label = T(label); g.shadowBlur = 6; g.fillStyle = c + "aa"; g.font = `700 ${label.length > 6 ? 11 : 14}px Sora, sans-serif`; g.textAlign = "center"; g.fillText(label, w / 2, h / 2 + 5); }
   });
+}
+// The middle of the board: an emblem in a ring, light lines reaching out to both sides, and brackets at the corners
+const boardDeco = [];
+function buildDeco() {
+  const add = (m, fn) => { board.add(m); if (fn) boardDeco.push(fn); return m; };
+  const glow = (map, o = 1) => new THREE.MeshBasicMaterial({ map, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false });
+  const c = "#" + BOARD_COLOR.toString(16).padStart(6, "0");
+  const ringTex = canvasTex(512, 512, (g, w) => {
+    const m = w / 2; g.shadowColor = c; g.strokeStyle = c;
+    for (const [r, lw, blur, dash] of [[240, 3, 20, []], [222, 1.5, 8, [6, 10]], [150, 2, 12, []]]) { g.setLineDash(dash); g.lineWidth = lw; g.shadowBlur = blur; g.beginPath(); g.arc(m, m, r, 0, 7); g.stroke(); }
+    g.setLineDash([]); g.lineWidth = 2;
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; g.beginPath(); g.moveTo(m + Math.cos(a) * 150, m + Math.sin(a) * 150); g.lineTo(m + Math.cos(a) * 240, m + Math.sin(a) * 240); g.stroke(); }
+  });
+  const big = add(mesh(new THREE.PlaneGeometry(0.44, 0.44).rotateX(-Math.PI / 2), glow(ringTex, 0.45), 0, 0.0006, 0), t => { big.rotation.y = t * 0.05; });
+  const gemTex = canvasTex(256, 256, (g, w) => {
+    const m = w / 2; g.shadowColor = c; g.shadowBlur = 18; g.strokeStyle = c; g.lineWidth = 5;
+    g.beginPath(); g.arc(m, m, 100, 0, 7); g.stroke();
+    g.fillStyle = c + "55"; g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? 26 : 70; g.lineTo(m + Math.cos(a) * r, m + Math.sin(a) * r); } g.closePath(); g.fill(); g.stroke();
+  });
+  const gem = add(mesh(new THREE.PlaneGeometry(0.05, 0.05).rotateX(-Math.PI / 2), glow(gemTex), 0, 0.0012, 0), t => { gem.material.opacity = 0.7 + Math.sin(t * 2) * 0.3; gem.rotation.y = -t * 0.3; });
+  const lineTex = canvasTex(512, 16, (g, w, h) => { const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, c + "00"); gr.addColorStop(0.35, c); gr.addColorStop(0.65, c); gr.addColorStop(1, c + "00"); g.fillStyle = gr; g.fillRect(0, h / 2 - 2, w, 4); g.globalAlpha = 0.35; g.fillRect(0, 0, w, h); });
+  const line = add(mesh(new THREE.PlaneGeometry(2 * BOARD_X + 0.5, 0.012).rotateX(-Math.PI / 2), glow(lineTex, 0.8), 0, 0.0008, 0), t => { line.material.opacity = 0.55 + Math.sin(t * 1.5) * 0.25; });
+  // brackets at the corners of the play area
+  const bm = new THREE.MeshBasicMaterial({ color: BOARD_COLOR, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }), Lb = 0.05, wb = 0.003, X = BOARD_X + 0.01, Z = BOARD_Z + 0.01;
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    add(mesh(new THREE.PlaneGeometry(Lb, wb).rotateX(-Math.PI / 2), bm, sx * (X - Lb / 2), 0.001, sz * Z));
+    add(mesh(new THREE.PlaneGeometry(wb, Lb).rotateX(-Math.PI / 2), bm, sx * X, 0.001, sz * (Z - Lb / 2)));
+  }
 }
 function buildBoard() {
   const texCache = {};
   const zoneGeo = new THREE.PlaneGeometry(CARD_W * 1.18, CARD_H * 1.12); zoneGeo.rotateX(-Math.PI / 2);
   for (const p of [0, 1]) for (const row of ["m", "s"]) for (let i = 0; i < 5; i++) {
-    const key = p + row; texCache[key] ??= zoneTexture(PCOLOR[p], row === "s" ? "S/T" : "");
-    const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: texCache[key], transparent: true, depthWrite: false }));
+    const key = row; texCache[key] ??= zoneTexture(BOARD_COLOR, row === "s" ? "S/T" : "");
+    const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: texCache[key], transparent: true, depthWrite: false, opacity: p === 1 ? 0.85 : 1 }));
     z.position.set(p === 0 ? COLS[i] : -COLS[i], 0.001, zoneZ(p, row));
     z.userData.zone = { p, row, i }; board.add(z); zoneMeshes.push(z);
   }
   // Extra Monster Zones, shared by both players, on the centre line
   for (const i of [5, 6]) {
-    const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: zoneTexture(0xffffff, "EX"), transparent: true, depthWrite: false }));
+    const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: texCache.ex ??= zoneTexture(0xbdf3ff, "EX"), transparent: true, depthWrite: false }));
     z.position.set(COLS[i === 5 ? 1 : 3], 0.001, 0); z.userData.zone = { p: 0, row: "m", i }; board.add(z); zoneMeshes.push(z);
   }
   for (const p of [0, 1]) {
@@ -1300,7 +1366,7 @@ function buildBoard() {
     fz.position.copy(pilePos(p, "FIELD", 0.001)); fz.scale.setScalar(PILE_S); if (p === 1) fz.rotation.y = Math.PI;
     fz.userData.zone = { p, row: "s", i: 5 }; board.add(fz); zoneMeshes.push(fz);
     for (const label of ["DECK", "GY", "EXTRA", "BANISHED"]) {
-      const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: zoneTexture(PCOLOR[p], label), transparent: true, depthWrite: false }));
+      const z = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ map: texCache[label] ??= zoneTexture(BOARD_COLOR, label), transparent: true, depthWrite: false, opacity: p === 1 ? 0.75 : 1 }));
       z.position.copy(pilePos(p, label, 0.001)); z.scale.setScalar(PILE_S); if (p === 1) z.rotation.y = Math.PI;
       z.userData.pile = { p, kind: label }; board.add(z); zoneMeshes.push(z);
     }
@@ -1308,9 +1374,7 @@ function buildBoard() {
     const stack = kind => { const m = new THREE.Mesh(new THREE.BoxGeometry(CARD_W * PILE_S, 0.012, CARD_H * PILE_S), [mat(0x222833), mat(0x222833), new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.6 }), mat(0x222833), mat(0x222833), mat(0x222833)]); m.position.copy(pilePos(p, kind, 0.007)); board.add(m); return m; };
     deckPiles[p] = { deck: stack("DECK"), extra: stack("EXTRA") };
   }
-  // centre line
-  const line = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.002).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 }));
-  board.add(line);
+  buildDeco();
 }
 
 // ---------- Card images (served and cached by api/ygo.php) ----------
@@ -1610,6 +1674,34 @@ function summonEffect(slot) {
   const full = slot.pos === "def" ? 0.85 : 1;
   effects.push({ t: 0, dur: 0.9, step: k => { ring.scale.setScalar(1 + k * 2.5); ring.material.opacity = 1 - k; beam.material.opacity = 0.5 * (1 - k); holo.scale.setScalar(full * Math.min(1, k * 1.6)); }, done: () => slot.obj.group.remove(ring, beam) });
 }
+// A big summon (Special, Ritual, Fusion, or a Tribute Summon of a level 7+): a magic circle the size of the board
+// flares up around it, a pentagram for a Ritual and a hexagram otherwise, in the monster's attribute colour
+const circleTex = {};
+function bigSummon(card, at) {
+  if (quiet) return;
+  const ritual = /Ritual/.test(card?.type || ""), key = ritual ? "pent" : "hex";
+  circleTex[key] ??= canvasTex(1024, 1024, (g, w) => {
+    const m = w / 2; g.strokeStyle = "#fff"; g.shadowColor = "#fff";
+    for (const [r, lw] of [[490, 6], [462, 2], [330, 3]]) { g.lineWidth = lw; g.shadowBlur = 24; g.beginPath(); g.arc(m, m, r, 0, 7); g.stroke(); }
+    g.lineWidth = 7; g.shadowBlur = 30; g.beginPath();
+    const n = ritual ? 5 : 6, step = ritual ? 2 : 1, pts = [...Array(n)].map((_, i) => [m + Math.cos(i / n * Math.PI * 2 - Math.PI / 2) * 462, m + Math.sin(i / n * Math.PI * 2 - Math.PI / 2) * 462]);
+    if (ritual) { for (let i = 0; i <= n; i++) { const [x, y] = pts[(i * step) % n]; i ? g.lineTo(x, y) : g.moveTo(x, y); } }
+    else for (const off of [0, 1]) { for (let i = 0; i <= 3; i++) { const [x, y] = pts[(off + i * 2) % n]; i ? g.lineTo(x, y) : g.moveTo(x, y); } }
+    g.stroke();
+    g.font = "40px serif"; g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle"; g.shadowBlur = 12;
+    const runes = "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ";
+    for (let i = 0; i < 40; i++) { const a = i / 40 * Math.PI * 2; g.save(); g.translate(m + Math.cos(a) * 396, m + Math.sin(a) * 396); g.rotate(a + Math.PI / 2); g.fillText(runes[i % runes.length], 0, 0); g.restore(); }
+  });
+  const color = new THREE.Color(ATTR_COLOR[card?.attribute] || BOARD_COLOR).lerp(new THREE.Color(0xffffff), 0.15), size = 2 * BOARD_Z * 0.95;
+  const circle = mesh(new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: circleTex[key], color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 0.002, 0);
+  const pillar = mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.6, 32, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }), at?.x || 0, 0.3, at?.z || 0);
+  board.add(circle, pillar); shakeBoard(0.003, 0.5);
+  effects.push({ t: 0, dur: 1.9, step: k => {
+    const inn = Math.min(1, k * 4), out = k > 0.65 ? (k - 0.65) / 0.35 : 0;
+    circle.material.opacity = inn * (1 - out); circle.scale.setScalar(0.4 + 0.6 * (1 - (1 - inn) ** 3) + out * 0.08); circle.rotation.y = k * 1.2;
+    pillar.material.opacity = Math.sin(Math.min(1, k * 1.6) * Math.PI) * 0.45; pillar.scale.set(1 - k * 0.5, 1, 1 - k * 0.5);
+  }, done: () => board.remove(circle, pillar) });
+}
 function sparks(pos, color) {
   const n = 36, geo = new THREE.BufferGeometry(), arr = new Float32Array(n * 3), vel = [];
   for (let i = 0; i < n; i++) { arr.set([pos.x, pos.y, pos.z], i * 3); vel.push(new THREE.Vector3((Math.random() - .5) * 0.6, Math.random() * 0.6, (Math.random() - .5) * 0.6)); }
@@ -1863,7 +1955,10 @@ async function play(m) {
       const p = side(m.controller), s = S.zones[p].m[m.sequence], name = CI.get(m.code)?.name || "a monster";
       const line = m.type === MSG.FLIPSUMMONING ? `${who(p)} Flip Summoned ${name}.` : m.type === MSG.SPSUMMONING ? `${who(p)} Special Summoned ${name}.` : `${who(p)} Normal Summoned ${name}.`;
       blog(p, line, [m.code]); toast(line);
-      if (s) summonEffect(s); await wait(700); break;
+      if (s) summonEffect(s);
+      const info = CI.get(m.code), bigOne = m.type === MSG.SPSUMMONING || (m.type === MSG.SUMMONING && (info?.level || 0) >= 7);
+      if (bigOne) { bigSummon(info, zonePos(p, "m", m.sequence)); await wait(1300); } else await wait(700);
+      break;
     }
     case MSG.SET: blog(side(m.controller), `${who(side(m.controller))} Set a card.`); toast(`${who(side(m.controller))} set a card`); await wait(300); break;
     case MSG.POS_CHANGE: {
@@ -2224,7 +2319,7 @@ function renderOppHand() {
   box.hidden = !n;
   for (let k = had - 1; k >= n; k--) box.querySelectorAll("img")[k].remove();
   const dock = $(".dock").getBoundingClientRect(), banner = $("#lp1").getBoundingClientRect();
-  box.style.top = banner.bottom + 2 + "px"; box.style.right = (dock.left > innerWidth * 0.4 && dock.top < banner.bottom + 60 ? innerWidth - dock.left + 10 : innerWidth - banner.right + 60) + "px";
+  box.style.top = banner.bottom + 2 + "px"; box.style.right = Math.max(8, dock.left > innerWidth * 0.4 && dock.top < banner.bottom + 60 ? innerWidth - dock.left + 10 : innerWidth - banner.right + 60) + "px";
   let deck = null;
   if (n > had && !quiet && mode === "preview") { const v = pilePos(1, "DECK"); v.y = 0.02; board.localToWorld(v); v.project(camera); deck = [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }
   for (let k = had; k < n; k++) box.insertBefore(el("img", { src: backImg ??= backTex.image.toDataURL("image/png"), alt: "" }), $("#oppCount"));
@@ -2257,7 +2352,7 @@ function placeCardMenu() {
   const w = menu.offsetWidth, h = menu.offsetHeight, top = $("#lp0").getBoundingClientRect().bottom + 4, dock = $(".dock").getBoundingClientRect();
   const right = dock.left > innerWidth * 0.4 ? dock.left - 6 : innerWidth - 8; // (sideways, the hand column is on the right)
   let left, y;
-  if (ui.sel.hand != null) { const r = $("#hand").children[ui.sel.hand]?.getBoundingClientRect(); if (!r) return; left = r.left + r.width / 2 - w / 2; y = r.top - 6 - h; if (dock.left > innerWidth * 0.4) { left = dock.left - w - 8; y = r.top; } }
+  if (ui.sel.hand != null) { const r = $("#hand").querySelectorAll(".hcard")[ui.sel.hand]?.getBoundingClientRect(); if (!r) return; left = r.left + r.width / 2 - w / 2; y = r.top - 8 - h; }
   else {
     // the card's corners on the screen: the menu goes above it if there's room, or else beside it
     const pt = (dx, dz) => { const v = zonePos(ui.sel.p, ui.sel.row, ui.sel.i); v.x += dx; v.z += dz; v.y = 0.02; board.localToWorld(v); v.project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; };
@@ -2268,7 +2363,7 @@ function placeCardMenu() {
   menu.style.left = Math.max(8, Math.min(right - w, left)) + "px";
   menu.style.top = Math.max(top, Math.min(innerHeight - h - 8, y)) + "px";
 }
-addEventListener("resize", () => setTimeout(placeCardMenu, 50));
+addEventListener("resize", () => setTimeout(() => { placeCardMenu(); if (!$("#overlay").hidden) renderOppHand(); }, 50));
 function cardInfo(panel, c, hidden) {
   const top = el("div", { className: "cinfo" });
   if (!hidden && c.id) { const im = el("img", { src: imgUrl(c, "small"), alt: "", title: "Tap to read the card" }); im.style.cursor = "pointer"; im.onclick = () => openCard(c); top.append(im); }
@@ -2307,6 +2402,8 @@ function refreshUI() {
     b.onclick = () => { ui.sel = { hand: idx, loc, id: c.id }; ui.view = null; refreshUI(); };
     hand.append(b);
   });
+  // (sideways the cards fan out like a hand held in front of you)
+  { const n = S.hand[0].length; [...hand.querySelectorAll(".hcard")].forEach((b, k) => { const o = k - (n - 1) / 2; b.style.setProperty("--r", `${o * Math.min(6, 30 / Math.max(1, n))}deg`); b.style.setProperty("--ov", `${n > 6 ? -18 : n > 4 ? -12 : -6}px`); b.style.zIndex = k; }); }
   dealAnim(); renderOppHand();
   const panel = $("#panel"); panel.innerHTML = ""; panel.hidden = true; panel.classList.remove("slim", "acts", "ask"); $("#cardMenu").hidden = true;
   const btn = (label, fn, cls = "") => { const b = el("button", { type: "button", className: "btn small " + cls, textContent: label }); b.onclick = fn; return b; };
@@ -4327,8 +4424,9 @@ function aimPreview() {
   // (in a lesson the coach's line sits above the hand, so leave room for it)
   const W = innerWidth, H = innerHeight, top = $("#lp0").getBoundingClientRect().bottom + 6, dock = $(".dock").getBoundingClientRect();
   // on a wide screen the hand sits in a column on the right and the board gets everything to its left
-  const beside = dock.left > W * 0.4, left = 0, right = beside ? dock.left - 6 : W;
-  const bottom = beside ? H - 8 : Math.max(top + 120, $("#hand").getBoundingClientRect().top - 6 - (S.vs?.lesson ? 70 : 0));
+  // (sideways: the icon buttons on the left, and the fanned hand peeking up from the bottom, overlapping the board's near edge a little)
+  const beside = dock.left > W * 0.4, left = beside ? 60 : 0, right = beside ? dock.left - 6 : W;
+  const bottom = beside ? H - Math.min(70, H * 0.17) : Math.max(top + 120, $("#hand").getBoundingClientRect().top - 6 - (S.vs?.lesson ? 70 : 0));
   const tilt = topDown() ? 0 : W > H ? (H > 600 ? 1.05 : 0.95) : 0.6; // radians away from straight down: more on a wide screen, where there's room
   camera.clearViewOffset(); camera.fov = W > H ? 40 : 30; camera.aspect = W / H; camera.updateProjectionMatrix();
   camera.up.set(0, 0, -1);
@@ -4430,7 +4528,7 @@ renderer.setAnimationLoop((time, frame) => {
   for (const p of [0, 1]) for (const row of ["m"]) for (const s of S.zones[p][row]) if (s?.obj?.holo) s.obj.holo.userData.model.traverse(o => o.userData.animate?.(t));
   for (const r of targetRings.values()) { const k = (t * 1.6) % 1; r.scale.setScalar(1 + k * 0.35); r.material.opacity = 1 - k * 0.7; }
   for (const sw of readySwords.values()) { sw.position.y = sw.userData.base.y + Math.sin(t * 3) * 0.006; sw.userData.glow.material.opacity = 0.25 + Math.sin(t * 4) * 0.12; }
-  if (board.visible) updateFieldArt();
+  if (board.visible) { updateFieldArt(); for (const f of boardDeco) f(t); }
   if (table.visible) arena?.update(t);
   for (const e of [...effects]) { e.t += dt; const k = Math.min(1, e.t / e.dur); e.step(k, dt); if (k >= 1) { effects.splice(effects.indexOf(e), 1); e.done?.(); } }
   renderer.render(scene, camera);
@@ -4487,7 +4585,7 @@ showInstall();
   $("#rotateSkip").addEventListener("click", () => { skipped = true; try { sessionStorage.setItem("arduel.portrait", "1"); } catch {} check(); });
 }
 
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, get arena() { return arena; }, aimPreview }; // for testing
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, bigSummon, get arena() { return arena; }, aimPreview }; // for testing
 </script>
 </body>
 </html>
