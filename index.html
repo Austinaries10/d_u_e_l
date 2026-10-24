@@ -3891,7 +3891,11 @@ async function openMeet(ch, story = true) {
     const deck = await npcDeck(ch), picks = [...new Map(deck.filter(c => c.id !== ch.ace.id && c.name !== ch.ace.name).map(c => [c.id, c])).values()].slice(0, 3);
     if (meeting?.ch === ch) for (const c of picks) box.append(rew(c));
   } catch {}
-  if (box.querySelector(".owned")) box.after(Object.assign(el("small", { className: "rewnote", textContent: "✓ = you already have this card" }), { id: "rewNote" }));
+  // what a win gives: coins and ONE random card from their deck; the ace 1 time in 5, for sure by the 5th win without it
+  const misses = store.get("noAce", {})[ch.id] || 0, aceIn = Math.max(1, 5 - misses);
+  const lines = [`Each win: +${ch.coins} coins and 1 random card from their deck, like these.`, coll[ch.ace.id] ? `Ace card: 1 chance in 5 for another copy.` : `Ace card: 1 chance in 5 each win${aceIn === 1 ? ", and yours for sure next win!" : `, and yours for sure within ${aceIn} wins.`}`];
+  if (box.querySelector(".owned")) lines.push("✓ = you already have this card");
+  const note = el("small", { className: "rewnote", id: "rewNote" }); lines.forEach((l, i) => { if (i) note.append(el("br")); note.append(l); }); box.after(note);
 }
 $("#meetClose").addEventListener("click", () => { $("#meet").hidden = true; });
 $("#meet").addEventListener("click", e => { if (e.target.id === "meet") $("#meet").hidden = true; });
