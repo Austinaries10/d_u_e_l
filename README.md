@@ -111,3 +111,5 @@ the GM switches it on in **GM → Packs → Watch ads for coins**, picks the ad 
 The GM also sets the coins per ad, how many ads a player may watch per day and the seconds between two. The
 server (`api/account.php?action=adReward`) counts each player's ads per day within those limits. `ads.js` talks to
 the networks.
+
+The privacy policy is `privacy.html` (linked from the login screen and the profile); its contact address is support@duel.cck8.my.
