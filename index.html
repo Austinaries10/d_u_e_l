@@ -138,58 +138,59 @@
   .rar { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 6px; padding: 1px 5px; margin-left: 4px; vertical-align: 1px; background: rgba(255,255,255,.12); color: var(--muted); }
   .rar.r1 { background: #3a4d6b; color: #cfe0ff; } .rar.r2 { background: #2f6d8a; color: #d6f4ff; } .rar.r3 { background: #8a6a1f; color: #fff1c9; }
   .rar.r4, .rar.r5, .rar.r6, .rar.r7, .rar.r8 { background: linear-gradient(90deg, #ff6ad5, #c774e8, #ad8cff, #8795e8, #94d0ff); color: #1a1030; }
-  /* ---------- Pack opening: a summoning hall ---------- */
-  #opening { position: fixed; inset: 0; z-index: 20; overflow: hidden; padding: 0; perspective: 900px; background: #05070f; --rc: #4f8bff; }
-  #opening .hall { position: absolute; inset: 0; background:
-      radial-gradient(1px 1px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 32% 8%, #cfe0ff, transparent), radial-gradient(1.5px 1.5px at 68% 14%, #fff, transparent), radial-gradient(1px 1px at 84% 26%, #cfe0ff, transparent), radial-gradient(1px 1px at 52% 22%, #fff, transparent),
-      radial-gradient(55% 45% at 50% 40%, color-mix(in srgb, var(--rc) 30%, transparent), transparent 70%),
-      linear-gradient(180deg, #060a1c 0%, #101a40 52%, #0b1128 58%, #04060d 100%); transition: background .6s; }
-  #opening .hall i { position: absolute; bottom: 42%; width: 3.2%; height: 46%; background: linear-gradient(90deg, #0d1430, #223066 45%, #0d1430); box-shadow: 0 0 22px color-mix(in srgb, var(--rc) 45%, transparent); border-radius: 3px 3px 0 0; }
-  #opening .hall i::after { content: ""; position: absolute; left: 35%; width: 30%; top: 8%; bottom: 8%; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--rc) 80%, white), transparent); opacity: .55; filter: blur(1px); }
-  #opening .hall i:nth-child(1) { left: 8%; } #opening .hall i:nth-child(2) { left: 24%; height: 38%; } #opening .hall i:nth-child(3) { right: 24%; height: 38%; } #opening .hall i:nth-child(4) { right: 8%; }
-  .sumcircle { position: absolute; left: 50%; top: 74%; width: min(118vw, 150vh, 900px); aspect-ratio: 1; transform: translate(-50%, -50%) rotateX(72deg); color: var(--rc); filter: drop-shadow(0 0 10px var(--rc)); opacity: .75; transition: opacity .4s, color .5s; pointer-events: none; }
-  .sumcircle svg { width: 100%; height: 100%; display: block; }
-  .sumcircle .spin { transform-origin: 100px 100px; animation: spin 24s linear infinite; } .sumcircle .spin2 { transform-origin: 100px 100px; animation: spin 16s linear infinite reverse; }
-  #opening.hot .sumcircle { opacity: 1; filter: drop-shadow(0 0 18px var(--rc)) brightness(1.4); } #opening.hot .sumcircle .spin { animation-duration: 5s; }
-  #opening.rainbow .sumcircle, #opening.rainbow .beam, #opening.rainbow .hall { animation: hues 3s linear infinite; } @keyframes hues { to { filter: hue-rotate(360deg) drop-shadow(0 0 14px var(--rc)); } }
-  #opening .tear { z-index: 2; } #opening .tear img { width: clamp(110px, 30vh, 180px); }
-  #opening .tear.go img { animation: floatpack .5s ease-out, shake .7s .5s ease-in-out, burst .35s 1.2s ease-in forwards; }
-  @keyframes floatpack { from { transform: translateY(40vh) scale(.6); opacity: 0; } }
-  #stage { position: absolute; inset: 0; }
-  #stage .beam { position: absolute; left: 50%; top: 4%; bottom: 26%; width: clamp(140px, 32vh, 260px); transform: translateX(-50%); background: linear-gradient(0deg, color-mix(in srgb, var(--rc) 70%, transparent), transparent 85%); opacity: 0; filter: blur(14px); transition: opacity .4s; }
-  #stage.up .beam { opacity: .55; }
-  .revcard { position: absolute; left: 50%; top: 44%; width: clamp(120px, 34vh, 230px); aspect-ratio: 59 / 86; padding: 0; border: 0; background: none; cursor: pointer; transform: translate(-50%, -50%) translateY(42vh) scale(.25); opacity: 0; perspective: 800px; }
-  #stage.up .revcard { transform: translate(-50%, -50%); opacity: 1; transition: transform .6s cubic-bezier(.2, .9, .3, 1.2), opacity .3s; }
-  .revcard .face { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .55s; }
-  .revcard .face > * { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 9px; }
-  .revcard .back { background: radial-gradient(ellipse 34% 26% at 50% 50%, #a06a2c 0 60%, #3b2412 62%), linear-gradient(135deg, #2a1a0c, #5a3818); border: 3px solid #6b4520; }
-  .revcard .front { transform: rotateY(180deg); object-fit: cover; background: #1c2230; box-shadow: 0 0 30px color-mix(in srgb, var(--rc) 70%, transparent); }
-  .revcard .shine { transform: rotateY(180deg); background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.75) 50%, transparent 65%); background-size: 250% 100%; background-position: 150% 0; mix-blend-mode: screen; }
-  #stage.open .revcard .face { transform: rotateY(180deg); } #stage.open.foil .revcard .shine { animation: shinemove 1.6s .4s ease-out; }
-  .revcard .flash { position: absolute; left: 50%; top: 45%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); background: #fff; box-shadow: 0 0 60px 40px color-mix(in srgb, var(--rc) 80%, white); animation: flashout .9s ease-out forwards; }
-  .revinfo { position: absolute; left: 6vw; top: 50%; width: min(30vw, 300px); transform: translateY(-50%); opacity: 0; transition: opacity .4s .3s; text-align: left; }
-  #stage.open .revinfo { opacity: 1; }
-  .revinfo .bigrar { display: inline-grid; place-items: center; min-width: 44px; height: 44px; padding: 0 8px; border: 2px solid var(--rc); border-radius: 8px; font-weight: 800; font-size: 18px; color: #fff; box-shadow: 0 0 14px var(--rc); background: rgba(10,14,30,.7); }
-  .revinfo .disc { display: block; margin: 12px 0 4px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-  .revinfo h2 { margin: 0 0 6px; font-size: clamp(20px, 4.4vh, 32px); line-height: 1.15; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
-  .revinfo .stats { font-size: 13px; color: #d7defa; } .revinfo .tag { display: inline-block; margin-top: 12px; font-size: 12px; padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(123,216,143,.6); color: #b9f5c6; background: rgba(40,90,55,.35); }
-  .revinfo .tag.dup { border-color: rgba(255,255,255,.25); color: var(--muted); background: rgba(255,255,255,.05); }
-  .revnav { position: absolute; right: 6vw; bottom: 9vh; display: grid; gap: 8px; justify-items: center; } .revnav #revCount { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  #openBody { position: absolute; inset: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 14px); text-align: center; }
-  #openBody .kicker { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #9fc3ff; }
-  #openBody h1 { margin: 4px 0; font-size: clamp(20px, 5vh, 30px); letter-spacing: .06em; }
-  #openBody .pulls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 1000px; margin: 12px auto 16px; }
-  .sumcard { position: relative; width: clamp(70px, 9.5vw, 104px); display: grid; gap: 3px; padding: 6px 5px 7px; border-radius: 10px; background: linear-gradient(180deg, rgba(40,56,110,.55), rgba(14,20,44,.8)); border: 1px solid rgba(150,190,255,.3); color: var(--text); font: inherit; cursor: pointer; animation: sumin .45s both; }
-  .sumcard img { width: 100%; aspect-ratio: 59 / 86; object-fit: cover; border-radius: 5px; background: #1c2230; }
-  .sumcard .rar { position: absolute; top: -7px; left: -5px; margin: 0; } .sumcard .new { position: absolute; right: 7px; top: calc(6px + (100% - 50px) * 0); background: #2f9e5a; color: #fff; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 4px; }
-  .sumcard b { font-size: 10px; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; } .sumcard small { font-size: 9px; color: var(--muted); }
-  .sumcard.r3, .sumcard.r4, .sumcard.r5, .sumcard.r6, .sumcard.r7, .sumcard.r8 { border-color: #ffd166; box-shadow: 0 0 14px rgba(255,209,102,.45); } .sumcard.r2 { border-color: #cfe7ff; }
-  @keyframes sumin { from { opacity: 0; transform: translateY(14px) scale(.9); } }
-  @media (orientation: portrait) {
-    .revcard { top: 36%; } .revinfo { left: 16px; right: 16px; width: auto; top: auto; bottom: 22vh; transform: none; text-align: center; }
-    .revnav { left: 0; right: 0; bottom: 5vh; grid-auto-flow: column; justify-content: center; align-items: center; }
-    .sumcard { width: 92px; }
-  }
+  /* ---------- Pack opening: tear the pack, deal the cards, flip them ---------- */
+  #opening { position: fixed; inset: 0; z-index: 20; overflow: hidden; background: #140c33; --rc: #8f6bff; perspective: 1000px; }
+  #opening .burstbg { position: absolute; left: 50%; top: 50%; width: 260vmax; height: 260vmax; transform: translate(-50%, -50%); animation: spin 60s linear infinite;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--rc) 55%, #fff 10%), transparent 60%), repeating-conic-gradient(from 0deg, rgba(255,255,255,.07) 0 4deg, transparent 4deg 12deg), radial-gradient(closest-side, #3b2a8a, #140c33 75%); transition: background .6s; }
+  #packStage { position: absolute; inset: 0; display: grid; place-items: center; touch-action: none; }
+  #packStage[hidden] { display: none; }
+  .pack3d { position: relative; height: min(66vh, 520px); aspect-ratio: 5 / 8; transform-style: preserve-3d; animation: packsway 3.2s ease-in-out infinite; cursor: grab; filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
+  @keyframes packsway { 0%, 100% { transform: rotateY(-12deg) rotateX(4deg); } 50% { transform: rotateY(12deg) rotateX(-3deg) translateY(-8px); } }
+  .pack3d > div { position: absolute; inset: 0; pointer-events: none; } .pack3d img { pointer-events: none; -webkit-user-drag: none; user-select: none; width: 100%; height: 100%; object-fit: cover; border-radius: 10px; display: block; }
+  .pack3d .ptop { clip-path: inset(0 0 84% 0); transition: transform .7s cubic-bezier(.3,.6,.4,1), opacity .7s; }
+  .pack3d .pbody { clip-path: inset(16% 0 0 0); transition: transform .8s ease-in, opacity .6s; }
+  .pack3d .pshine { position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.65) 50%, transparent 65%); background-size: 260% 100%; animation: shinemove 2.6s ease-in-out infinite; mix-blend-mode: screen; pointer-events: none; }
+  .pack3d .pcut { position: absolute; left: 0; top: 16%; height: 4px; width: 0; transform: translateY(-50%); background: #fff; box-shadow: 0 0 14px 4px #fff, 0 0 30px 10px var(--rc); border-radius: 2px; }
+  .pack3d.torn { animation: none; } .pack3d.torn .ptop { transform: translate(55%, -120%) rotate(28deg); opacity: 0; } .pack3d.torn .pshine { display: none; }
+  .pack3d.out .pbody { transform: translateY(85vh) rotate(-6deg); opacity: 0; }
+  .pack3d.out .pcut { opacity: 0; transition: opacity .25s; }
+  .phint { position: absolute; bottom: 7vh; left: 0; right: 0; text-align: center; font-weight: 700; color: #fff; text-shadow: 0 2px 8px #000; animation: hintpulse 1.4s ease-in-out infinite; }
+  @keyframes hintpulse { 50% { opacity: .45; } }
+  .flashw { position: absolute; inset: 0; background: radial-gradient(circle, #fff 0%, rgba(255,255,255,.9) 30%, rgba(255,255,255,0) 70%); opacity: 0; pointer-events: none; }
+  .flashw.go { animation: flashw .7s ease-out; } @keyframes flashw { 15% { opacity: 1; } 100% { opacity: 0; } }
+  #cardRow { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-58%); display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(6px, 1.4vw, 14px); padding: 0 12px; perspective: 900px; }
+  .rcard { --w: clamp(56px, min(9.2vw, 23vh), 128px); position: relative; width: var(--w); aspect-ratio: 59 / 86; padding: 0; border: 0; background: none; cursor: pointer; transform-style: preserve-3d; }
+  .rcard .rf { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3,.7,.3,1.2); }
+  .rcard .rf > * { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 6px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .rcard .rback { background: radial-gradient(ellipse 34% 26% at 50% 50%, #a06a2c 0 60%, #3b2412 62%), linear-gradient(135deg, #2a1a0c, #5a3818); border: 2px solid #6b4520; box-shadow: 0 8px 18px rgba(0,0,0,.5); }
+  .rcard .rfront { transform: rotateY(180deg); object-fit: cover; background: #1c2230; box-shadow: 0 8px 18px rgba(0,0,0,.5); }
+  .rcard.open .rf { transform: rotateY(180deg); }
+  .rcard.dealt { animation: deal .55s cubic-bezier(.2,.8,.3,1.1) backwards; }
+  @keyframes deal { from { transform: translate(var(--dx), var(--dy)) rotate(-12deg) scale(.6); opacity: 0; } }
+  /* rare cards give themselves away before you flip them: a glowing rim, and flames for the best */
+  .rcard.r2:not(.open) .rback { box-shadow: 0 0 0 2px #dfefff, 0 0 16px 3px rgba(200,230,255,.8); }
+  .rcard.r3:not(.open) .rback, .rcard.r4:not(.open) .rback, .rcard.r5:not(.open) .rback, .rcard.r6:not(.open) .rback, .rcard.r7:not(.open) .rback, .rcard.r8:not(.open) .rback { box-shadow: 0 0 0 2px #ffd166, 0 0 22px 6px rgba(255,190,70,.9); animation: rarepulse 1s ease-in-out infinite; }
+  @keyframes rarepulse { 50% { filter: brightness(1.25); } }
+  .rcard .aura { position: absolute; left: 10%; right: 10%; bottom: 70%; height: 90%; border-radius: 50% 50% 20% 20%; background: radial-gradient(ellipse at 50% 100%, rgba(255,210,110,.95), rgba(255,120,30,.55) 40%, transparent 70%); filter: blur(4px); animation: flame .45s ease-in-out infinite alternate; pointer-events: none; transform-origin: 50% 100%; }
+  .rcard.open .aura { display: none; } @keyframes flame { to { transform: scaleY(1.18) scaleX(.9); opacity: .75; } }
+  .rcard .rname { position: absolute; left: -4px; right: -4px; top: 100%; margin-top: 4px; font-size: 10px; line-height: 1.2; text-align: center; color: #e8ecff; opacity: 0; transition: opacity .3s .3s; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .rcard.open .rname { opacity: 1; }
+  .rcard .rnew { position: absolute; right: -5px; top: -7px; z-index: 2; background: #2f9e5a; color: #fff; font: 800 9px/1 var(--font); padding: 3px 5px; border-radius: 4px; opacity: 0; transition: opacity .3s .4s; }
+  .rcard.open .rnew { opacity: 1; } .rcard .rar { position: absolute; left: -5px; top: -7px; z-index: 2; margin: 0; opacity: 0; transition: opacity .3s .4s; } .rcard.open .rar { opacity: 1; }
+  #bigReveal { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; align-content: center; gap: 10px; background: rgba(10,6,30,.55); cursor: pointer; }
+  #bigReveal[hidden] { display: none; }
+  #bigReveal .rays { position: absolute; left: 50%; top: 50%; width: 240vmax; height: 240vmax; transform: translate(-50%, -50%); background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--rc) 70%, transparent) 0 5deg, transparent 5deg 15deg); mask: radial-gradient(closest-side, #000, transparent 70%); -webkit-mask: radial-gradient(closest-side, #000, transparent 70%); animation: spin 14s linear infinite; }
+  #bigImg { position: relative; height: min(62vh, 480px); aspect-ratio: 59 / 86; border-radius: 12px; box-shadow: 0 0 0 3px #fff6, 0 0 60px 16px color-mix(in srgb, var(--rc) 80%, transparent); animation: bigin .6s cubic-bezier(.2,.9,.3,1.3); }
+  @keyframes bigin { from { transform: scale(.3) rotateY(180deg); opacity: 0; } }
+  .bigbanner { position: relative; font: italic 900 clamp(30px, 7vh, 54px) var(--font); letter-spacing: .02em; background: linear-gradient(180deg, #fff, #ffe08a 50%, #ff9b2e); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 #6a2a00) drop-shadow(0 0 18px rgba(255,190,80,.8)); animation: bannerin .5s .25s cubic-bezier(.2,.9,.3,1.4) backwards; }
+  @keyframes bannerin { from { transform: scale(2.2); opacity: 0; } }
+  .bigname { position: relative; font-weight: 800; font-size: 18px; text-shadow: 0 2px 6px #000; } .bighint { position: relative; color: #cfd6ff; opacity: .8; }
+  @media (orientation: landscape) { #bigReveal { grid-template-columns: auto auto; column-gap: 28px; } #bigReveal .bigbanner, #bigReveal .bigname, #bigReveal .bighint { grid-column: 2; justify-self: start; } #bigImg { grid-row: 1 / span 3; } }
+  #flipAll { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); z-index: 4; }
+  #openBody { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); text-align: center; z-index: 3; display: grid; gap: 4px; padding: 0 12px; }
+  #openBody[hidden] { display: none; } #openBody h1 { margin: 0; font-size: clamp(16px, 4vh, 24px); }
+  #openBody .note { margin: 0; }
+  @media (orientation: portrait) { .rcard { --w: 17vw; } #cardRow { top: 44%; } }
   .pulls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 460px; margin: 12px auto; }
   .pull { position: relative; border: 0; padding: 0; background: none; cursor: pointer; font: inherit; color: var(--text); text-align: center; perspective: 600px; }
   .pull .face { aspect-ratio: 59 / 86; border-radius: 8px; transition: transform .45s; transform-style: preserve-3d; position: relative; }
@@ -988,22 +989,20 @@
 </div>
 
 <div id="opening" hidden>
-  <div class="hall" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-  <div class="sumcircle" id="sumCircle" aria-hidden="true"></div>
-  <div class="tear" id="tear"><img id="tearImg" alt=""></div>
-  <div id="stage" hidden>
-    <div class="beam" aria-hidden="true"></div>
-    <button class="revcard" id="revCard" type="button" aria-label="Next card"><span class="face"><span class="back"></span><img class="front" id="revImg" alt=""><span class="shine"></span></span></button>
-    <div class="revinfo" id="revInfo"></div>
-    <div class="revnav"><span id="revCount"></span><button class="btn primary" id="revNext" type="button">Next card →</button><button class="btn small" id="revSkip" type="button">Show all</button></div>
+  <div class="burstbg" aria-hidden="true"></div>
+  <div id="packStage">
+    <div class="pack3d" id="pack3d"><div class="ptop"><img id="ptopImg" alt=""></div><div class="pbody"><img id="pbodyImg" alt=""></div><span class="pshine"></span><span class="pcut"></span></div>
+    <p class="phint" id="packHint">Swipe across the top to tear it open</p>
   </div>
+  <div class="flashw" id="flashW" aria-hidden="true"></div>
+  <div id="cardRow"></div>
+  <div id="bigReveal" hidden><div class="rays" aria-hidden="true"></div><div class="bigbanner" id="bigBanner"></div><img id="bigImg" alt=""><div class="bigname" id="bigName"></div><small class="bighint">Tap to continue</small></div>
   <div id="openBody" hidden>
-    <small class="kicker">The pack has answered</small>
     <h1 id="openTitle"></h1>
     <p class="note center" id="openSum"></p>
-    <div class="pulls" id="pulls"></div>
     <div class="row" style="justify-content:center"><button class="btn primary" id="openAgain" type="button"></button><button class="btn" id="openColl" type="button">Collection</button><button class="btn" id="openDone" type="button">Done</button></div>
   </div>
+  <button class="btn primary" id="flipAll" type="button" hidden>Open all</button>
 </div>
 
 <section class="screen" id="scan" hidden>
@@ -3520,67 +3519,85 @@ async function openPack(pk, pay) {
   ceremony(pk, shown);
   renderOpenAgain(); renderShop();
 }
-const RCOL = ["#4f8bff", "#7fe0ff", "#e8f2ff", "#ffd166"];
-const rcol = r => RCOL[Math.min(3, Math.max(0, rank(r)))];
+const RCOL = ["#8f6bff", "#7fe0ff", "#e8f2ff", "#ffc844"];
+const rcol = r => rank(r) >= 4 ? "#ff6ad5" : RCOL[Math.min(3, Math.max(0, rank(r)))];
 let rev = null;
-function sumCircleSvg() {
-  const runes = "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ";
-  const t = [...Array(36)].map((_, i) => { const a = i / 36 * Math.PI * 2, x = 100 + Math.cos(a) * 83, y = 100 + Math.sin(a) * 83; return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" transform="rotate(${(a * 180 / Math.PI + 90).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})">${runes[i % runes.length]}</text>`; }).join("");
-  const star = n => [...Array(n)].map((_, i) => { const a = i / n * Math.PI * 2 - Math.PI / 2; return `${(100 + Math.cos(a) * 62).toFixed(1)},${(100 + Math.sin(a) * 62).toFixed(1)}`; });
-  const hex = star(6);
-  return `<svg viewBox="0 0 200 200" fill="none" stroke="currentColor"><circle cx="100" cy="100" r="97" stroke-width="1.6"/><circle cx="100" cy="100" r="92" stroke-width=".6"/>
-    <g class="spin"><circle cx="100" cy="100" r="76" stroke-width="1" stroke-dasharray="3 3"/><g fill="currentColor" stroke="none" font-size="7" text-anchor="middle" dominant-baseline="middle">${t}</g></g>
-    <g class="spin2"><polygon points="${[hex[0], hex[2], hex[4]].join(" ")}" stroke-width="1.1"/><polygon points="${[hex[1], hex[3], hex[5]].join(" ")}" stroke-width="1.1"/><circle cx="100" cy="100" r="62" stroke-width=".8"/></g>
-    <circle cx="100" cy="100" r="34" stroke-width="1.4"/><circle cx="100" cy="100" r="20" stroke-width=".8" stroke-dasharray="2 2"/></svg>`;
-}
+// 1. the pack sways in the middle; swipe across its top (or tap it) to tear it open
 function ceremony(pk, shown) {
-  const o = $("#opening"), order = shown.map((p, k) => ({ ...p, k })).sort((a, b) => rank(a.r) - rank(b.r) || a.k - b.k);
-  if (!$("#sumCircle").firstChild) $("#sumCircle").innerHTML = sumCircleSvg();
-  rev = { pk, shown, order, i: -1, busy: false }; sound.music("pack"); setTimeout(() => sfx("burst"), 1150);
-  o.style.setProperty("--rc", RCOL[0]); o.className = "hot"; o.hidden = false;
-  $("#stage").hidden = true; $("#openBody").hidden = true;
-  $("#tearImg").src = packImg(pk); $("#tear").hidden = false; $("#tear").classList.remove("go"); void $("#tear").offsetWidth; $("#tear").classList.add("go");
-  setTimeout(() => { if (rev?.shown !== shown) return; $("#tear").hidden = true; o.classList.remove("hot"); $("#stage").hidden = false; nextCard(); }, 1600);
+  const o = $("#opening"), pack = $("#pack3d");
+  rev = { pk, shown, opened: 0, torn: false, queue: [], big: false };
+  sound.music("pack"); o.style.setProperty("--rc", RCOL[0]); o.hidden = false;
+  $("#cardRow").innerHTML = ""; $("#openBody").hidden = true; $("#flipAll").hidden = true; $("#bigReveal").hidden = true;
+  $("#packStage").hidden = false; pack.className = "pack3d"; $("#ptopImg").src = $("#pbodyImg").src = packImg(pk);
+  $("#packHint").textContent = "Swipe across the top to tear it open"; pack.querySelector(".pcut").style.width = "0";
 }
-function nextCard() {
-  if (!rev || rev.busy) return;
-  if (rev.i >= 0 && !$("#stage").classList.contains("open")) return flipCard(); // first tap turns it over
-  if (++rev.i >= rev.order.length) return showSummary();
-  const p = rev.order[rev.i], st = $("#stage"), o = $("#opening");
-  rev.busy = true; st.className = ""; void st.offsetWidth;
-  o.style.setProperty("--rc", rcol(p.r)); o.classList.toggle("rainbow", rank(p.r) >= 4); o.classList.toggle("hot", rank(p.r) >= 2);
-  $("#revImg").src = imgUrl(p.card); $("#revCount").textContent = `${rev.i + 1} / ${rev.order.length}`;
-  $("#revNext").textContent = rev.i + 1 === rev.order.length ? "See all cards →" : "Next card →";
-  const info = $("#revInfo"); info.innerHTML = "";
-  const nm = el("h2"); tset(nm, p.card);
-  const c = p.card, stats = c.kind === "monster" ? `★${c.level ?? "?"} · ATK ${c.atk ?? "?"} / DEF ${c.def ?? "-"}` : c.type || "";
-  info.append(el("span", { className: "bigrar", textContent: RARITY[p.r]?.[1] || p.r || "C" }), el("span", { className: "disc", textContent: p.isNew ? "First discovery" : p.r || "" }), nm, el("div", { className: "stats", textContent: stats }),
-    el("span", { className: "tag" + (p.isNew ? "" : " dup"), textContent: p.isNew ? "NEW · added to your collection" : `You now have ${coll[c.id]?.n || 1}` }));
-  requestAnimationFrame(() => { st.classList.add("up"); setTimeout(() => { rev.busy = false; flipCard(); }, 650); });
+{
+  let start = null;
+  const stage = $("#packStage"), cut = () => $("#pack3d .pcut");
+  stage.addEventListener("pointerdown", e => { if (rev && !rev.torn) { start = { x: e.clientX, t: Date.now() }; try { stage.setPointerCapture(e.pointerId); } catch {} e.preventDefault(); } });
+  stage.addEventListener("pointermove", e => { if (!start) return; const r = $("#pack3d").getBoundingClientRect(), d = Math.abs(e.clientX - start.x); cut().style.width = Math.min(100, d / r.width * 130) + "%"; if (d > r.width * 0.7) { start = null; tearPack(); } });
+  const up = () => { if (!start) return; const quick = Date.now() - start.t < 250; start = null; if (quick) tearPack(); else cut().style.width = "0"; };
+  stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", () => { start = null; cut().style.width = "0"; });
 }
-function flipCard() {
-  const p = rev.order[rev.i], st = $("#stage"); if (st.classList.contains("open")) return;
-  st.classList.add("open"); sfx(rank(p.r) >= 3 ? "rare" : "flip"); if (rank(p.r) >= 2) { st.classList.add("foil"); const f = el("span", { className: "flash" }); $("#revCard").append(f); setTimeout(() => f.remove(), 900); }
+// 2. torn: a flash, the top flies off, the cards come out and are dealt face down in a row
+function tearPack() {
+  if (!rev || rev.torn) return; rev.torn = true;
+  const pack = $("#pack3d"), f = $("#flashW");
+  pack.querySelector(".pcut").style.width = "100%"; pack.classList.add("torn"); sfx("burst");
+  f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
+  setTimeout(() => { pack.classList.add("out"); dealCards(); }, 650);
+  setTimeout(() => { $("#packStage").hidden = true; }, 1400);
 }
-function showSummary() {
-  const o = $("#opening"); o.className = ""; o.style.setProperty("--rc", rcol(rev.order.at(-1)?.r));
-  $("#stage").hidden = true; $("#openBody").hidden = false;
-  $("#openTitle").textContent = rev.pk.name;
-  const fresh = rev.shown.filter(p => p.isNew).length;
-  $("#openSum").textContent = `${rev.shown.length} cards · ${fresh} new`;
-  const box = $("#pulls"); box.innerHTML = "";
+function dealCards() {
+  const row = $("#cardRow"); row.innerHTML = "";
+  const best = rev.shown.reduce((m, p) => Math.max(m, rank(p.r)), 0); $("#opening").style.setProperty("--rc", rcol(Object.keys(RARITY).find(r => rank(r) === best) || ""));
   rev.shown.forEach((p, k) => {
-    const b = el("button", { type: "button", className: "sumcard r" + Math.max(0, rank(p.r)) }); b.style.animationDelay = k * 60 + "ms";
-    const nm = el("b"); tset(nm, p.card);
-    b.append(el("img", { src: imgUrl(p.card, "small"), alt: "" }), rarBadge(p.r), nm, el("small", { textContent: `You have ${coll[p.card.id]?.n || 1}` }));
-    if (p.isNew) b.append(el("span", { className: "new", textContent: "NEW" }));
-    b.onclick = () => openCard(p.card); box.append(b);
+    const rk = Math.max(0, rank(p.r)), b = el("button", { type: "button", className: `rcard r${rk}`, "aria-label": "Turn over" });
+    const nm = el("span", { className: "rname" }); tset(nm, p.card);
+    b.append(el("span", { className: "rf" }, el("span", { className: "rback" }), el("img", { className: "rfront", src: imgUrl(p.card), alt: "" })), nm, rarBadge(p.r));
+    if (p.isNew) b.append(el("span", { className: "rnew", textContent: "NEW" }));
+    if (rk >= 3) b.prepend(el("span", { className: "aura" }));
+    b.onclick = () => b.classList.contains("open") ? openCard(p.card) : flipRow(k);
+    row.append(b);
   });
-  rev.i = rev.order.length;
+  // they fly in from the middle of the screen, one after another
+  requestAnimationFrame(() => [...row.children].forEach((b, k) => {
+    const r = b.getBoundingClientRect(); b.style.setProperty("--dx", `${innerWidth / 2 - (r.left + r.width / 2)}px`); b.style.setProperty("--dy", `${innerHeight * 0.55 - (r.top + r.height / 2)}px`);
+    b.style.animationDelay = k * 90 + "ms"; b.classList.add("dealt"); setTimeout(() => sfx("draw"), k * 90);
+  }));
+  setTimeout(() => { $("#flipAll").hidden = false; }, rev.shown.length * 90 + 400);
 }
-$("#revNext").addEventListener("click", nextCard);
-$("#revCard").addEventListener("click", nextCard);
-$("#revSkip").addEventListener("click", () => { if (rev) showSummary(); });
+// 3. a card turned over; an Ultra Rare or better also jumps to the middle with rays and a banner
+function flipRow(k) {
+  const b = $("#cardRow").children[k], p = rev.shown[k]; if (!b || b.classList.contains("open") || rev.big) return false;
+  b.classList.add("open"); rev.opened++;
+  const rk = rank(p.r);
+  if (rk >= 3) { sfx("rare"); setTimeout(() => bigReveal(p), 380); } else sfx(rk >= 2 ? "rare" : "flip");
+  if (rev.opened >= rev.shown.length) setTimeout(finishOpening, rk >= 3 ? 600 : 500);
+  return true;
+}
+function bigReveal(p) {
+  rev.big = true; const v = $("#bigReveal"), rk = rank(p.r);
+  $("#opening").style.setProperty("--rc", rcol(p.r));
+  $("#bigBanner").textContent = rk >= 7 ? "LEGENDARY!" : rk >= 4 ? "SECRET RARE!" : "ULTRA RARE!";
+  $("#bigImg").src = imgUrl(p.card); tset($("#bigName"), p.card);
+  v.hidden = false; for (const n of [$("#bigImg"), $("#bigBanner")]) { n.style.animation = "none"; void n.offsetWidth; n.style.animation = ""; }
+}
+$("#bigReveal").addEventListener("click", () => { $("#bigReveal").hidden = true; rev.big = false; if (rev.auto) setTimeout(autoFlip, 200); });
+// "Open all": turns the rest over one by one (stopping for each big reveal)
+function autoFlip() {
+  if (!rev || rev.big) return;
+  const k = [...$("#cardRow").children].findIndex(b => !b.classList.contains("open"));
+  if (k < 0) { rev.auto = false; return; }
+  flipRow(k); setTimeout(autoFlip, 260);
+}
+$("#flipAll").addEventListener("click", () => { if (!rev) return; rev.auto = true; $("#flipAll").hidden = true; autoFlip(); });
+// 4. all turned over: the pack's name, how many are new, and what to do next (tap a card to read it)
+function finishOpening() {
+  $("#flipAll").hidden = true; $("#openBody").hidden = false;
+  $("#openTitle").textContent = rev.pk.name;
+  $("#openSum").textContent = `${rev.shown.length} cards · ${rev.shown.filter(p => p.isNew).length} new`;
+}
 $("#openColl").addEventListener("click", () => { $("#opening").hidden = true; $("#openDecks").click(); });
 // a flash of light when a foil card is turned over
 function burst(b) { const f = el("span", { className: "flash" }); b.append(f); setTimeout(() => f.remove(), 900); }
@@ -3589,7 +3606,7 @@ function renderOpenAgain() {
   $("#openAgain").textContent = ev ? (ev.price ? `Open another (${ev.price} coins)` : "Open another") : wallet.free > 0 ? "Open another (free)" : `Open another (${lastPack?.price ?? PACK_PRICE} coins)`;
 }
 $("#openAgain").addEventListener("click", () => { $("#opening").hidden = true; openPack(lastPack, lastPack.event ? "event" : wallet.free > 0 ? "free" : "coins"); });
-$("#openDone").addEventListener("click", () => { $("#opening").hidden = true; sound.music("menu"); });
+$("#openDone").addEventListener("click", () => { $("#opening").hidden = true; rev = null; sound.music("menu"); });
 $("#freeBtn").addEventListener("click", () => $("#openShop").click());
 $("#openShop").addEventListener("click", () => { show("shop"); renderAdSlots(); $("#shopLine").textContent = any(SHOP_LINES); packList = null; renderShop(); loadGm(); });
 setInterval(() => { if (!$("#shop").hidden && $("#opening").hidden) renderShop(); }, 60000); // keep event countdowns current
@@ -4825,7 +4842,7 @@ showInstall();
   $("#rotateSkip").addEventListener("click", () => { skipped = true; try { sessionStorage.setItem("arduel.portrait", "1"); } catch {} check(); });
 }
 
-if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, bigSummon, showExtraAura, openReader, useArt, sound, get arena() { return arena; }, aimPreview }; // for testing
+if (new URLSearchParams(location.search).has("debug")) window.duel = { S, ui, net, GATES, CHARS, wallet, coll, answer, aiAnswer, Q, camera, glowing, THREE, pick, LESSONS, startLesson, refreshUI, MSG, openRewards, useArena, scene, vanish, recoil, bigSummon, showExtraAura, openReader, useArt, sound, bigReveal, get rev() { return rev; }, get arena() { return arena; }, aimPreview }; // for testing
 </script>
 </body>
 </html>
