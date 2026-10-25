@@ -164,7 +164,7 @@
   .rcard { --w: clamp(56px, min(9.2vw, 23vh), 128px); position: relative; width: var(--w); aspect-ratio: 59 / 86; padding: 0; border: 0; background: none; cursor: pointer; transform-style: preserve-3d; }
   .rcard .rf { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3,.7,.3,1.2); }
   .rcard .rf > * { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 6px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-  .rcard .rback { background: #2a1408 var(--cardback) center / cover; border: 0; box-shadow: 0 8px 18px rgba(0,0,0,.5); }
+  .rcard .rback { background: #2a1408 center / cover no-repeat; background-image: var(--cardback); border: 0; box-shadow: 0 8px 18px rgba(0,0,0,.5); }
   .rcard .rfront { transform: rotateY(180deg); object-fit: cover; background: #1c2230; box-shadow: 0 8px 18px rgba(0,0,0,.5); }
   .rcard.open .rf { transform: rotateY(180deg); }
   .rcard.dealt { animation: deal .55s cubic-bezier(.2,.8,.3,1.1) backwards; }
@@ -197,7 +197,7 @@
   .pull { position: relative; border: 0; padding: 0; background: none; cursor: pointer; font: inherit; color: var(--text); text-align: center; perspective: 600px; }
   .pull .face { aspect-ratio: 59 / 86; border-radius: 8px; transition: transform .45s; transform-style: preserve-3d; position: relative; }
   .pull .face > * { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 8px; }
-  .pull .back { background: #2a1408 var(--cardback) center / cover; border: 3px solid #6b4520; }
+  .pull .back { background: #2a1408 center / cover no-repeat; background-image: var(--cardback); border: 3px solid #6b4520; }
   .pull .front { transform: rotateY(180deg); object-fit: cover; background: #1c2230; }
   .pull.open .face { transform: rotateY(180deg); }
   .pull .rim { position: absolute; left: -4px; right: -4px; top: -4px; aspect-ratio: 59 / 86; border-radius: 11px; opacity: 0; transition: opacity .3s .35s; z-index: -1; }
@@ -1504,8 +1504,14 @@ const backTex = canvasTex(512, 744, (g, w, h) => {
   g.strokeStyle = "#140803"; g.lineWidth = 26; g.strokeRect(0, 0, w, h);
   g.strokeStyle = "rgba(220,140,60,.55)"; g.lineWidth = 2; g.strokeRect(14, 14, w - 28, h - 28);
 });
-// the same picture for the face-down cards drawn by the page itself (pack opening and lists)
-document.documentElement.style.setProperty("--cardback", `url(${backTex.image.toDataURL("image/jpeg", 0.88)})`);
+// the card back picture (icons/card-back.jpg) replaces the drawn one as soon as it has loaded, on the board and in
+// the page (pack opening, lists, the rival's hand); the drawn one only shows if it can't be loaded
+document.documentElement.style.setProperty("--cardback", `url("icons/card-back.jpg"), url(${backTex.image.toDataURL("image/jpeg", 0.88)})`);
+{
+  const im = new Image();
+  im.onload = () => { const c = backTex.image, g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(im, 0, 0, c.width, c.height); backTex.needsUpdate = true; };
+  im.src = "icons/card-back.jpg";
+}
 const KIND_COLOR = { monster: "#c77d2a", spell: "#2a9d6f", trap: "#b5468f" };
 const ATTR_COLOR = { DARK: 0x9b5de5, LIGHT: 0xffd166, FIRE: 0xff5400, WATER: 0x3a86ff, EARTH: 0xb08968, WIND: 0x52b788, DIVINE: 0xf9c74f };
 function faceTexture(card) {
@@ -2459,7 +2465,7 @@ function actionsFor(loc) {
   }
   return out;
 }
-let backImg = null; // the card back, as a picture for lists of cards
+let backImg = "icons/card-back.jpg"; // the card back, as a picture for lists of cards
 const cardImg = (c, hidden) => el("img", { src: hidden ? (backImg ??= backTex.image.toDataURL("image/png")) : imgUrl(c, "small"), alt: hidden ? "" : c.name, className: hidden ? "back" : "" });
 // The rival's hand: card backs fanned under their banner; new ones fly in from their deck
 function renderOppHand() {
