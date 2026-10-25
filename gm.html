@@ -198,6 +198,7 @@ try { const p = sessionStorage.getItem("gmPass"); if (p) { $("#password").value 
 for (const b of $("#tabs").children) b.addEventListener("click", () => {
   for (const x of $("#tabs").children) x.setAttribute("aria-pressed", String(x === b));
   for (const p of document.querySelectorAll("[data-panel]")) p.hidden = p.dataset.panel !== b.dataset.tab;
+  if (b.dataset.tab === "players") findPlayers();
 });
 
 // ---------- Forbidden & Limited ----------
@@ -409,17 +410,22 @@ $("#newEvent").addEventListener("click", () => {
 // ---------- Players ----------
 const RARITY_LIST = ["Common", "Rare", "Super Rare", "Ultra Rare", "Secret Rare", "Ultimate Rare", "Quarter Century Secret Rare", "Ghost Rare", "Starlight Rare"];
 const ago = t => { if (!t) return "never"; const m = Math.round((Date.now() / 1000 - t) / 60); return m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; };
+// only the latest search is shown (a slow earlier one would otherwise add its list too)
+let playerSearch = 0, playerTimer = 0;
 async function findPlayers() {
-  const box = $("#playerList"); box.innerHTML = ""; $("#playerEdit").hidden = true;
+  const box = $("#playerList"), n = ++playerSearch; $("#playerEdit").hidden = true; $("#playerCount").textContent = "Loading…";
   try {
     const j = await call("players", { q: $("#playerFind").value.trim() });
+    if (n !== playerSearch) return;
+    box.innerHTML = "";
     $("#playerCount").textContent = `${j.count} player${j.count === 1 ? "" : "s"}`;
     for (const u of j.players) box.append(el("div", { className: "item" }, el("b", { textContent: `${u.name}${u.banned ? " (suspended)" : ""}` }),
       el("span", { className: "note", textContent: `${u.coins} coins · ${u.total} cards · ${u.wins} wins · seen ${ago(u.seen)}` }),
       el("button", { type: "button", className: "btn small primary", textContent: "Open", onclick: () => openPlayer(u.name) })));
-  } catch (e) { $("#playerCount").textContent = errText(e); }
+  } catch (e) { if (n === playerSearch) $("#playerCount").textContent = errText(e); }
 }
 $("#playerFindBtn").addEventListener("click", findPlayers);
+$("#playerFind").addEventListener("input", () => { clearTimeout(playerTimer); playerTimer = setTimeout(findPlayers, 350); });
 $("#playerFind").addEventListener("keydown", e => { if (e.key === "Enter") findPlayers(); });
 async function openPlayer(name) {
   const box = $("#playerEdit"); box.hidden = false; box.innerHTML = ""; box.append(el("p", { textContent: "Loading…" }));
