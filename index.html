@@ -152,6 +152,8 @@
   .pack3d .ptop { clip-path: inset(0 0 84% 0); transition: transform .7s cubic-bezier(.3,.6,.4,1), opacity .7s; }
   .pack3d .pbody { clip-path: inset(16% 0 0 0); transition: transform .8s ease-in, opacity .6s; }
   .pack3d .pshine { position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.65) 50%, transparent 65%); background-size: 260% 100%; animation: shinemove 2.6s ease-in-out infinite; mix-blend-mode: screen; pointer-events: none; }
+  .pack3d::after { content: ""; position: absolute; left: 3%; right: 3%; top: 16%; border-top: 2px dashed rgba(255,255,255,.75); filter: drop-shadow(0 0 3px #000); animation: hintpulse 1.4s ease-in-out infinite; pointer-events: none; }
+  .pack3d.torn::after { display: none; }
   .pack3d .pcut { position: absolute; left: 0; top: 16%; height: 4px; width: 0; transform: translateY(-50%); background: #fff; box-shadow: 0 0 14px 4px #fff, 0 0 30px 10px var(--rc); border-radius: 2px; }
   .pack3d.torn { animation: none; } .pack3d.torn .ptop { transform: translate(55%, -120%) rotate(28deg); opacity: 0; } .pack3d.torn .pshine { display: none; }
   .pack3d.out .pbody { transform: translateY(85vh) rotate(-6deg); opacity: 0; }
@@ -994,7 +996,7 @@
   <div class="burstbg" aria-hidden="true"></div>
   <div id="packStage">
     <div class="pack3d" id="pack3d"><div class="ptop"><img id="ptopImg" alt=""></div><div class="pbody"><img id="pbodyImg" alt=""></div><span class="pshine"></span><span class="pcut"></span></div>
-    <p class="phint" id="packHint">Swipe across the top to tear it open</p>
+    <p class="phint" id="packHint">Drag your finger across the top, left to right, to cut it open</p>
   </div>
   <div class="flashw" id="flashW" aria-hidden="true"></div>
   <div id="cardRow"></div>
@@ -3565,23 +3567,39 @@ function ceremony(pk, shown) {
   sound.music("pack"); o.style.setProperty("--rc", RCOL[0]); o.hidden = false;
   $("#cardRow").innerHTML = ""; $("#openBody").hidden = true; $("#flipAll").hidden = true; $("#bigReveal").hidden = true;
   $("#packStage").hidden = false; pack.className = "pack3d"; $("#ptopImg").src = $("#pbodyImg").src = packImg(pk);
-  $("#packHint").textContent = "Swipe across the top to tear it open"; pack.querySelector(".pcut").style.width = "0";
+  $("#packHint").textContent = "Drag your finger across the top, left to right, to cut it open"; pack.querySelector(".pcut").style.width = "0";
 }
 {
-  let start = null;
-  const stage = $("#packStage"), cut = () => $("#pack3d .pcut");
-  stage.addEventListener("pointerdown", e => { if (rev && !rev.torn) { start = { x: e.clientX, t: Date.now() }; try { stage.setPointerCapture(e.pointerId); } catch {} e.preventDefault(); } });
-  stage.addEventListener("pointermove", e => { if (!start) return; const r = $("#pack3d").getBoundingClientRect(), d = Math.abs(e.clientX - start.x); cut().style.width = Math.min(100, d / r.width * 130) + "%"; if (d > r.width * 0.7) { start = null; tearPack(); } });
-  // the pack tilts toward your finger or mouse, and with the phone itself; a glare slides across it
-  const pack = () => $("#pack3d");
+  // Tearing: put your finger on the top strip of the pack (near its left side) and drag to the right; the cut
+  // follows your finger, and only a cut all the way across opens the pack (let go early and it closes up again).
+  // Dragging anywhere else turns the pack left and right to look at it.
+  let cutting = null, turning = null;
+  const stage = $("#packStage"), pack = () => $("#pack3d"), cut = () => $("#pack3d .pcut");
   let idle = null;
-  const tilt = (nx, ny) => { const p = pack(); if (!p || rev?.torn) return; p.classList.add("tilt"); p.querySelector(".pshine").classList.add("glare");
-    p.style.setProperty("--ry", `${nx * 28}deg`); p.style.setProperty("--rx", `${-ny * 22}deg`); p.style.setProperty("--gx", `${50 + nx * 50}%`); p.style.setProperty("--gy", `${30 + ny * 40}%`);
+  const tilt = nx => { const p = pack(); if (!p || rev?.torn) return; p.classList.add("tilt"); p.querySelector(".pshine").classList.add("glare");
+    p.style.setProperty("--ry", `${nx * 30}deg`); p.style.setProperty("--rx", "0deg"); p.style.setProperty("--gx", `${50 + nx * 50}%`);
     clearTimeout(idle); idle = setTimeout(() => { p.classList.remove("tilt"); p.querySelector(".pshine").classList.remove("glare"); }, 2500); };
-  stage.addEventListener("pointermove", e => { const r = pack().getBoundingClientRect(); tilt(Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width * 0.8))), Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height * 0.8)))); });
-  addEventListener("deviceorientation", e => { if ($("#opening").hidden || $("#packStage").hidden || e.gamma == null) return; tilt(Math.max(-1, Math.min(1, e.gamma / 30)), Math.max(-1, Math.min(1, ((e.beta || 0) - 40) / 30))); });
-  const up = () => { if (!start) return; const quick = Date.now() - start.t < 250; start = null; if (quick) tearPack(); else cut().style.width = "0"; };
-  stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", () => { start = null; cut().style.width = "0"; });
+  stage.addEventListener("pointerdown", e => {
+    if (!rev || rev.torn) return;
+    const r = pack().getBoundingClientRect(), inTop = e.clientY >= r.top - r.height * 0.08 && e.clientY <= r.top + r.height * 0.3, fromLeft = e.clientX <= r.left + r.width * 0.45 && e.clientX >= r.left - r.width * 0.25;
+    if (inTop && fromLeft) { cutting = true; tilt(0); } else turning = { x: e.clientX };
+    try { stage.setPointerCapture(e.pointerId); } catch {} e.preventDefault();
+  });
+  stage.addEventListener("pointermove", e => {
+    if (!rev || rev.torn) return;
+    const r = pack().getBoundingClientRect();
+    if (cutting) {
+      // the cut reaches as far as your finger has gone (it never shrinks while you hold on)
+      const k = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), now = parseFloat(cut().style.width) || 0;
+      if (k * 100 > now) { cut().style.width = k * 100 + "%"; if (Math.floor(k * 10) > Math.floor(now / 10)) sfx("draw"); }
+      if (k >= 0.97) { cutting = null; tearPack(); }
+      return;
+    }
+    tilt(Math.max(-1, Math.min(1, (e.clientX - (turning ? turning.x : r.left + r.width / 2)) / (r.width * (turning ? 0.6 : 0.8)))));
+  });
+  addEventListener("deviceorientation", e => { if ($("#opening").hidden || $("#packStage").hidden || e.gamma == null || cutting) return; tilt(Math.max(-1, Math.min(1, e.gamma / 30))); });
+  const up = () => { if (cutting && rev && !rev.torn) cut().style.width = "0"; cutting = null; turning = null; };
+  stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
 }
 // 2. torn: a flash, the top flies off, the cards come out and are dealt face down in a row
 function tearPack() {
