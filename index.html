@@ -976,7 +976,7 @@
   <header class="gatebar"><button class="round" id="shopDone" type="button" aria-label="Back">‹</button><h1>Shop</h1><div class="cur small"><span class="coin" aria-hidden="true"></span><b id="shopCoins">0</b></div><div class="cur small"><span class="ticket" aria-hidden="true"></span><b id="shopFree">0</b></div></header>
   <div class="host"><img data-face="Solomon_Muto" alt=""><div class="bubble" id="shopLine">Welcome to the Kame Game shop! What are you looking for today?</div></div>
   <div class="adslot" id="shopAd"></div>
-  <div class="tabs row center" id="shopTabs"><button class="btn small" type="button" data-tab="events" aria-pressed="true">Limited</button><button class="btn small" type="button" data-tab="packs" aria-pressed="false">Booster packs</button><button class="btn small" type="button" data-tab="decks" aria-pressed="false">Starter decks</button><button class="btn small" type="button" data-tab="duelists" aria-pressed="false">Duelist decks</button></div>
+  <div class="tabs row center" id="shopTabs"><button class="btn small" type="button" data-tab="events" aria-pressed="true">Limited</button><button class="btn small" type="button" data-tab="packs" aria-pressed="false">Booster packs</button><button class="btn small" type="button" data-tab="decks" aria-pressed="false">Starter decks</button><button class="btn small" type="button" data-tab="ocg" aria-pressed="false">Japan only</button><button class="btn small" type="button" data-tab="duelists" aria-pressed="false">Duelist decks</button></div>
   <input id="packFind" class="find" placeholder="Find a pack" autocomplete="off" aria-label="Find a pack">
   <div class="packs" id="packs"></div>
   <p class="note center">A pack has 9 cards (all-foil sets have 5), each at its real rarity in the set. About 1 in 6 packs has an Ultra Rare, 1 in 12 a Secret Rare. Free packs reset at midnight.</p>
@@ -3443,6 +3443,8 @@ function makePack(set, cards) {
   const commons = cards.filter(c => c.rarities.some(r => rank(r) === 0)), out = [];
   const common = () => { const c = any(commons); return { card: c, r: c.rarities.find(r => rank(r) === 0) }; };
   const foils = Object.keys(FOIL_ODDS).filter(r => pool(r).length), lowest = foils[0];
+  // a pack of only Rares (some Japanese sets): 5 of them
+  if (!commons.length && !foils.length) return Array.from({ length: Math.min(5, cards.length) }, () => { const c = any(cards); return { card: c, r: c.rarities[0] }; });
   if (!commons.length) {
     // all-foil sets: 4 of the lowest foil rarity and one better
     for (let i = 0; i < 4; i++) out.push({ card: any(pool(lowest)), r: lowest });
@@ -3462,14 +3464,14 @@ const setCache = new Map();
 let shopTab = null;
 const SHOP_LINES = ["Welcome to the Kame Game shop! What are you looking for today?", "Ah, a fine duelist! I have just the packs for you.", "Back again? Let's see what luck the cards bring you!", "Every pack holds a story. Which one will you open?"];
 const packImg = pk => pk.event ? (pk.event.set ? `api/ygo.php?action=img&set=${pk.event.set}` : pk.event.image ? imgUrl({ id: pk.event.image }) : "") : `api/ygo.php?action=img&set=${pk.code}`;
-let deckList = [];
+let deckList = [], ocgList = [];
 async function renderShop() {
   topUp();
   $("#shopCoins").textContent = wallet.coins; $("#shopFree").textContent = wallet.free;
   const box = $("#packs");
   if (!packList) {
     box.innerHTML = ""; box.append(note("Loading packs…"));
-    try { const j = await api({ action: "packs" }); packList = j.packs; deckList = j.decks || []; } catch (e) { box.innerHTML = ""; box.append(note(errText(e))); return; }
+    try { const j = await api({ action: "packs" }); packList = j.packs; deckList = j.decks || []; ocgList = j.ocg || []; } catch (e) { box.innerHTML = ""; box.append(note(errText(e))); return; }
   }
   const events = gm.events.filter(e => Date.parse(e.end) > nowMs());
   shopTab ??= events.length ? "events" : "packs";
@@ -3483,6 +3485,14 @@ async function renderShop() {
       const soon = Date.parse(ev.start) > nowMs(), left = ev.limit ? ev.limit - (bought[ev.id] || 0) : Infinity, pk = { event: ev, name: ev.name };
       const tile = el("button", { type: "button", className: "pack event" });
       tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: soon ? "SOON" : left <= 0 ? "SOLD OUT" : `${fmtLeft(Date.parse(ev.end) - nowMs())} left` }), el("b", { textContent: ev.name }));
+      tile.onclick = () => openPackModal(pk); box.append(tile);
+    }
+  } else if (shopTab === "ocg") {
+    // packs that only came out in Japan (the cards that also came out in English)
+    box.append(el("p", { className: "note center", style: "grid-column:1/-1", textContent: "Packs that only came out in Japan, with their Japanese rarities." }));
+    for (const pk of ocgList.filter(p => !q || p.name.toLowerCase().includes(q) || packName(p).includes(q) || p.code.toLowerCase() === q)) {
+      const tile = el("button", { type: "button", className: "pack" });
+      tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: `${pk.price} coins` }), el("b", { textContent: packName(pk) }), el("small", { textContent: `🇯🇵 ${(pk.date || "").slice(0, 4)}` }));
       tile.onclick = () => openPackModal(pk); box.append(tile);
     }
   } else if (shopTab === "duelists") {

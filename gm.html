@@ -108,6 +108,10 @@
       <p>Players buy these whole (every card in the deck, saved as a ready-to-duel deck). Switch each one on or off and set its price.</p>
       <div class="row"><button class="btn small" id="startersOn" type="button">All on</button><button class="btn small" id="startersOff" type="button">All off</button><span class="note" id="starterCount"></span></div>
       <div class="list" id="starterList" style="gap:8px"></div>
+      <h2 style="margin-top:24px">Japan-only packs in the Shop</h2>
+      <p>Packs that only came out in Japan (OCG), in the Shop's "Japan only" tab. Their cards come from Yugipedia's card lists. All are on sale unless you switch one off.</p>
+      <div class="row"><button class="btn small" id="ocgOn" type="button">All on</button><button class="btn small" id="ocgOff" type="button">All off</button><span class="note" id="ocgCount"></span></div>
+      <div class="list" id="ocgList" style="gap:8px"></div>
       <h2 style="margin-top:24px">Watch ads for coins</h2>
       <p>Players tap "Watch an ad" in the Shop and get coins when the ad finishes. Pick the ad network you were approved by and enter its ID; "Test" shows a pretend 5-second ad so you can try it first.</p>
       <div class="row">
@@ -185,7 +189,7 @@ async function open() {
     $("#setNames").innerHTML = ""; for (const s of sets) $("#setNames").append(el("option", { value: `${s.name} (${s.code})` }));
     try { sessionStorage.setItem("gmPass", password); } catch {}
     $("#login").hidden = true; $("#gm").hidden = false; $("#bar").hidden = false;
-    renderBan(); renderPacks(); renderStarters(); renderAds(); renderEvents();
+    renderBan(); renderPacks(); renderStarters(); renderOcg(); renderAds(); renderEvents();
   } catch (e) { $("#loginStatus").textContent = errText(e); $("#loginStatus").className = "note err"; }
 }
 $("#loginBtn").addEventListener("click", open);
@@ -254,7 +258,7 @@ function renderPacks() {
   });
 }
 // pack pictures: the GM sees each pack's real artwork, here and when choosing one to add
-let PACK_ZH = {}; fetch("i18n/packs.json").then(r => r.json()).then(j => { for (const [c, t] of Object.entries(j)) if (Array.isArray(t)) PACK_ZH[c] = t[0]; if (cfg) { renderPacks(); renderStarters(); } }).catch(() => {});
+let PACK_ZH = {}; fetch("i18n/packs.json").then(r => r.json()).then(j => { for (const [c, t] of Object.entries(j)) if (Array.isArray(t)) PACK_ZH[c] = t[0]; if (cfg) { renderPacks(); renderStarters(); renderOcg(); } }).catch(() => {});
 const zhName = code => PACK_ZH[code] ? ` · ${PACK_ZH[code]}` : "";
 const packImgUrl = code => `api/ygo.php?action=img&set=${encodeURIComponent(code)}`;
 const packThumb = code => el("img", { className: "pthumb", src: packImgUrl(code), alt: "", loading: "lazy" });
@@ -302,6 +306,23 @@ function renderStarters() {
       el("label", { className: "field", style: "flex:0 0 auto" }, "Price", price)));
   }
 }
+// ---------- Japan-only packs ----------
+const ocgDefaultPrice = code => /^JP\d/.test(code) ? 300 : /^J(20LC|HAC|LGB|MB1|PAC|PGB|QC|RCPG|SSB|AC)/.test(code) ? 200 : 100;
+function ocgRow(code) { cfg.ocgShop ??= []; let l = cfg.ocgShop.find(x => x.code === code); if (!l) { l = { code, price: ocgDefaultPrice(code), enabled: true }; cfg.ocgShop.push(l); } return l; }
+function renderOcg() {
+  const box = $("#ocgList"); box.innerHTML = "";
+  const list = sets.filter(x => x.ocg).sort((a, b) => a.date.localeCompare(b.date)), rows = list.map(x => [x, ocgRow(x.code)]);
+  $("#ocgCount").textContent = `${rows.filter(([, l]) => l.enabled).length} of ${rows.length} on sale`;
+  for (const [x, l] of rows) {
+    const on = el("input", { type: "checkbox", checked: l.enabled }); on.onchange = () => { l.enabled = on.checked; changed(); renderOcg(); };
+    const price = el("input", { type: "number", min: 0, step: 50, value: l.price, style: "width:110px" }); price.oninput = () => { l.price = Math.max(0, +price.value || 0); changed(); };
+    box.append(el("div", { className: "row", style: "justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 0" },
+      packThumb(x.code), el("label", { className: "check", style: "flex:1 1 200px" }, on, `🇯🇵 ${x.name}${zhName(x.code)} · ${x.date.slice(0, 4)}`),
+      el("label", { className: "field", style: "flex:0 0 auto" }, "Price", price)));
+  }
+}
+$("#ocgOn").addEventListener("click", () => { for (const x of sets.filter(x => x.ocg)) ocgRow(x.code).enabled = true; changed(); renderOcg(); });
+$("#ocgOff").addEventListener("click", () => { for (const x of sets.filter(x => x.ocg)) ocgRow(x.code).enabled = false; changed(); renderOcg(); });
 function renderAds() {
   const a = cfg.ads ??= { enabled: false, provider: "test", id: "", coins: 100, perDay: 5, gap: 60 };
   $("#adsOn").checked = a.enabled; $("#adsProv").value = a.provider; $("#adsId").value = a.id; $("#adsCoins").value = a.coins; $("#adsPerDay").value = a.perDay; $("#adsGap").value = a.gap;
@@ -486,7 +507,7 @@ $("#save").addEventListener("click", async () => {
     const j = await call("save", { config: cfg });
     cfg = j.config; cfg.banlist.cards = Array.isArray(cfg.banlist.cards) ? {} : cfg.banlist.cards;
     dirty = false; $("#saveStatus").textContent = "Saved. Players get the changes the next time they open the game or the Shop.";
-    renderBan(); renderPacks(); renderStarters(); renderAds(); renderEvents();
+    renderBan(); renderPacks(); renderStarters(); renderOcg(); renderAds(); renderEvents();
   } catch (e) { $("#saveStatus").className = "err"; $("#saveStatus").textContent = errText(e); }
 });
 

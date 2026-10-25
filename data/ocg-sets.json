@@ -1,0 +1,219 @@
+{
+ "_": "Japanese-only (OCG) packs sold in the shop. Card lists come from Yugipedia's 'Set Card Lists:<title> (OCG-JP)'. Codes start with J.",
+ "JV1": {
+  "title": "Vol.1",
+  "date": "1999-02-04"
+ },
+ "JV2": {
+  "title": "Vol.2",
+  "date": "1999-03-27"
+ },
+ "JV3": {
+  "title": "Vol.3",
+  "date": "1999-05-27"
+ },
+ "JV4": {
+  "title": "Vol.4",
+  "date": "1999-07-22"
+ },
+ "JV5": {
+  "title": "Vol.5",
+  "date": "1999-09-23"
+ },
+ "JV6": {
+  "title": "Vol.6",
+  "date": "1999-11-18"
+ },
+ "JV7": {
+  "title": "Vol.7",
+  "date": "2000-01-27"
+ },
+ "JB1": {
+  "title": "Booster 1",
+  "date": "1999-03-01"
+ },
+ "JB2": {
+  "title": "Booster 2",
+  "date": "1999-05-25"
+ },
+ "JB3": {
+  "title": "Booster 3",
+  "date": "1999-07-05"
+ },
+ "JB4": {
+  "title": "Booster 4",
+  "date": "1999-08-26"
+ },
+ "JB5": {
+  "title": "Booster 5",
+  "date": "1999-10-17"
+ },
+ "JB6": {
+  "title": "Booster 6",
+  "date": "1999-12-01"
+ },
+ "JB7": {
+  "title": "Booster 7",
+  "date": "2000-03-01"
+ },
+ "JBR1": {
+  "title": "Booster R1",
+  "date": "2000-06-23"
+ },
+ "JBR2": {
+  "title": "Booster R2",
+  "date": "2000-09-09"
+ },
+ "JBR3": {
+  "title": "Booster R3",
+  "date": "2000-11-23"
+ },
+ "JP2": {
+  "title": "Premium Pack 2",
+  "date": "1999-08-26"
+ },
+ "JP3": {
+  "title": "Premium Pack 3",
+  "date": "2000-08-10"
+ },
+ "JP4": {
+  "title": "Premium Pack 4",
+  "date": "2000-12-23"
+ },
+ "JP5": {
+  "title": "Premium Pack 5",
+  "date": "2001-12-22"
+ },
+ "JP6": {
+  "title": "Premium Pack 6",
+  "date": "2004-03-11"
+ },
+ "JP7": {
+  "title": "Premium Pack 7",
+  "date": "2004-08-05"
+ },
+ "JP8": {
+  "title": "Premium Pack 8",
+  "date": "2004-12-18"
+ },
+ "JP9": {
+  "title": "Premium Pack 9",
+  "date": "2005-12-17"
+ },
+ "JP21": {
+  "title": "Premium Pack 2021",
+  "date": "2020-12-28"
+ },
+ "JTEB": {
+  "title": "Thousand Eyes Bible",
+  "date": "2000-12-14"
+ },
+ "JSOM": {
+  "title": "Spell of Mask",
+  "date": "2001-04-19"
+ },
+ "JCOA": {
+  "title": "Curse of Anubis",
+  "date": "2001-07-12"
+ },
+ "JSOC": {
+  "title": "Struggle of Chaos",
+  "date": "2001-09-20"
+ },
+ "JAOU": {
+  "title": "Advent of Union",
+  "date": "2002-07-18"
+ },
+ "JBE1": {
+  "title": "Beginner's Edition 1",
+  "date": "2004-06-24"
+ },
+ "JBE2": {
+  "title": "Beginner's Edition 2",
+  "date": "2004-12-09"
+ },
+ "JDL1": {
+  "title": "Duelist Legacy Volume.1",
+  "date": "2002-06-20"
+ },
+ "JDL2": {
+  "title": "Duelist Legacy Volume.2",
+  "date": "2002-08-22"
+ },
+ "JDL3": {
+  "title": "Duelist Legacy Volume.3",
+  "date": "2002-12-12"
+ },
+ "JDL4": {
+  "title": "Duelist Legacy Volume.4",
+  "date": "2003-01-23"
+ },
+ "JDL5": {
+  "title": "Duelist Legacy Volume.5",
+  "date": "2003-04-24"
+ },
+ "J20LC": {
+  "title": "20th Anniversary Legend Collection",
+  "date": "2019-02-09"
+ },
+ "JAC21": {
+  "title": "Animation Chronicle 2021",
+  "date": "2021-06-12"
+ },
+ "JAC22": {
+  "title": "Animation Chronicle 2022",
+  "date": "2022-06-11"
+ },
+ "JAC23": {
+  "title": "Animation Chronicle 2023",
+  "date": "2023-06-10"
+ },
+ "JAC24": {
+  "title": "Animation Chronicle 2024",
+  "date": "2024-06-22"
+ },
+ "JCPL": {
+  "title": "Collectors Pack: Duelist of Legend Version",
+  "date": "2014-05-17"
+ },
+ "JDPLD": {
+  "title": "Duelist Pack: Legend Duelist",
+  "date": "2017-06-03"
+ },
+ "JHAC": {
+  "title": "History Archive Collection",
+  "date": "2022-02-19"
+ },
+ "JLGB": {
+  "title": "Legendary Gold Box",
+  "date": "2019-12-21"
+ },
+ "JMB1": {
+  "title": "Millennium Box Gold Edition",
+  "date": "2015-11-28"
+ },
+ "JPAC": {
+  "title": "Prismatic Art Collection",
+  "date": "2021-02-06"
+ },
+ "JPGB": {
+  "title": "Prismatic God Box",
+  "date": "2020-12-19"
+ },
+ "JQCP": {
+  "title": "Quarter Century Chronicle side:Pride",
+  "date": "2024-03-23"
+ },
+ "JQCU": {
+  "title": "Quarter Century Chronicle side:Unity",
+  "date": "2024-02-23"
+ },
+ "JRCPG": {
+  "title": "Rarity Collection Premium Gold Edition",
+  "date": "2020-02-08"
+ },
+ "JSSB": {
+  "title": "Secret Shiny Box",
+  "date": "2021-12-25"
+ }
+}

@@ -120,7 +120,13 @@ function clean(array $c): array
     $prov = in_array($a['provider'] ?? '', ['test', 'adinplay', 'gamedistribution', 'h5'], true) ? $a['provider'] : 'test';
     $ads = ['enabled' => !empty($a['enabled']), 'provider' => $prov, 'id' => preg_replace('/[^A-Za-z0-9_.\/-]/', '', (string)($a['id'] ?? '')),
         'coins' => max(1, min(10000, (int)($a['coins'] ?? 100))), 'perDay' => max(1, min(50, (int)($a['perDay'] ?? 5))), 'gap' => max(0, min(3600, (int)($a['gap'] ?? 60)))];
+    // Japanese-only packs: on or off, and their price
+    $ocg = [];
+    foreach ((array)($c['ocgShop'] ?? []) as $l) {
+        if (preg_match('/^J[A-Z0-9]{1,5}$/', (string)($l['code'] ?? ''))) $ocg[] = ['code' => (string)$l['code'], 'price' => max(0, min(100000, (int)($l['price'] ?? 100))), 'enabled' => !empty($l['enabled'])];
+    }
     return [
+        'ocgShop' => $ocg,
         'ads' => $ads,
         'shop' => $shop,
         'starterShop' => $starters,

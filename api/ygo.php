@@ -107,6 +107,22 @@ function starterListings(array $gm): array
     }
     return $out;
 }
+// Japanese-only packs in the shop's "Japan only" tab: all on sale unless the GM switches one off; premium packs cost more
+function ocgDefaultPrice(string $code): int
+{
+    return preg_match('/^JP\d/', $code) ? 300 : (preg_match('/^J(20LC|HAC|LGB|MB1|PAC|PGB|QC|RCPG|SSB|AC)/', $code) ? 200 : 100);
+}
+function ocgListings(array $gm): array
+{
+    $byCode = [];
+    foreach ((array)($gm['ocgShop'] ?? []) as $l) $byCode[(string)($l['code'] ?? '')] = $l;
+    $out = [];
+    foreach (array_keys(ocgSets()) as $code) {
+        $l = $byCode[$code] ?? ['enabled' => true, 'price' => ocgDefaultPrice($code)];
+        if (!empty($l['enabled'])) $out[] = ['code' => $code, 'price' => max(0, (int)($l['price'] ?? ocgDefaultPrice($code)))];
+    }
+    return $out;
+}
 // What the shop sells until the GM chooses: the first booster packs, 100 coins each
 const DEFAULT_SHOP = ['LOB', 'MRD', 'SRL', 'PSV', 'LON', 'LOD', 'PGD', 'MFC'];
 // The GM's shop listings that are on sale now or coming soon: [{code, price, start, end, enabled}]
@@ -141,7 +157,71 @@ function allSets(): array
         }
         @file_put_contents($file, json_encode($sets), LOCK_EX);
     }
-    return json_decode((string)file_get_contents($file), true) ?: [];
+    return (json_decode((string)file_get_contents($file), true) ?: []) + ocgSets();
+}
+// Japanese-only (OCG) packs: data/ocg-sets.json; their cards come from Yugipedia (see ocgCards)
+function ocgSets(): array
+{
+    static $sets = null;
+    if ($sets === null) {
+        $sets = [];
+        foreach (json_decode((string)@file_get_contents(__DIR__ . '/../data/ocg-sets.json'), true) ?: [] as $code => $x) {
+            if (is_array($x)) $sets[$code] = ['code' => $code, 'name' => $x['title'], 'date' => $x['date'], 'ocg' => true];
+        }
+    }
+    return $sets;
+}
+// Yugipedia's rarity names and abbreviations, as the TCG rarities the game knows
+function ocgRarity(string $r): string
+{
+    $r = trim(html_entity_decode($r, ENT_QUOTES));
+    $abbr = ['C' => 'Common', 'N' => 'Common', 'NR' => 'Common', 'NPR' => 'Common', 'R' => 'Rare', 'SR' => 'Super Rare', 'UR' => 'Ultra Rare', 'UPR' => 'Ultra Rare', 'SE' => 'Secret Rare', 'ScR' => 'Secret Rare',
+        'UtR' => 'Ultimate Rare', 'UL' => 'Ultimate Rare', 'GR' => 'Ghost Rare', 'HR' => 'Ghost Rare', 'HGR' => 'Ghost Rare', 'CR' => "Collector's Rare", 'PScR' => 'Platinum Secret Rare', 'PSE' => 'Secret Rare', 'ESR' => 'Secret Rare',
+        '20ScR' => 'Secret Rare', 'QCScR' => 'Quarter Century Secret Rare', 'QCSE' => 'Quarter Century Secret Rare', 'StR' => 'Starlight Rare', 'GUR' => 'Ultra Rare', 'GScR' => 'Secret Rare', 'PGR' => 'Ultra Rare', 'MLR' => 'Ultra Rare', 'MLUR' => 'Ultra Rare', 'MLSR' => 'Super Rare', 'GSR' => 'Secret Rare', 'KC' => 'Ultra Rare', 'KCR' => 'Ultra Rare', 'P' => 'Super Rare', 'PR' => 'Super Rare'];
+    if (isset($abbr[$r])) return $abbr[$r];
+    $r = preg_replace('/\s*Parallel\b/i', '', $r);
+    if (preg_match('/^(Normal|Common|Short Print)/i', $r)) return 'Common';
+    if (preg_match('/Gold|Millennium|Kaiba/i', $r)) return 'Ultra Rare';
+    foreach (['Quarter Century Secret Rare', 'Platinum Secret Rare', 'Starlight Rare', "Collector's Rare", 'Ghost Rare', 'Ultimate Rare', 'Secret Rare', 'Ultra Rare', 'Super Rare', 'Rare'] as $known) {
+        if (stripos($r, $known) !== false) return $known;
+    }
+    if (preg_match('/Holographic/i', $r)) return 'Ghost Rare';
+    if (preg_match('/Gold|Millennium|Kaiba/i', $r)) return 'Ultra Rare';
+    return 'Super Rare';
+}
+// A Japanese pack's cards, with their rarities in it, read from Yugipedia's card list and matched to the card database by name
+function ocgCards(array $set): array
+{
+    $json = json_decode((string)fetchUrl('https://yugipedia.com/api.php?' . http_build_query(['action' => 'query', 'prop' => 'revisions', 'rvprop' => 'content', 'rvslots' => 'main', 'redirects' => 1,
+        'titles' => "Set Card Lists:{$set['name']} (OCG-JP)", 'format' => 'json'])), true) ?: fail(502, 'Could not reach the card list. Try again.');
+    $text = (string)((current($json['query']['pages'] ?? []) ?: [])['revisions'][0]['slots']['main']['*'] ?? '');
+    $text !== '' || fail(404, 'No card list for that pack.');
+    $byName = [];
+    foreach (cardDb() as $c) $byName[mb_strtolower($c['name'])] ??= $c;
+    $found = [];
+    preg_match_all('/\{\{Set list\s*\|(.*?)\n\}\}/s', $text, $blocks);
+    foreach ($blocks[1] as $block) {
+        $lines = explode("\n", $block);
+        $head = array_shift($lines);
+        preg_match('/rarities\s*=\s*([^|]*)/', $head, $m);
+        $default = array_values(array_filter(array_map('trim', explode(',', $m[1] ?? 'Common'))));
+        $noCode = str_contains($head, 'noabbr'); // (older lists have no card numbers: "name; rarity")
+        foreach ($lines as $line) {
+            $f = array_map('trim', explode(';', $line));
+            if ($noCode) array_unshift($f, '');
+            if (count($f) < 2 || $f[1] === '' || str_starts_with($f[1], '{') || str_starts_with($f[1], '<')) continue;
+            $name = html_entity_decode(preg_replace('/\s*\/\/.*$/', '', $f[1]), ENT_QUOTES);
+            $c = $byName[mb_strtolower($name)] ?? $byName[mb_strtolower(preg_replace('/\s*\([^)]*\)\s*$/', '', $name))] ?? null;
+            if (!$c) continue; // a card that never came out in English
+            $rar = ($f[2] ?? '') !== '' ? array_map('trim', explode(',', $f[2])) : ($default ?: ['Common']);
+            $e = $found[$c['id']] ?? $c + ['rarities' => []];
+            foreach ($rar as $r) if ($r !== '') $e['rarities'][] = ocgRarity($r);
+            $e['rarities'] = array_values(array_unique($e['rarities']));
+            $found[$c['id']] = $e;
+        }
+    }
+    $found || fail(404, 'No cards found for that pack.');
+    return array_values($found);
 }
 
 // The whole card database, trimmed, sorted by name, kept as a PHP file so OPcache holds it in memory.
@@ -224,18 +304,23 @@ if ($action === 'img') {
         preg_match('/^[A-Z0-9]{2,5}$/', (string)$_GET['set']) || fail(400, 'Bad set code.');
         [$folder, $id] = ['sets', (string)$_GET['set']];
     }
-    $file = cacheDir('img/' . $folder) . "/$id" . ($folder === 'sets' ? '-v2' : '') . '.jpg'; // v2: pack art may come from Yugipedia
+    $file = cacheDir('img/' . $folder) . "/$id" . ($folder === 'sets' ? '-v3' : '') . '.jpg'; // v3: pack art may come from Yugipedia
     if (!is_file($file)) {
         $body = fetchUrl(IMG . "$folder/$id.jpg");
         if ($folder === 'sets') {
             // pack art: keep Yugipedia's picture of the pack instead when it is larger (older packs especially)
             $name = allSets()[$id]['name'] ?? null;
-            $json = $name ? json_decode((string)fetchUrl('https://yugipedia.com/api.php?' . http_build_query(['action' => 'query', 'redirects' => 1, 'titles' => $name, 'prop' => 'pageimages', 'pithumbsize' => 1000, 'format' => 'json'])), true) : null;
-            $src = (string)(current($json['query']['pages'] ?? []) ?: [])['thumbnail']['source'] ?? '';
+            $json = $name ? json_decode((string)fetchUrl('https://yugipedia.com/api.php?' . http_build_query(['action' => 'query', 'redirects' => 1, 'titles' => $name, 'prop' => 'pageimages', 'piprop' => 'original', 'format' => 'json'])), true) : null;
+            $src = (string)(current($json['query']['pages'] ?? []) ?: [])['original']['source'] ?? '';
             $alt = $src !== '' ? fetchUrl($src) : null;
             $width = fn($b) => $b !== null && ($i = @getimagesizefromstring($b)) ? $i[0] : 0;
             if ($alt !== null && $width($alt) > $width($body)) {
                 $body = $alt;
+            }
+            // originals can be huge: shrink to 600px wide when GD is there
+            if ($width($body) > 600 && function_exists('imagecreatefromstring') && ($im = @imagecreatefromstring($body))) {
+                $small = imagescale($im, 600);
+                ob_start(); imagejpeg($small, null, 86); $body = (string)ob_get_clean();
             }
         }
         if ($body === null || strlen($body) < 1000 || !@getimagesizefromstring($body)) {
@@ -350,7 +435,8 @@ if ($action === 'packs') {
     }
     // the real starter decks are sold whole in the shop, for more than a pack
     $decks = array_values(array_map(fn($l) => $sets[$l['code']] + ['price' => $l['price']], array_filter(starterListings(gmSettings()), fn($l) => isset($sets[$l['code']]))));
-    echo json_encode(['packs' => $packs, 'starters' => STARTERS, 'decks' => $decks, 'suggested' => PACKS, 'now' => gmdate('c')]);
+    $ocg = array_values(array_map(fn($l) => $sets[$l['code']] + ['price' => $l['price']], ocgListings(gmSettings())));
+    echo json_encode(['packs' => $packs, 'ocg' => $ocg, 'starters' => STARTERS, 'decks' => $decks, 'suggested' => PACKS, 'now' => gmdate('c')]);
     exit;
 }
 
@@ -374,10 +460,13 @@ if ($action === 'set') {
     } else {
         // a new player's starter deck, a starter deck on sale, or a pack the GM has on sale right now
         in_array($code, STARTERS, true) || in_array($code, array_column(starterListings($gm), 'code'), true)
-            || in_array($code, array_column(shopListings($gm, true), 'code'), true) || fail(403, 'That pack is not on sale right now.');
+            || in_array($code, array_column(shopListings($gm, true), 'code'), true) || in_array($code, array_column(ocgListings($gm), 'code'), true) || fail(403, 'That pack is not on sale right now.');
     }
     $set = allSets()[$code] ?? fail(404, 'Unknown pack.');
     $file = cacheDir('data') . "/set-$code.json";
+    if (!empty($set['ocg']) && (!is_file($file) || filemtime($file) < time() - DATA_TTL)) {
+        @file_put_contents($file, json_encode(['set' => $set, 'cards' => ocgCards($set)]), LOCK_EX);
+    }
     if (!is_file($file) || filemtime($file) < time() - DATA_TTL) {
         $body = fetchUrl(API . '?' . http_build_query(['cardset' => $set['name']])) ?? fail(502, 'Could not reach the card database. Try again.');
         $cards = [];
