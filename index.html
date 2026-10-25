@@ -144,10 +144,9 @@
     background: radial-gradient(closest-side, color-mix(in srgb, var(--rc) 55%, #fff 10%), transparent 60%), repeating-conic-gradient(from 0deg, rgba(255,255,255,.07) 0 4deg, transparent 4deg 12deg), radial-gradient(closest-side, #3b2a8a, #140c33 75%); transition: background .6s; }
   #packStage { position: absolute; inset: 0; display: grid; place-items: center; touch-action: none; }
   #packStage[hidden] { display: none; }
-  .pack3d { --rx: 0deg; --ry: 0deg; position: relative; height: min(66vh, 520px); aspect-ratio: 5 / 8; transform-style: preserve-3d; animation: packsway 3.2s ease-in-out infinite; cursor: grab; filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
-  .pack3d.tilt { animation: none; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .12s ease-out; }
+  .pack3d { --ry: 0deg; position: relative; height: min(66vh, 520px); aspect-ratio: 5 / 8; transform-style: preserve-3d; transform: rotateY(var(--ry)); transition: transform .45s cubic-bezier(.3,1.4,.5,1); cursor: grab; filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
+  .pack3d.held { transition: transform .08s linear; cursor: grabbing; }
   .pack3d .pshine.glare { animation: none; background: radial-gradient(circle at var(--gx, 50%) var(--gy, 30%), rgba(255,255,255,.55), transparent 45%), linear-gradient(105deg, transparent 30%, rgba(160,220,255,.35) 45%, rgba(255,160,240,.3) 55%, transparent 70%); background-size: 100% 100%, 300% 100%; background-position: 0 0, var(--gx, 50%) 0; }
-  @keyframes packsway { 0%, 100% { transform: rotateY(-12deg) rotateX(4deg); } 50% { transform: rotateY(12deg) rotateX(-3deg) translateY(-8px); } }
   .pack3d > div { position: absolute; inset: 0; pointer-events: none; } .pack3d img { pointer-events: none; -webkit-user-drag: none; user-select: none; width: 100%; height: 100%; object-fit: cover; border-radius: 10px; display: block; }
   .pack3d .ptop { clip-path: inset(0 0 84% 0); transition: transform .7s cubic-bezier(.3,.6,.4,1), opacity .7s; }
   .pack3d .pbody { clip-path: inset(16% 0 0 0); transition: transform .8s ease-in, opacity .6s; }
@@ -3575,14 +3574,13 @@ function ceremony(pk, shown) {
   // Dragging anywhere else turns the pack left and right to look at it.
   let cutting = null, turning = null;
   const stage = $("#packStage"), pack = () => $("#pack3d"), cut = () => $("#pack3d .pcut");
-  let idle = null;
-  const tilt = nx => { const p = pack(); if (!p || rev?.torn) return; p.classList.add("tilt"); p.querySelector(".pshine").classList.add("glare");
-    p.style.setProperty("--ry", `${nx * 30}deg`); p.style.setProperty("--rx", "0deg"); p.style.setProperty("--gx", `${50 + nx * 50}%`);
-    clearTimeout(idle); idle = setTimeout(() => { p.classList.remove("tilt"); p.querySelector(".pshine").classList.remove("glare"); }, 2500); };
+  // (it only turns while your finger is down, and swings back to face you when you let go)
+  const tilt = nx => { const p = pack(); if (!p || rev?.torn) return; p.querySelector(".pshine").classList.toggle("glare", nx !== 0);
+    p.style.setProperty("--ry", `${nx * 30}deg`); p.style.setProperty("--gx", `${50 + nx * 50}%`); };
   stage.addEventListener("pointerdown", e => {
     if (!rev || rev.torn) return;
     const r = pack().getBoundingClientRect(), inTop = e.clientY >= r.top - r.height * 0.08 && e.clientY <= r.top + r.height * 0.3, fromLeft = e.clientX <= r.left + r.width * 0.45 && e.clientX >= r.left - r.width * 0.25;
-    if (inTop && fromLeft) { cutting = true; tilt(0); } else turning = { x: e.clientX };
+    if (inTop && fromLeft) { cutting = true; tilt(0); } else { turning = { x: e.clientX }; pack().classList.add("held"); }
     try { stage.setPointerCapture(e.pointerId); } catch {} e.preventDefault();
   });
   stage.addEventListener("pointermove", e => {
@@ -3595,10 +3593,9 @@ function ceremony(pk, shown) {
       if (k >= 0.97) { cutting = null; tearPack(); }
       return;
     }
-    tilt(Math.max(-1, Math.min(1, (e.clientX - (turning ? turning.x : r.left + r.width / 2)) / (r.width * (turning ? 0.6 : 0.8)))));
+    if (turning) tilt(Math.max(-1, Math.min(1, (e.clientX - turning.x) / (r.width * 0.6))));
   });
-  addEventListener("deviceorientation", e => { if ($("#opening").hidden || $("#packStage").hidden || e.gamma == null || cutting) return; tilt(Math.max(-1, Math.min(1, e.gamma / 30))); });
-  const up = () => { if (cutting && rev && !rev.torn) cut().style.width = "0"; cutting = null; turning = null; };
+  const up = () => { if (cutting && rev && !rev.torn) cut().style.width = "0"; if (turning) { pack()?.classList.remove("held"); tilt(0); } cutting = null; turning = null; };
   stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
 }
 // 2. torn: a flash, the top flies off, the cards come out and are dealt face down in a row
