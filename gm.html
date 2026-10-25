@@ -110,7 +110,7 @@
       <div class="list" id="starterList" style="gap:8px"></div>
       <h2 style="margin-top:24px">Japan-only packs in the Shop</h2>
       <p>Packs that only came out in Japan (OCG), in the Shop's "Japan only" tab. Their cards come from Yugipedia's card lists. All are on sale unless you switch one off.</p>
-      <div class="row"><button class="btn small" id="ocgOn" type="button">All on</button><button class="btn small" id="ocgOff" type="button">All off</button><span class="note" id="ocgCount"></span></div>
+      <div class="row"><select id="ocgKind" aria-label="Type"><option value="">All types</option><option value="booster">Booster packs 补充包</option><option value="premium">Premium packs 精选包</option><option value="deck">Decks 卡组</option><option value="tournament">Tournament / Duel Terminal 赛事包</option><option value="box">Boxes 礼盒</option><option value="promo">Promo / bonus 特典</option></select><input id="ocgFind" placeholder="Find" autocomplete="off" style="max-width:180px"><button class="btn small" id="ocgOn" type="button">All shown on</button><button class="btn small" id="ocgOff" type="button">All shown off</button><span class="note" id="ocgCount"></span></div>
       <div class="list" id="ocgList" style="gap:8px"></div>
       <h2 style="margin-top:24px">Watch ads for coins</h2>
       <p>Players tap "Watch an ad" in the Shop and get coins when the ad finishes. Pick the ad network you were approved by and enter its ID; "Test" shows a pretend 5-second ad so you can try it first.</p>
@@ -307,13 +307,13 @@ function renderStarters() {
   }
 }
 // ---------- Japan-only packs ----------
-const ocgDefaultPrice = code => /^JP\d/.test(code) ? 300 : /^J(20LC|HAC|LGB|MB1|PAC|PGB|QC|RCPG|SSB|AC)/.test(code) ? 200 : 100;
+const ocgDefaultPrice = code => ({ premium: 300, box: 200 })[sets.find(x => x.code === code)?.kind] ?? 100;
 function ocgRow(code) { cfg.ocgShop ??= []; let l = cfg.ocgShop.find(x => x.code === code); if (!l) { l = { code, price: ocgDefaultPrice(code), enabled: true }; cfg.ocgShop.push(l); } return l; }
 function renderOcg() {
   const box = $("#ocgList"); box.innerHTML = "";
-  const list = sets.filter(x => x.ocg).sort((a, b) => a.date.localeCompare(b.date)), rows = list.map(x => [x, ocgRow(x.code)]);
+  const all = sets.filter(x => x.ocg).sort((a, b) => a.date.localeCompare(b.date)), rows = all.map(x => [x, ocgRow(x.code)]);
   $("#ocgCount").textContent = `${rows.filter(([, l]) => l.enabled).length} of ${rows.length} on sale`;
-  for (const [x, l] of rows) {
+  for (const [x, l] of rows.filter(([x]) => ocgShown(x))) {
     const on = el("input", { type: "checkbox", checked: l.enabled }); on.onchange = () => { l.enabled = on.checked; changed(); renderOcg(); };
     const price = el("input", { type: "number", min: 0, step: 50, value: l.price, style: "width:110px" }); price.oninput = () => { l.price = Math.max(0, +price.value || 0); changed(); };
     box.append(el("div", { className: "row", style: "justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 0" },
@@ -321,8 +321,11 @@ function renderOcg() {
       el("label", { className: "field", style: "flex:0 0 auto" }, "Price", price)));
   }
 }
-$("#ocgOn").addEventListener("click", () => { for (const x of sets.filter(x => x.ocg)) ocgRow(x.code).enabled = true; changed(); renderOcg(); });
-$("#ocgOff").addEventListener("click", () => { for (const x of sets.filter(x => x.ocg)) ocgRow(x.code).enabled = false; changed(); renderOcg(); });
+// the type and search filters; "All shown on/off" only touch the packs on screen
+function ocgShown(x) { const k = $("#ocgKind").value, q = $("#ocgFind").value.trim().toLowerCase(); return (!k || x.kind === k) && (!q || `${x.name} ${x.code} ${PACK_ZH[x.code] || ""} ${x.ja || ""}`.toLowerCase().includes(q)); }
+$("#ocgKind").addEventListener("change", renderOcg); $("#ocgFind").addEventListener("input", renderOcg);
+$("#ocgOn").addEventListener("click", () => { for (const x of sets.filter(x => x.ocg && ocgShown(x))) ocgRow(x.code).enabled = true; changed(); renderOcg(); });
+$("#ocgOff").addEventListener("click", () => { for (const x of sets.filter(x => x.ocg && ocgShown(x))) ocgRow(x.code).enabled = false; changed(); renderOcg(); });
 function renderAds() {
   const a = cfg.ads ??= { enabled: false, provider: "test", id: "", coins: 100, perDay: 5, gap: 60 };
   $("#adsOn").checked = a.enabled; $("#adsProv").value = a.provider; $("#adsId").value = a.id; $("#adsCoins").value = a.coins; $("#adsPerDay").value = a.perDay; $("#adsGap").value = a.gap;

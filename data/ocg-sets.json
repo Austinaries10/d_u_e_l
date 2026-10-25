@@ -2,218 +2,2846 @@
  "_": "Japanese-only (OCG) packs sold in the shop. Card lists come from Yugipedia's 'Set Card Lists:<title> (OCG-JP)'. Codes start with J.",
  "JV1": {
   "title": "Vol.1",
-  "date": "1999-02-04"
- },
- "JV2": {
-  "title": "Vol.2",
-  "date": "1999-03-27"
- },
- "JV3": {
-  "title": "Vol.3",
-  "date": "1999-05-27"
- },
- "JV4": {
-  "title": "Vol.4",
-  "date": "1999-07-22"
- },
- "JV5": {
-  "title": "Vol.5",
-  "date": "1999-09-23"
- },
- "JV6": {
-  "title": "Vol.6",
-  "date": "1999-11-18"
- },
- "JV7": {
-  "title": "Vol.7",
-  "date": "2000-01-27"
+  "date": "1999-02-04",
+  "kind": "booster"
  },
  "JB1": {
   "title": "Booster 1",
-  "date": "1999-03-01"
+  "date": "1999-03-01",
+  "kind": "booster"
+ },
+ "JX001": {
+  "title": "Starter Box: Theatrical Release",
+  "date": "1999-03-06",
+  "ja": "STARTER BOX 劇場限定発売版",
+  "kind": "box"
+ },
+ "JX002": {
+  "title": "Starter Box",
+  "date": "1999-03-18",
+  "ja": "STARTER BOX",
+  "kind": "box"
+ },
+ "JV2": {
+  "title": "Vol.2",
+  "date": "1999-03-27",
+  "kind": "booster"
  },
  "JB2": {
   "title": "Booster 2",
-  "date": "1999-05-25"
+  "date": "1999-05-25",
+  "kind": "booster"
+ },
+ "JV3": {
+  "title": "Vol.3",
+  "date": "1999-05-27",
+  "kind": "booster"
  },
  "JB3": {
   "title": "Booster 3",
-  "date": "1999-07-05"
+  "date": "1999-07-05",
+  "kind": "booster"
+ },
+ "JV4": {
+  "title": "Vol.4",
+  "date": "1999-07-22",
+  "kind": "booster"
  },
  "JB4": {
   "title": "Booster 4",
-  "date": "1999-08-26"
- },
- "JB5": {
-  "title": "Booster 5",
-  "date": "1999-10-17"
- },
- "JB6": {
-  "title": "Booster 6",
-  "date": "1999-12-01"
- },
- "JB7": {
-  "title": "Booster 7",
-  "date": "2000-03-01"
- },
- "JBR1": {
-  "title": "Booster R1",
-  "date": "2000-06-23"
- },
- "JBR2": {
-  "title": "Booster R2",
-  "date": "2000-09-09"
- },
- "JBR3": {
-  "title": "Booster R3",
-  "date": "2000-11-23"
+  "date": "1999-08-26",
+  "kind": "booster"
  },
  "JP2": {
   "title": "Premium Pack 2",
-  "date": "1999-08-26"
+  "date": "1999-08-26",
+  "kind": "premium"
+ },
+ "JV5": {
+  "title": "Vol.5",
+  "date": "1999-09-23",
+  "kind": "booster"
+ },
+ "JB5": {
+  "title": "Booster 5",
+  "date": "1999-10-17",
+  "kind": "booster"
+ },
+ "JV6": {
+  "title": "Vol.6",
+  "date": "1999-11-18",
+  "kind": "booster"
+ },
+ "JB6": {
+  "title": "Booster 6",
+  "date": "1999-12-01",
+  "kind": "booster"
+ },
+ "JX006": {
+  "title": "EX Starter Box",
+  "date": "1999-12-16",
+  "ja": "EX",
+  "kind": "box"
+ },
+ "JV7": {
+  "title": "Vol.7",
+  "date": "2000-01-27",
+  "kind": "booster"
+ },
+ "JB7": {
+  "title": "Booster 7",
+  "date": "2000-03-01",
+  "kind": "booster"
+ },
+ "JX007": {
+  "title": "Dark Ceremony Edition",
+  "date": "2000-03-23",
+  "ja": "DARK CEREMONY EDITION",
+  "kind": "premium"
+ },
+ "JX008": {
+  "title": "Limited Edition 2",
+  "date": "2000-04-01",
+  "ja": "LIMITED EDITION 2",
+  "kind": "promo"
+ },
+ "JBR1": {
+  "title": "Booster R1",
+  "date": "2000-06-23",
+  "kind": "booster"
+ },
+ "JX012": {
+  "title": "Phantom God",
+  "date": "2000-08-10",
+  "ja": "幻の召喚神",
+  "kind": "booster"
  },
  "JP3": {
   "title": "Premium Pack 3",
-  "date": "2000-08-10"
+  "date": "2000-08-10",
+  "kind": "premium"
  },
- "JP4": {
-  "title": "Premium Pack 4",
-  "date": "2000-12-23"
+ "JBR2": {
+  "title": "Booster R2",
+  "date": "2000-09-09",
+  "kind": "booster"
  },
- "JP5": {
-  "title": "Premium Pack 5",
-  "date": "2001-12-22"
+ "JX013": {
+  "title": "Revival of Black Demons Dragon",
+  "date": "2000-10-26",
+  "ja": "暗黒魔竜復活",
+  "kind": "booster"
  },
- "JP6": {
-  "title": "Premium Pack 6",
-  "date": "2004-03-11"
+ "JX014": {
+  "title": "EX-R Starter Box",
+  "date": "2000-11-23",
+  "ja": "EX-R [二人対戦用構築済みデッキセット]",
+  "kind": "box"
  },
- "JP7": {
-  "title": "Premium Pack 7",
-  "date": "2004-08-05"
- },
- "JP8": {
-  "title": "Premium Pack 8",
-  "date": "2004-12-18"
- },
- "JP9": {
-  "title": "Premium Pack 9",
-  "date": "2005-12-17"
- },
- "JP21": {
-  "title": "Premium Pack 2021",
-  "date": "2020-12-28"
+ "JBR3": {
+  "title": "Booster R3",
+  "date": "2000-11-23",
+  "kind": "booster"
  },
  "JTEB": {
   "title": "Thousand Eyes Bible",
-  "date": "2000-12-14"
+  "date": "2000-12-14",
+  "kind": "booster"
+ },
+ "JP4": {
+  "title": "Premium Pack 4",
+  "date": "2000-12-23",
+  "kind": "premium"
+ },
+ "JX015": {
+  "title": "Limited Edition 3",
+  "date": "2001-04-01",
+  "ja": "LIMITED EDITION 3",
+  "kind": "promo"
  },
  "JSOM": {
   "title": "Spell of Mask",
-  "date": "2001-04-19"
+  "date": "2001-04-19",
+  "kind": "booster"
+ },
+ "JX019": {
+  "title": "Structure Deck: Yugi",
+  "date": "2001-06-28",
+  "ja": "ストラクチャーデッキ -遊戯編-",
+  "kind": "deck"
  },
  "JCOA": {
   "title": "Curse of Anubis",
-  "date": "2001-07-12"
+  "date": "2001-07-12",
+  "kind": "booster"
+ },
+ "JBC": {
+  "title": "Booster Chronicle",
+  "date": "2001-08-30",
+  "ja": "Booster Chronicle",
+  "kind": "booster"
  },
  "JSOC": {
   "title": "Struggle of Chaos",
-  "date": "2001-09-20"
+  "date": "2001-09-20",
+  "kind": "booster"
  },
- "JAOU": {
-  "title": "Advent of Union",
-  "date": "2002-07-18"
+ "JX020": {
+  "title": "Structure Deck: Joey",
+  "date": "2001-10-25",
+  "ja": "ストラクチャーデッキ -城之内編-",
+  "kind": "deck"
  },
- "JBE1": {
-  "title": "Beginner's Edition 1",
-  "date": "2004-06-24"
+ "JX021": {
+  "title": "Mythological Age",
+  "date": "2001-11-29",
+  "ja": "Mythological Age -蘇りし魂-",
+  "kind": "booster"
  },
- "JBE2": {
-  "title": "Beginner's Edition 2",
-  "date": "2004-12-09"
+ "JP5": {
+  "title": "Premium Pack 5",
+  "date": "2001-12-22",
+  "kind": "premium"
+ },
+ "JX022": {
+  "title": "Structure Deck: Kaiba",
+  "date": "2002-01-24",
+  "ja": "ストラクチャーデッキ -海馬編-",
+  "kind": "deck"
+ },
+ "JX023": {
+  "title": "Structure Deck: Pegasus",
+  "date": "2002-03-21",
+  "ja": "ストラクチャーデッキ -ペガサス・J・クロフォード編-",
+  "kind": "deck"
+ },
+ "JX024": {
+  "title": "The New Ruler",
+  "date": "2002-05-16",
+  "ja": "新たなる支配者",
+  "kind": "booster"
+ },
+ "JX025": {
+  "title": "Limited Edition 4",
+  "date": "2002-05-28",
+  "ja": "LIMITED EDITION 4",
+  "kind": "promo"
  },
  "JDL1": {
   "title": "Duelist Legacy Volume.1",
-  "date": "2002-06-20"
+  "date": "2002-06-20",
+  "kind": "booster"
+ },
+ "JAOU": {
+  "title": "Advent of Union",
+  "date": "2002-07-18",
+  "kind": "booster"
  },
  "JDL2": {
   "title": "Duelist Legacy Volume.2",
-  "date": "2002-08-22"
+  "date": "2002-08-22",
+  "kind": "booster"
+ },
+ "JX028": {
+  "title": "Champion of Black Magic",
+  "date": "2002-09-19",
+  "ja": "黒魔導の覇者",
+  "kind": "booster"
+ },
+ "JX029": {
+  "title": "Power of the Guardian",
+  "date": "2002-11-21",
+  "ja": "ガーディアンの力",
+  "kind": "booster"
  },
  "JDL3": {
   "title": "Duelist Legacy Volume.3",
-  "date": "2002-12-12"
+  "date": "2002-12-12",
+  "kind": "booster"
  },
  "JDL4": {
   "title": "Duelist Legacy Volume.4",
-  "date": "2003-01-23"
+  "date": "2003-01-23",
+  "kind": "booster"
+ },
+ "JX030": {
+  "title": "Threat of the Dark Demon World",
+  "date": "2003-02-20",
+  "ja": "闇魔界の脅威",
+  "kind": "booster"
+ },
+ "JX031": {
+  "title": "Limited Edition 5",
+  "date": "2003-04-08",
+  "ja": "LIMITED EDITION 5",
+  "kind": "promo"
+ },
+ "JX032": {
+  "title": "Limited Edition 5: Kaiba Pack",
+  "date": "2003-04-08",
+  "ja": "LIMITED EDITION 5 -海馬パック-",
+  "kind": "promo"
+ },
+ "JX033": {
+  "title": "Limited Edition 5: Yugi Pack",
+  "date": "2003-04-08",
+  "ja": "LIMITED EDITION 5 -遊戯パック-",
+  "kind": "promo"
+ },
+ "JX034": {
+  "title": "Controller of Chaos",
+  "date": "2003-04-24",
+  "ja": "混沌を制す者",
+  "kind": "booster"
  },
  "JDL5": {
   "title": "Duelist Legacy Volume.5",
-  "date": "2003-04-24"
+  "date": "2003-04-24",
+  "kind": "booster"
  },
- "J20LC": {
-  "title": "20th Anniversary Legend Collection",
-  "date": "2019-02-09"
+ "JX035": {
+  "title": "Structure Deck: Yugi Volume 2",
+  "date": "2003-05-22",
+  "ja": "ストラクチャーデッキ -遊戯編- Volume 2",
+  "kind": "deck"
  },
- "JAC21": {
-  "title": "Animation Chronicle 2021",
-  "date": "2021-06-12"
+ "JX036": {
+  "title": "Structure Deck: Joey Volume 2",
+  "date": "2003-08-07",
+  "ja": "ストラクチャーデッキ -城之内編- Volume 2",
+  "kind": "deck"
  },
- "JAC22": {
-  "title": "Animation Chronicle 2022",
-  "date": "2022-06-11"
+ "JX037": {
+  "title": "Structure Deck: Kaiba Volume 2",
+  "date": "2003-12-11",
+  "ja": "ストラクチャーデッキ -海馬編- Volume 2",
+  "kind": "deck"
  },
- "JAC23": {
-  "title": "Animation Chronicle 2023",
-  "date": "2023-06-10"
+ "JX038": {
+  "title": "Pharaoh's Inheritance",
+  "date": "2004-02-26",
+  "ja": "ファラオの遺産",
+  "kind": "booster"
  },
- "JAC24": {
-  "title": "Animation Chronicle 2024",
-  "date": "2024-06-22"
+ "JP6": {
+  "title": "Premium Pack 6",
+  "date": "2004-03-11",
+  "kind": "premium"
+ },
+ "JLE6": {
+  "title": "Limited Edition 6",
+  "date": "2004-05-01",
+  "ja": "LIMITED EDITION 6",
+  "kind": "promo"
+ },
+ "JBE1": {
+  "title": "Beginner's Edition 1",
+  "date": "2004-06-24",
+  "kind": "booster"
+ },
+ "JP7": {
+  "title": "Premium Pack 7",
+  "date": "2004-08-05",
+  "kind": "premium"
+ },
+ "JX039": {
+  "title": "Expert Edition Volume.1",
+  "date": "2004-09-23",
+  "ja": "EXPERT EDITION Volume 1",
+  "kind": "booster"
+ },
+ "JBE2": {
+  "title": "Beginner's Edition 2",
+  "date": "2004-12-09",
+  "kind": "booster"
+ },
+ "JP8": {
+  "title": "Premium Pack 8",
+  "date": "2004-12-18",
+  "kind": "premium"
+ },
+ "JX040": {
+  "title": "Expert Edition Volume.2",
+  "date": "2005-03-17",
+  "ja": "EXPERT EDITION Volume 2",
+  "kind": "booster"
+ },
+ "JX041": {
+  "title": "Expert Edition Volume 3",
+  "date": "2005-12-08",
+  "ja": "EXPERT EDITION Volume 3",
+  "kind": "booster"
+ },
+ "JP9": {
+  "title": "Premium Pack 9",
+  "date": "2005-12-17",
+  "kind": "premium"
+ },
+ "JSD11": {
+  "title": "Structure Deck: Surge of Radiance",
+  "date": "2006-12-14",
+  "ja": "ストラクチャーデッキ -閃光の波動-",
+  "kind": "deck"
+ },
+ "JPP10": {
+  "title": "Premium Pack 10",
+  "date": "2006-12-16",
+  "ja": "PREMIUM PACK 10",
+  "kind": "premium"
+ },
+ "JSD12": {
+  "title": "Structure Deck: Curse of Darkness",
+  "date": "2007-03-08",
+  "ja": "ストラクチャーデッキ -暗闇の呪縛-",
+  "kind": "deck"
+ },
+ "JYSD2": {
+  "title": "Starter Deck 2007",
+  "date": "2007-03-22",
+  "ja": "STARTER DECK 2007",
+  "kind": "deck"
+ },
+ "JTP01": {
+  "title": "Tournament Pack 2007 Vol.1",
+  "date": "2007-04-01",
+  "ja": "トーナメントパック 2007 Vol.1",
+  "kind": "tournament"
+ },
+ "JLE10": {
+  "title": "Limited Edition 10",
+  "date": "2007-05-21",
+  "ja": "LIMITED EDITION 10",
+  "kind": "promo"
+ },
+ "JSD13": {
+  "title": "Structure Deck: Revival of the Great Dragon",
+  "date": "2007-06-23",
+  "ja": "ストラクチャーデッキ -巨竜の復活-",
+  "kind": "deck"
+ },
+ "JTP02": {
+  "title": "Tournament Pack 2007 Vol.2",
+  "date": "2007-07-01",
+  "ja": "トーナメントパック 2007 Vol.2",
+  "kind": "tournament"
+ },
+ "JX047": {
+  "title": "Expert Edition Volume 4",
+  "date": "2007-09-22",
+  "ja": "EXPERT EDITION Volume 4",
+  "kind": "booster"
+ },
+ "JTP03": {
+  "title": "Tournament Pack 2007 Vol.3",
+  "date": "2007-10-01",
+  "ja": "トーナメントパック 2007 Vol.3",
+  "kind": "tournament"
+ },
+ "JLE11": {
+  "title": "Limited Edition 11",
+  "date": "2007-10-20",
+  "ja": "LIMITED EDITION 11",
+  "kind": "promo"
+ },
+ "JSD14": {
+  "title": "Structure Deck: Advent of the Emperor",
+  "date": "2007-12-15",
+  "ja": "ストラクチャーデッキ -帝王の降臨-",
+  "kind": "deck"
+ },
+ "JPP11": {
+  "title": "Premium Pack 11",
+  "date": "2007-12-22",
+  "ja": "PREMIUM PACK 11",
+  "kind": "premium"
+ },
+ "JTP04": {
+  "title": "Tournament Pack 2007 Vol.4",
+  "date": "2008-01-01",
+  "ja": "トーナメントパック 2007 Vol.4",
+  "kind": "tournament"
+ },
+ "JDT01": {
+  "title": "Duel Terminal - Synchro Awakening!!",
+  "date": "2008-03-12",
+  "ja": "デュエルターミナル 「シンクロ覚醒!!」",
+  "kind": "tournament"
+ },
+ "JYSD3": {
+  "title": "Starter Deck 2008",
+  "date": "2008-03-15",
+  "ja": "STARTER DECK 2008",
+  "kind": "deck"
+ },
+ "JTP05": {
+  "title": "Tournament Pack 2008 Vol.1",
+  "date": "2008-04-01",
+  "ja": "トーナメントパック 2008 Vol.1",
+  "kind": "tournament"
+ },
+ "JSD15": {
+  "title": "Structure Deck: Undead World",
+  "date": "2008-06-21",
+  "ja": "ストラクチャーデッキ -アンデットワールド-",
+  "kind": "deck"
+ },
+ "JDT02": {
+  "title": "Duel Terminal - Invasion of Worms!!",
+  "date": "2008-06-24",
+  "ja": "デュエルターミナル 「ワームの侵攻!!」",
+  "kind": "tournament"
+ },
+ "JTP06": {
+  "title": "Tournament Pack 2008 Vol.2",
+  "date": "2008-07-01",
+  "ja": "トーナメントパック 2008 Vol.2",
+  "kind": "tournament"
+ },
+ "JEXP1": {
+  "title": "Extra Pack",
+  "date": "2008-09-13",
+  "ja": "EXTRA PACK",
+  "kind": "booster"
+ },
+ "JDT03": {
+  "title": "Duel Terminal - Justice Strikes Back!!",
+  "date": "2008-09-22",
+  "ja": "デュエルターミナル 「反撃のジャスティス!!」",
+  "kind": "tournament"
+ },
+ "JTP07": {
+  "title": "Tournament Pack 2008 Vol.3",
+  "date": "2008-10-01",
+  "ja": "トーナメントパック 2008 Vol.3",
+  "kind": "tournament"
+ },
+ "JDT04": {
+  "title": "Duel Terminal - Demon Roar God Revival!!",
+  "date": "2008-12-04",
+  "ja": "デュエルターミナル 「魔轟神復活!!」",
+  "kind": "tournament"
+ },
+ "JSD16": {
+  "title": "Structure Deck: Lord of Magician",
+  "date": "2008-12-13",
+  "ja": "ストラクチャーデッキ -ロード・オブ・マジシャン-",
+  "kind": "deck"
+ },
+ "JJF09": {
+  "title": "Jump Festa 2009 - Promotion Pack",
+  "date": "2008-12-20",
+  "ja": "ジャンプフェスタ 2009 プロモーションパック",
+  "kind": "promo"
+ },
+ "JTP08": {
+  "title": "Tournament Pack 2008 Vol.4",
+  "date": "2009-01-01",
+  "ja": "トーナメントパック 2008 Vol.4",
+  "kind": "tournament"
+ },
+ "JYSD4": {
+  "title": "Starter Deck 2009",
+  "date": "2009-03-14",
+  "ja": "STARTER DECK 2009",
+  "kind": "deck"
+ },
+ "JTP09": {
+  "title": "Tournament Pack 2009 Vol.1",
+  "date": "2009-04-01",
+  "ja": "トーナメントパック 2009 Vol.1",
+  "kind": "tournament"
+ },
+ "JDT05": {
+  "title": "Duel Terminal - Champion of Chaos!!",
+  "date": "2009-04-14",
+  "ja": "デュエルターミナル 「混沌の覇者!!」",
+  "kind": "tournament"
+ },
+ "JLE15": {
+  "title": "Limited Edition 15",
+  "date": "2009-05-21",
+  "ja": "LIMITED EDITION 15",
+  "kind": "promo"
+ },
+ "JSD17": {
+  "title": "Structure Deck: Warriors' Strike",
+  "date": "2009-06-20",
+  "ja": "ストラクチャーデッキ -ウォリアーズ・ストライク-",
+  "kind": "deck"
+ },
+ "JTP10": {
+  "title": "Tournament Pack 2009 Vol.2",
+  "date": "2009-07-01",
+  "ja": "トーナメントパック2009 Vol.2",
+  "kind": "tournament"
+ },
+ "JDT06": {
+  "title": "Duel Terminal - Dragunity of the Hurricane!!",
+  "date": "2009-07-01",
+  "ja": "デュエルターミナル 「疾風のドラグニティ!!」",
+  "kind": "tournament"
+ },
+ "JEXP2": {
+  "title": "Extra Pack Volume 2",
+  "date": "2009-09-19",
+  "ja": "EXTRA PACK Volume 2",
+  "kind": "booster"
+ },
+ "JTP11": {
+  "title": "Tournament Pack 2009 Vol.3",
+  "date": "2009-10-01",
+  "ja": "トーナメントパック2009 Vol.3",
+  "kind": "tournament"
+ },
+ "JDT07": {
+  "title": "Duel Terminal - Charge of the Genex!!",
+  "date": "2009-10-01",
+  "ja": "デュエルターミナル 「ジェネクスの進撃!!」",
+  "kind": "tournament"
+ },
+ "JLE17": {
+  "title": "Limited Edition 17",
+  "date": "2009-10-21",
+  "ja": "LIMITED EDITION 17",
+  "kind": "promo"
+ },
+ "JSD18": {
+  "title": "Structure Deck: Machiners Command",
+  "date": "2009-12-12",
+  "ja": "ストラクチャーデッキ -マシンナーズ・コマンド-",
+  "kind": "deck"
+ },
+ "JJF10": {
+  "title": "Jump Festa 2010 - Promotion Pack",
+  "date": "2009-12-19",
+  "ja": "ジャンプフェスタ 2010 プロモーションパック",
+  "kind": "promo"
+ },
+ "JPP12": {
+  "title": "Premium Pack 12",
+  "date": "2009-12-19",
+  "ja": "PREMIUM PACK 12",
+  "kind": "premium"
+ },
+ "JTP12": {
+  "title": "Tournament Pack 2009 Vol.4",
+  "date": "2010-01-01",
+  "ja": "トーナメントパック2009 Vol.4",
+  "kind": "tournament"
+ },
+ "JDT08": {
+  "title": "Duel Terminal - Pulse of the Trishula!!",
+  "date": "2010-01-21",
+  "ja": "デュエルターミナル 「トリシューラの鼓動!!」",
+  "kind": "tournament"
+ },
+ "JMFC1": {
+  "title": "Monster Figure Collection promotional cards",
+  "date": "2010-01-23",
+  "ja": "モンスターフィギュアコレクション",
+  "kind": "promo"
+ },
+ "JGS02": {
+  "title": "Gold Series 2010",
+  "date": "2010-01-23",
+  "ja": "GOLD SERIES 2010",
+  "kind": "booster"
+ },
+ "JYSD5": {
+  "title": "Starter Deck 2010",
+  "date": "2010-03-20",
+  "ja": "STARTER DECK 2010",
+  "kind": "deck"
+ },
+ "JTP13": {
+  "title": "Tournament Pack 2010 Vol.1",
+  "date": "2010-04-01",
+  "ja": "トーナメントパック2010 Vol.1",
+  "kind": "tournament"
+ },
+ "JDT09": {
+  "title": "Duel Terminal - Vylon Descends!!",
+  "date": "2010-04-27",
+  "ja": "デュエルターミナル 「ヴァイロン降臨!!」",
+  "kind": "tournament"
+ },
+ "JMFC2": {
+  "title": "Monster Figure Collection Volume 2 promotional cards",
+  "date": "2010-05-29",
+  "ja": "モンスターフィギュアコレクション Volume 2",
+  "kind": "promo"
+ },
+ "JSD19": {
+  "title": "Structure Deck: Dragunity Drive",
+  "date": "2010-06-19",
+  "ja": "ストラクチャーデッキ -ドラグニティ・ドライブ-",
+  "kind": "deck"
+ },
+ "JTP14": {
+  "title": "Tournament Pack 2010 Vol.2",
+  "date": "2010-07-01",
+  "ja": "トーナメントパック2010 Vol.2",
+  "kind": "tournament"
+ },
+ "JDT10": {
+  "title": "Duel Terminal - Raid of the Inverz!!",
+  "date": "2010-08-03",
+  "ja": "デュエルターミナル 「インヴェルズの侵略!!」",
+  "kind": "tournament"
+ },
+ "JEXP3": {
+  "title": "Extra Pack Volume 3",
+  "date": "2010-09-18",
+  "ja": "EXTRA PACK Volume 3",
+  "kind": "booster"
+ },
+ "JMFC3": {
+  "title": "Monster Figure Collection Volume 3 promotional cards",
+  "date": "2010-09-25",
+  "ja": "モンスターフィギュアコレクション Volume 3",
+  "kind": "promo"
+ },
+ "JTP15": {
+  "title": "Tournament Pack 2010 Vol.3",
+  "date": "2010-10-01",
+  "ja": "トーナメントパック2010 Vol.3",
+  "kind": "tournament"
+ },
+ "JPR01": {
+  "title": "Promotion Pack",
+  "date": "2010-11-13",
+  "ja": "プロモーションパック 2010",
+  "kind": "promo"
+ },
+ "JDT11": {
+  "title": "Duel Terminal - Judgment of Omega!!",
+  "date": "2010-12-01",
+  "ja": "デュエルターミナル 「オメガの裁き!!」",
+  "kind": "tournament"
+ },
+ "JSD20": {
+  "title": "Structure Deck: Lost Sanctuary",
+  "date": "2010-12-11",
+  "ja": "ストラクチャーデッキ -ロスト・サンクチュアリ-",
+  "kind": "deck"
+ },
+ "JJF11": {
+  "title": "Jump Festa 2011 - Promotion Pack",
+  "date": "2010-12-18",
+  "ja": "ジャンプフェスタ 2011 プロモーションパック",
+  "kind": "promo"
+ },
+ "JPP13": {
+  "title": "Premium Pack 13",
+  "date": "2010-12-18",
+  "ja": "PREMIUM PACK 13",
+  "kind": "premium"
+ },
+ "JTP16": {
+  "title": "Tournament Pack 2010 Vol.4",
+  "date": "2011-01-01",
+  "ja": "トーナメントパック 2010 Vol.4",
+  "kind": "tournament"
+ },
+ "JGS03": {
+  "title": "Gold Series 2011",
+  "date": "2011-01-15",
+  "ja": "GOLD SERIES 2011",
+  "kind": "booster"
+ },
+ "JPR02": {
+  "title": "Promotion Pack 2",
+  "date": "2011-02-11",
+  "ja": "プロモーションパック 2011",
+  "kind": "promo"
+ },
+ "JYSD6": {
+  "title": "Starter Deck 2011",
+  "date": "2011-03-19",
+  "ja": "STARTER DECK 2011",
+  "kind": "deck"
+ },
+ "JTP17": {
+  "title": "Tournament Pack 2011 Vol.1",
+  "date": "2011-04-01",
+  "ja": "トーナメントパック 2011 Vol.1",
+  "kind": "tournament"
+ },
+ "JDT12": {
+  "title": "Duel Terminal - Xyz Startup!!",
+  "date": "2011-04-26",
+  "ja": "デュエルターミナル「エクシーズ始動!!」",
+  "kind": "tournament"
+ },
+ "JBE01": {
+  "title": "Beginner's Edition 1 (2011)",
+  "date": "2011-05-14",
+  "ja": "BEGINNER'S EDITION 1 [2011]",
+  "kind": "booster"
+ },
+ "JSD21": {
+  "title": "Structure Deck: Devil's Gate",
+  "date": "2011-06-18",
+  "ja": "ストラクチャーデッキ -デビルズ・ゲート-",
+  "kind": "deck"
+ },
+ "JTP18": {
+  "title": "Tournament Pack 2011 Vol.2",
+  "date": "2011-07-01",
+  "ja": "トーナメントパック 2011 Vol.2",
+  "kind": "tournament"
+ },
+ "JBE02": {
+  "title": "Beginner's Edition 2 (2011)",
+  "date": "2011-08-13",
+  "ja": "BEGINNER'S EDITION 2 [2011]",
+  "kind": "booster"
+ },
+ "JEXP4": {
+  "title": "Extra Pack Volume 4",
+  "date": "2011-09-17",
+  "ja": "EXTRA PACK Volume 4",
+  "kind": "booster"
+ },
+ "JTP19": {
+  "title": "Tournament Pack 2011 Vol.3",
+  "date": "2011-10-01",
+  "ja": "トーナメントパック 2011 Vol.3",
+  "kind": "tournament"
+ },
+ "JDT13": {
+  "title": "Duel Terminal - Sacred Star Knights!!",
+  "date": "2011-10-04",
+  "ja": "デュエルターミナル 「星の騎士団セイクリッド!!」",
+  "kind": "tournament"
+ },
+ "JDP12": {
+  "title": "Duelist Pack: Yuma",
+  "date": "2011-10-15",
+  "ja": "デュエリストパック -遊馬編-",
+  "kind": "booster"
+ },
+ "JDB12": {
+  "title": "Duelist Box 2012",
+  "date": "2011-11-26",
+  "ja": "デュエリストボックス2012",
+  "kind": "booster"
+ },
+ "JSD22": {
+  "title": "Structure Deck: Dragonic Legion",
+  "date": "2011-12-10",
+  "ja": "ストラクチャーデッキ -ドラゴニック・レギオン-",
+  "kind": "deck"
+ },
+ "JJF12": {
+  "title": "Jump Festa 2012 - Promotion Pack A",
+  "date": "2011-12-17",
+  "ja": "ジャンプフェスタ 2012 17日配布 プロモーションパック",
+  "kind": "promo"
+ },
+ "JPP14": {
+  "title": "Premium Pack 14",
+  "date": "2011-12-17",
+  "ja": "PREMIUM PACK 14",
+  "kind": "premium"
+ },
+ "JX048": {
+  "title": "Jump Festa 2012 - Promotion Pack B",
+  "date": "2011-12-18",
+  "ja": "ジャンプフェスタ 2012 18日配布 プロモーションパック",
+  "kind": "promo"
+ },
+ "JTP20": {
+  "title": "Tournament Pack 2011 Vol.4",
+  "date": "2012-01-01",
+  "ja": "トーナメントパック 2011 Vol.4",
+  "kind": "tournament"
+ },
+ "JGS04": {
+  "title": "Gold Series 2012",
+  "date": "2012-01-07",
+  "ja": "GOLD SERIES 2012",
+  "kind": "booster"
+ },
+ "JDT14": {
+  "title": "Duel Terminal - Ouroboros, Wicked Dragon of Destruction!!",
+  "date": "2012-01-24",
+  "ja": "デュエルターミナル 「破滅の邪龍 ウロボロス!!」",
+  "kind": "tournament"
+ },
+ "JST12": {
+  "title": "Starter Deck 2012",
+  "date": "2012-03-17",
+  "ja": "STARTER DECK 2012",
+  "kind": "deck"
+ },
+ "JTP21": {
+  "title": "Tournament Pack 2012 Vol.1",
+  "date": "2012-04-01",
+  "ja": "トーナメントパック 2012 Vol.1",
+  "kind": "tournament"
+ },
+ "JDE01": {
+  "title": "Duelist Edition Volume 1",
+  "date": "2012-05-12",
+  "ja": "DUELIST EDITION Volume 1",
+  "kind": "booster"
+ },
+ "JDE02": {
+  "title": "Duelist Edition Volume 2",
+  "date": "2012-05-12",
+  "ja": "DUELIST EDITION Volume 2",
+  "kind": "booster"
+ },
+ "JDTC1": {
+  "title": "Duel Terminal Chronicle 1 - Chapter of Awakening",
+  "date": "2012-06-01",
+  "ja": "デュエルターミナル クロニクルI 「覚醒の章」",
+  "kind": "tournament"
+ },
+ "JSD23": {
+  "title": "Structure Deck: Roar of the Sea Emperor",
+  "date": "2012-06-16",
+  "ja": "ストラクチャーデッキ -海皇の咆哮-",
+  "kind": "deck"
+ },
+ "JTP22": {
+  "title": "Tournament Pack 2012 Vol.2",
+  "date": "2012-07-01",
+  "ja": "トーナメントパック2012 Vol.2",
+  "kind": "tournament"
+ },
+ "JDE03": {
+  "title": "Duelist Edition Volume 3",
+  "date": "2012-08-11",
+  "ja": "DUELIST EDITION Volume 3",
+  "kind": "booster"
+ },
+ "JDE04": {
+  "title": "Duelist Edition Volume 4",
+  "date": "2012-08-11",
+  "ja": "DUELIST EDITION Volume 4",
+  "kind": "booster"
+ },
+ "JGDB1": {
+  "title": "The Gold Box",
+  "date": "2012-08-25",
+  "ja": "THE GOLD BOX",
+  "kind": "booster"
+ },
+ "JDTC2": {
+  "title": "Duel Terminal Chronicle 2 - Chapter of Chaos",
+  "date": "2012-08-28",
+  "ja": "デュエルターミナル クロニクルII 「混沌の章」",
+  "kind": "tournament"
+ },
+ "JDP13": {
+  "title": "Duelist Pack: Kite",
+  "date": "2012-09-15",
+  "ja": "デュエリストパック -カイト編-",
+  "kind": "booster"
+ },
+ "JTP23": {
+  "title": "Tournament Pack 2012 Vol.3",
+  "date": "2012-10-01",
+  "ja": "トーナメントパック2012 Vol.3",
+  "kind": "tournament"
+ },
+ "JEP12": {
+  "title": "Extra Pack 2012",
+  "date": "2012-10-13",
+  "ja": "EXTRA PACK 2012",
+  "kind": "booster"
+ },
+ "JDTC3": {
+  "title": "Duel Terminal Chronicle 3 - Chapter of Destruction",
+  "date": "2012-11-06",
+  "ja": "デュエルターミナル クロニクルIII 「破滅の章」",
+  "kind": "tournament"
+ },
+ "JSD24": {
+  "title": "Structure Deck: Onslaught of the Fire Kings",
+  "date": "2012-12-08",
+  "ja": "ストラクチャーデッキ -炎王の急襲-",
+  "kind": "deck"
+ },
+ "JJF13": {
+  "title": "Jump Festa 2013 - Promotion Pack A",
+  "date": "2012-12-22",
+  "ja": "ジャンプフェスタ 2013 22日配布 プロモーションパック",
+  "kind": "promo"
+ },
+ "JPP15": {
+  "title": "Premium Pack 15",
+  "date": "2012-12-22",
+  "ja": "PREMIUM PACK 15",
+  "kind": "premium"
+ },
+ "JX049": {
+  "title": "Jump Festa 2013 - Promotion Pack B",
+  "date": "2012-12-23",
+  "ja": "ジャンプフェスタ 2013 23日配布 プロモーションパック",
+  "kind": "promo"
+ },
+ "JAT01": {
+  "title": "Advanced Tournament Pack 2013 Vol.1",
+  "date": "2013-01-01",
+  "ja": "アドバンスド・トーナメントパック2013 Vol.1",
+  "kind": "tournament"
+ },
+ "JGS05": {
+  "title": "Gold Series 2013",
+  "date": "2013-01-12",
+  "ja": "GOLD SERIES 2013",
+  "kind": "booster"
+ },
+ "JPR03": {
+  "title": "Promotion Pack 3: Part A",
+  "date": "2013-02-15",
+  "ja": "スペシャルカード A 2013",
+  "kind": "promo"
+ },
+ "JDTC4": {
+  "title": "Duel Terminal Chronicle 4 - Chapter of Opposites",
+  "date": "2013-02-26",
+  "ja": "デュエルターミナル クロニクルIV 「対極の章」",
+  "kind": "tournament"
+ },
+ "JX050": {
+  "title": "Promotion Pack 3: Part B",
+  "date": "2013-03-16",
+  "ja": "スペシャルカード B 2013",
+  "kind": "promo"
+ },
+ "JST13": {
+  "title": "Starter Deck 2013 Enhancement Pack",
+  "date": "2013-03-16",
+  "ja": "スターターデッキ強化パック",
+  "kind": "booster"
+ },
+ "JX051": {
+  "title": "Starter Deck 2013",
+  "date": "2013-03-16",
+  "ja": "STARTER DECK 2013",
+  "kind": "deck"
+ },
+ "JAT02": {
+  "title": "Advanced Tournament Pack 2013 Vol.2",
+  "date": "2013-04-01",
+  "ja": "アドバンスド・トーナメントパック2013 Vol.2",
+  "kind": "tournament"
+ },
+ "JEP13": {
+  "title": "Extra Pack: Sword of Knights",
+  "date": "2013-05-18",
+  "ja": "EXTRA PACK -SWORD OF KNIGHTS-",
+  "kind": "booster"
+ },
+ "JSD25": {
+  "title": "Structure Deck: The Blue-Eyed Dragon's Thundering Descent",
+  "date": "2013-06-15",
+  "ja": "ストラクチャーデッキ -青眼龍轟臨-",
+  "kind": "deck"
+ },
+ "JAT03": {
+  "title": "Advanced Tournament Pack 2013 Vol.3",
+  "date": "2013-07-01",
+  "ja": "アドバンスド・トーナメントパック2013 Vol.3",
+  "kind": "tournament"
+ },
+ "JCPZ1": {
+  "title": "Collectors Pack: ZEXAL Version",
+  "date": "2013-08-10",
+  "ja": "コレクターズパック -ZEXAL編-",
+  "kind": "booster"
+ },
+ "JDP14": {
+  "title": "Duelist Pack: Yuma 2: Gogogo & Dododo",
+  "date": "2013-09-21",
+  "ja": "デュエリストパック -遊馬編 2 ゴゴゴ&ドドド-",
+  "kind": "booster"
+ },
+ "JDP15": {
+  "title": "Duelist Pack: Kastle Siblings",
+  "date": "2013-10-19",
+  "ja": "デュエリストパック -神代兄妹編-",
+  "kind": "booster"
+ },
+ "JAT04": {
+  "title": "Advanced Tournament Pack 2013 Vol.4",
+  "date": "2013-11-01",
+  "ja": "アドバンスド・トーナメントパック2013 Vol.4",
+  "kind": "tournament"
+ },
+ "JDS14": {
+  "title": "Duelist Set: Version Lightsworn Judgment Enhancement Pack",
+  "date": "2013-11-23",
+  "ja": "デュエリストセット Ver.ライトロード・ジャッジメント-デッキ構築用パック",
+  "kind": "booster"
+ },
+ "JX052": {
+  "title": "Duelist Set: Version Machine-Gear Troopers Enhancement Pack",
+  "date": "2013-11-23",
+  "ja": "デュエリストセット Ver.マシンギア・トルーパーズ-デッキ構築用パック",
+  "kind": "booster"
+ },
+ "JSD26": {
+  "title": "Structure Deck: Blitzkrieg of the Mechlight Dragons",
+  "date": "2013-12-07",
+  "ja": "ストラクチャーデッキ -機光竜襲雷-",
+  "kind": "deck"
+ },
+ "JJF14": {
+  "title": "Jump Festa 2014 - Promotion Pack",
+  "date": "2013-12-21",
+  "ja": "ジャンプフェスタ 2014 プロモーションパック",
+  "kind": "promo"
+ },
+ "JPP16": {
+  "title": "Premium Pack 16",
+  "date": "2013-12-21",
+  "ja": "PREMIUM PACK 16",
+  "kind": "premium"
+ },
+ "JAT05": {
+  "title": "Advanced Tournament Pack 2014 Vol.1",
+  "date": "2014-01-01",
+  "ja": "アドバンスド・トーナメントパック2014 Vol.1",
+  "kind": "tournament"
+ },
+ "JGS06": {
+  "title": "Gold Series 2014",
+  "date": "2014-01-11",
+  "ja": "GOLD SERIES 2014",
+  "kind": "booster"
+ },
+ "JPR04": {
+  "title": "Promotion Pack 4: Part A",
+  "date": "2014-02-15",
+  "ja": "プロモーションパック2014-A",
+  "kind": "promo"
+ },
+ "JST14": {
+  "title": "Starter Deck 2014 Enhancement Pack",
+  "date": "2014-03-21",
+  "ja": "スターターデッキ強化パック",
+  "kind": "booster"
+ },
+ "JX053": {
+  "title": "Starter Deck 2014",
+  "date": "2014-03-21",
+  "ja": "STARTER DECK 2014",
+  "kind": "deck"
+ },
+ "JX054": {
+  "title": "Deck Custom Pack 01",
+  "date": "2014-04-19",
+  "ja": "デッキカスタムパック 01",
+  "kind": "booster"
+ },
+ "JAT06": {
+  "title": "Advanced Tournament Pack 2014 Vol.2",
+  "date": "2014-04-19",
+  "ja": "アドバンスド・トーナメントパック2014 Vol.2",
+  "kind": "tournament"
  },
  "JCPL": {
   "title": "Collectors Pack: Duelist of Legend Version",
-  "date": "2014-05-17"
+  "date": "2014-05-17",
+  "kind": "booster"
  },
- "JDPLD": {
-  "title": "Duelist Pack: Legend Duelist",
-  "date": "2017-06-03"
+ "JSD27": {
+  "title": "Structure Deck: HERO's Strike",
+  "date": "2014-06-21",
+  "ja": "ストラクチャーデッキ -HERO's STRIKE-",
+  "kind": "deck"
  },
- "JHAC": {
-  "title": "History Archive Collection",
-  "date": "2022-02-19"
+ "JAT07": {
+  "title": "Advanced Tournament Pack 2014 Vol.3",
+  "date": "2014-07-01",
+  "ja": "アドバンスド・トーナメントパック2014 Vol.3",
+  "kind": "tournament"
  },
- "JLGB": {
-  "title": "Legendary Gold Box",
-  "date": "2019-12-21"
+ "JSPRG": {
+  "title": "Booster SP: Raging Masters",
+  "date": "2014-08-09",
+  "ja": "ブースターSP -レイジング・マスターズ-",
+  "kind": "booster"
+ },
+ "JEP14": {
+  "title": "Extra Pack: Knights of Order",
+  "date": "2014-09-13",
+  "ja": "EXTRA PACK -KNIGHTS OF ORDER-",
+  "kind": "booster"
+ },
+ "JAT08": {
+  "title": "Advanced Tournament Pack 2014 Vol.4",
+  "date": "2014-10-01",
+  "ja": "アドバンスド・トーナメントパック2014 Vol.4",
+  "kind": "tournament"
+ },
+ "JSPTR": {
+  "title": "Booster SP: Tribe Force",
+  "date": "2014-10-11",
+  "ja": "ブースターSP -トライブ・フォース-",
+  "kind": "booster"
+ },
+ "JSD28": {
+  "title": "Structure Deck: Synchron Extreme",
+  "date": "2014-12-06",
+  "ja": "ストラクチャーデッキ -シンクロン・エクストリーム-",
+  "kind": "deck"
+ },
+ "JTRC1": {
+  "title": "The Rarity Collection",
+  "date": "2014-12-20",
+  "ja": "THE RARITY COLLECTION",
+  "kind": "booster"
+ },
+ "JJF15": {
+  "title": "Jump Festa 2015 - Promotion Pack",
+  "date": "2014-12-20",
+  "ja": "ジャンプフェスタ 2015 プロモーションパック",
+  "kind": "promo"
+ },
+ "JPP17": {
+  "title": "Premium Pack 17",
+  "date": "2014-12-20",
+  "ja": "PREMIUM PACK 17",
+  "kind": "premium"
+ },
+ "JAT09": {
+  "title": "Advanced Tournament Pack 2015 Vol.1",
+  "date": "2015-01-01",
+  "ja": "アドバンスド・トーナメントパック2015 Vol.1",
+  "kind": "tournament"
+ },
+ "J15AX": {
+  "title": "Duelist Road -Piece of Memory- Side: Yami Yugi",
+  "date": "2015-01-10",
+  "ja": "決闘者の栄光 -記憶の断片- side:闇遊戯",
+  "kind": "booster"
+ },
+ "JX055": {
+  "title": "Duelist Road -Piece of Memory- Side: Yugi Muto",
+  "date": "2015-01-10",
+  "ja": "決闘者の栄光 -記憶の断片- side:武藤遊戯",
+  "kind": "booster"
+ },
+ "JVS15": {
+  "title": "Duelist Entry Deck VS",
+  "date": "2015-03-21",
+  "ja": "デュエリストエントリーデッキVS",
+  "kind": "deck"
+ },
+ "JEN01": {
+  "title": "Entry Pack",
+  "date": "2015-04-15",
+  "ja": "エントリーパック",
+  "kind": "booster"
+ },
+ "JAT10": {
+  "title": "Advanced Tournament Pack 2015 Vol.2",
+  "date": "2015-05-01",
+  "ja": "アドバンスド・トーナメントパック2015 Vol.2",
+  "kind": "tournament"
+ },
+ "JCPD1": {
+  "title": "Collectors Pack: Duelist of Destiny Version",
+  "date": "2015-05-16",
+  "ja": "コレクターズパック -運命の決闘者編-",
+  "kind": "booster"
+ },
+ "JSD29": {
+  "title": "Structure Deck: Master of Pendulum",
+  "date": "2015-06-20",
+  "ja": "ストラクチャーデッキ -マスター・オブ・ペンデュラム-",
+  "kind": "deck"
+ },
+ "JAT11": {
+  "title": "Advanced Tournament Pack 2015 Vol.3",
+  "date": "2015-07-01",
+  "ja": "アドバンスド・トーナメントパック2015 Vol.3",
+  "kind": "tournament"
+ },
+ "JSPHR": {
+  "title": "Booster SP: High-Speed Riders",
+  "date": "2015-08-22",
+  "ja": "ブースターSP -ハイスピード・ライダーズ-",
+  "kind": "booster"
+ },
+ "JEP15": {
+  "title": "Extra Pack 2015",
+  "date": "2015-09-19",
+  "ja": "EXTRA PACK 2015",
+  "kind": "booster"
+ },
+ "JSR01": {
+  "title": "Structure Deck R: Advent of the True Monarch",
+  "date": "2015-09-19",
+  "ja": "ストラクチャーデッキR -真帝王降臨-",
+  "kind": "deck"
+ },
+ "JAT12": {
+  "title": "Advanced Tournament Pack 2015 Vol.4",
+  "date": "2015-10-01",
+  "ja": "アドバンスド・トーナメントパック2015 Vol.4",
+  "kind": "tournament"
+ },
+ "JSPWR": {
+  "title": "Booster SP: Wing Raiders",
+  "date": "2015-11-14",
+  "ja": "ブースターSP -ウィング・レイダーズ-",
+  "kind": "booster"
  },
  "JMB1": {
   "title": "Millennium Box Gold Edition",
-  "date": "2015-11-28"
+  "date": "2015-11-28",
+  "kind": "box"
  },
- "JPAC": {
-  "title": "Prismatic Art Collection",
-  "date": "2021-02-06"
+ "JSD30": {
+  "title": "Structure Deck: Pendulum Domination",
+  "date": "2015-12-12",
+  "ja": "ストラクチャーデッキ -ペンデュラム・ドミネーション-",
+  "kind": "deck"
  },
- "JPGB": {
-  "title": "Prismatic God Box",
-  "date": "2020-12-19"
+ "JPP18": {
+  "title": "Premium Pack 18",
+  "date": "2015-12-19",
+  "ja": "PREMIUM PACK 18",
+  "kind": "premium"
  },
- "JQCP": {
-  "title": "Quarter Century Chronicle side:Pride",
-  "date": "2024-03-23"
+ "JAT13": {
+  "title": "Advanced Tournament Pack 2016 Vol.1",
+  "date": "2016-01-01",
+  "ja": "アドバンスド・トーナメントパック2016 Vol.1",
+  "kind": "tournament"
  },
- "JQCU": {
-  "title": "Quarter Century Chronicle side:Unity",
-  "date": "2024-02-23"
+ "JSR02": {
+  "title": "Structure Deck R: Revival of the Great Divine Dragon",
+  "date": "2016-02-06",
+  "ja": "ストラクチャーデッキR -巨神竜復活-",
+  "kind": "deck"
+ },
+ "JDF16": {
+  "title": "Duelist Festival 2016 - Promotion Pack",
+  "date": "2016-02-11",
+  "ja": "プロモーションパック",
+  "kind": "promo"
+ },
+ "JGP16": {
+  "title": "Gold Pack 2016",
+  "date": "2016-02-20",
+  "ja": "GOLD PACK 2016",
+  "kind": "booster"
+ },
+ "JST16": {
+  "title": "Starter Deck 2016",
+  "date": "2016-03-19",
+  "ja": "STARTER DECK 2016",
+  "kind": "deck"
+ },
+ "JAT14": {
+  "title": "Advanced Tournament Pack 2016 Vol.2",
+  "date": "2016-04-01",
+  "ja": "アドバンスド・トーナメントパック2016 Vol.2",
+  "kind": "tournament"
+ },
+ "JCPF1": {
+  "title": "Collectors Pack: Duelist of Flash Version",
+  "date": "2016-05-14",
+  "ja": "コレクターズパック -閃光の決闘者編-",
+  "kind": "booster"
+ },
+ "JDP17": {
+  "title": "Duelist Pack: Pharaoh's Memories",
+  "date": "2016-06-04",
+  "ja": "デュエリストパック -王の記憶編-",
+  "kind": "booster"
+ },
+ "JAT15": {
+  "title": "Advanced Tournament Pack 2016 Vol.3",
+  "date": "2016-07-01",
+  "ja": "アドバンスド・トーナメントパック2016 Vol.3",
+  "kind": "tournament"
+ },
+ "JVF16": {
+  "title": "Jump Victory Carnival 2016 - Promotion Pack",
+  "date": "2016-07-30",
+  "ja": "ジャンプビクトリーカーニバル2016 物販購入特典カード",
+  "kind": "promo"
+ },
+ "JSPDS": {
+  "title": "Booster SP: Destiny Soldiers",
+  "date": "2016-08-06",
+  "ja": "ブースターSP -デステニー・ソルジャーズ-",
+  "kind": "booster"
+ },
+ "JEP16": {
+  "title": "Extra Pack 2016",
+  "date": "2016-09-10",
+  "ja": "EXTRA PACK 2016",
+  "kind": "booster"
+ },
+ "JSR03": {
+  "title": "Structure Deck R: Machine Dragon Re-Volt",
+  "date": "2016-09-24",
+  "ja": "ストラクチャーデッキR -機械竜叛乱-",
+  "kind": "deck"
+ },
+ "JAT16": {
+  "title": "Advanced Tournament Pack 2016 Vol.4",
+  "date": "2016-10-01",
+  "ja": "アドバンスド・トーナメントパック2016 Vol.4",
+  "kind": "tournament"
+ },
+ "JSPFE": {
+  "title": "Booster SP: Fusion Enforcers",
+  "date": "2016-11-12",
+  "ja": "ブースターSP -フュージョン・エンフォーサーズ-",
+  "kind": "booster"
+ },
+ "JDBLE": {
+  "title": "Dimension Box Limited Edition",
+  "date": "2016-11-26",
+  "ja": "ディメンションボックス -リミテッド・エディション-",
+  "kind": "booster"
+ },
+ "J20AP": {
+  "title": "20th Anniversary Pack 1st Wave",
+  "date": "2016-12-17",
+  "ja": "20th ANNIVERSARY PACK 1st WAVE",
+  "kind": "booster"
+ },
+ "JPP19": {
+  "title": "Premium Pack 19",
+  "date": "2016-12-17",
+  "ja": "PREMIUM PACK 19",
+  "kind": "premium"
+ },
+ "JSD31": {
+  "title": "Structure Deck: Pendulum Evolution",
+  "date": "2016-12-23",
+  "ja": "ストラクチャーデッキ -ペンデュラム・エボリューション-",
+  "kind": "deck"
+ },
+ "JAT17": {
+  "title": "Advanced Tournament Pack 2017 Vol.1",
+  "date": "2017-01-01",
+  "ja": "アドバンスド・トーナメントパック2017 Vol.1",
+  "kind": "tournament"
+ },
+ "JX056": {
+  "title": "20th Anniversary Pack 2nd Wave",
+  "date": "2017-02-11",
+  "ja": "20th ANNIVERSARY PACK 2nd WAVE",
+  "kind": "booster"
+ },
+ "JSR04": {
+  "title": "Structure Deck R: Tyranno's Rage",
+  "date": "2017-02-25",
+  "ja": "ストラクチャーデッキR -恐獣の鼓動-",
+  "kind": "deck"
+ },
+ "JST17": {
+  "title": "Starter Deck 2017",
+  "date": "2017-03-25",
+  "ja": "STARTER DECK 2017",
+  "kind": "deck"
+ },
+ "J17TP": {
+  "title": "Tournament Pack 2017 Vol.2",
+  "date": "2017-04-01",
+  "ja": "トーナメントパック2017 Vol.2",
+  "kind": "tournament"
+ },
+ "JCP17": {
+  "title": "Collectors Pack 2017",
+  "date": "2017-05-13",
+  "ja": "コレクターズパック 2017",
+  "kind": "booster"
+ },
+ "JDPLD": {
+  "title": "Duelist Pack: Legend Duelist",
+  "date": "2017-06-03",
+  "kind": "booster"
+ },
+ "JX057": {
+  "title": "Tournament Pack 2017 Vol.3",
+  "date": "2017-07-01",
+  "ja": "トーナメントパック2017 Vol.3",
+  "kind": "tournament"
+ },
+ "J17SP": {
+  "title": "Special Pack",
+  "date": "2017-08-05",
+  "ja": "SPECIAL PACK",
+  "kind": "promo"
+ },
+ "JDBSW": {
+  "title": "Deck-Build Pack: Spirit Warriors",
+  "date": "2017-08-11",
+  "ja": "デッキビルドパック -スピリット・ウォリアーズ-",
+  "kind": "booster"
+ },
+ "JEP17": {
+  "title": "Extra Pack 2017",
+  "date": "2017-09-09",
+  "ja": "EXTRA PACK 2017",
+  "kind": "booster"
+ },
+ "JSR05": {
+  "title": "Structure Deck R: Surge of Divine Light",
+  "date": "2017-09-23",
+  "ja": "ストラクチャーデッキR -神光の波動-",
+  "kind": "deck"
+ },
+ "JX058": {
+  "title": "Tournament Pack 2017 Vol.4",
+  "date": "2017-10-01",
+  "ja": "トーナメントパック 2017 Vol.4",
+  "kind": "tournament"
+ },
+ "J17PR": {
+  "title": "Promotion Pack 2017",
+  "date": "2017-10-07",
+  "ja": "プロモーションパック2017",
+  "kind": "promo"
+ },
+ "JDP19": {
+  "title": "Duelist Pack: Legend Duelist 2",
+  "date": "2017-11-11",
+  "ja": "デュエリストパック -レジェンドデュエリスト編2-",
+  "kind": "booster"
+ },
+ "JLVP1": {
+  "title": "LINK VRAINS Pack",
+  "date": "2017-11-25",
+  "ja": "LINK VRAINS PACK",
+  "kind": "booster"
+ },
+ "JPP20": {
+  "title": "Premium Pack 20",
+  "date": "2017-12-16",
+  "ja": "PREMIUM PACK 20",
+  "kind": "premium"
+ },
+ "JLVB1": {
+  "title": "LINK VRAINS Box",
+  "date": "2017-12-23",
+  "ja": "LINK VRAINS BOX",
+  "kind": "box"
+ },
+ "J18TP": {
+  "title": "Tournament Pack 2018 Vol.1",
+  "date": "2018-01-01",
+  "ja": "トーナメントパック 2018 Vol.1",
+  "kind": "tournament"
+ },
+ "JRC02": {
+  "title": "Rarity Collection 20th Anniversary Edition",
+  "date": "2018-02-10",
+  "ja": "RARITY COLLECTION 20th Anniversary Edition",
+  "kind": "booster"
+ },
+ "JDBDS": {
+  "title": "Deck-Build Pack: Dark Saviors",
+  "date": "2018-02-24",
+  "ja": "デッキビルドパック -ダーク・セイヴァーズ-",
+  "kind": "booster"
+ },
+ "J18SP": {
+  "title": "Special Pack 20th Anniversary Edition Vol.1",
+  "date": "2018-03-24",
+  "ja": "SPECIAL PACK 20th ANNIVERSARY EDITION Vol.1",
+  "kind": "promo"
+ },
+ "JST18": {
+  "title": "Starter Deck 2018",
+  "date": "2018-03-24",
+  "ja": "STARTER DECK 2018",
+  "kind": "deck"
+ },
+ "JX059": {
+  "title": "Tournament Pack 2018 Vol.2",
+  "date": "2018-04-01",
+  "ja": "トーナメントパック 2018 Vol.2",
+  "kind": "tournament"
+ },
+ "JCP18": {
+  "title": "Collectors Pack 2018",
+  "date": "2018-05-12",
+  "ja": "コレクターズパック 2018",
+  "kind": "booster"
+ },
+ "J18PR": {
+  "title": "Promotion Pack 2018",
+  "date": "2018-05-27",
+  "ja": "プロモーションパック2018",
+  "kind": "promo"
+ },
+ "JX060": {
+  "title": "Special Pack 20th Anniversary Edition Vol.2",
+  "date": "2018-06-09",
+  "ja": "SPECIAL PACK 20th ANNIVERSARY EDITION Vol.2",
+  "kind": "promo"
+ },
+ "JDP20": {
+  "title": "Duelist Pack: Legend Duelist 3",
+  "date": "2018-06-09",
+  "ja": "デュエリストパック -レジェンドデュエリスト編3-",
+  "kind": "booster"
+ },
+ "JSD34": {
+  "title": "Structure Deck: Master Link",
+  "date": "2018-06-23",
+  "ja": "ストラクチャーデッキ -マスター・リンク-",
+  "kind": "deck"
+ },
+ "JX061": {
+  "title": "Tournament Pack 2018 Vol.3",
+  "date": "2018-07-01",
+  "ja": "トーナメントパック 2018 Vol.3",
+  "kind": "tournament"
+ },
+ "JDBHS": {
+  "title": "Deck-Build Pack: Hidden Summoners",
+  "date": "2018-08-04",
+  "ja": "デッキビルドパック -ヒドゥン・サモナーズ-",
+  "kind": "booster"
+ },
+ "JX062": {
+  "title": "Special Pack 20th Anniversary Edition Vol.3",
+  "date": "2018-09-08",
+  "ja": "SPECIAL PACK 20th ANNIVERSARY EDITION Vol.3",
+  "kind": "promo"
+ },
+ "JEP18": {
+  "title": "Extra Pack 2018",
+  "date": "2018-09-08",
+  "ja": "EXTRA PACK 2018",
+  "kind": "booster"
+ },
+ "JX063": {
+  "title": "Tournament Pack 2018 Vol.4",
+  "date": "2018-10-01",
+  "ja": "トーナメントパック 2018 Vol.4",
+  "kind": "tournament"
+ },
+ "JDP21": {
+  "title": "Duelist Pack: Legend Duelist 4",
+  "date": "2018-11-10",
+  "ja": "デュエリストパック -レジェンドデュエリスト編4-",
+  "kind": "booster"
+ },
+ "JLVP2": {
+  "title": "LINK VRAINS Pack 2",
+  "date": "2018-11-23",
+  "ja": "LINK VRAINS PACK 2",
+  "kind": "booster"
+ },
+ "JX064": {
+  "title": "Special Pack 20th Anniversary Edition Vol.4",
+  "date": "2018-12-08",
+  "ja": "SPECIAL PACK 20th ANNIVERSARY EDITION Vol.4",
+  "kind": "promo"
+ },
+ "JSD35": {
+  "title": "Structure Deck: Soulburner Extra Deck Enhancement Pack",
+  "date": "2018-12-08",
+  "ja": "STRUCTURE DECK -ソウルバーナー- エクストラデッキ強化パック",
+  "kind": "booster"
+ },
+ "J20TH": {
+  "title": "20th Anniversary Duelist Box",
+  "date": "2018-12-22",
+  "ja": "20th ANNIVERSARY DUELIST BOX",
+  "kind": "box"
+ },
+ "JJF19": {
+  "title": "Jump Festa Limited Pack 2019",
+  "date": "2018-12-22",
+  "ja": "ジャンプフェスタ リミテッドパック 2019",
+  "kind": "promo"
+ },
+ "J19PP": {
+  "title": "Premium Pack 2019",
+  "date": "2018-12-22",
+  "ja": "PREMIUM PACK 2019",
+  "kind": "premium"
+ },
+ "JSSD1": {
+  "title": "Speed Start Deck: Link Edition",
+  "date": "2018-12-22",
+  "ja": "スピードスタートデッキ -リンク編-",
+  "kind": "deck"
+ },
+ "JSSD2": {
+  "title": "Speed Start Deck: Synchro Edition",
+  "date": "2018-12-22",
+  "ja": "スピードスタートデッキ -シンクロ編-",
+  "kind": "deck"
+ },
+ "J19TP": {
+  "title": "Tournament Pack 2019 Vol.1",
+  "date": "2019-01-01",
+  "ja": "トーナメントパック 2019 Vol.1",
+  "kind": "tournament"
+ },
+ "J20LC": {
+  "title": "20th Anniversary Legend Collection",
+  "date": "2019-02-09",
+  "kind": "booster"
+ },
+ "J20CP": {
+  "title": "20th Secret Rare Special Pack",
+  "date": "2019-02-09",
+  "ja": "20thシークレットレア SPECIAL PACK",
+  "kind": "booster"
+ },
+ "JX065": {
+  "title": "20th Secret Rare Challenge Pack",
+  "date": "2019-02-23",
+  "ja": "20thシークレットレア CHALLENGE PACK",
+  "kind": "booster"
+ },
+ "JDBIC": {
+  "title": "Deck-Build Pack: Infinity Chasers",
+  "date": "2019-02-23",
+  "ja": "デッキビルドパック -インフィニティ・チェイサーズ-",
+  "kind": "booster"
+ },
+ "JSR08": {
+  "title": "Structure Deck R: Lord of Magician",
+  "date": "2019-03-09",
+  "ja": "ストラクチャーデッキR -ロード・オブ・マジシャン-",
+  "kind": "deck"
+ },
+ "JST19": {
+  "title": "Starter Deck 2019",
+  "date": "2019-03-23",
+  "ja": "STARTER DECK 2019",
+  "kind": "deck"
+ },
+ "JX066": {
+  "title": "Tournament Pack 2019 Vol.2",
+  "date": "2019-04-01",
+  "ja": "トーナメントパック 2019 Vol.2",
+  "kind": "tournament"
+ },
+ "J19SP": {
+  "title": "Special Pack 20th Anniversary Edition Vol.5",
+  "date": "2019-04-13",
+  "ja": "SPECIAL PACK 20th ANNIVERSARY EDITION Vol.5",
+  "kind": "promo"
+ },
+ "J19PR": {
+  "title": "Promotion Pack 2019",
+  "date": "2019-05-11",
+  "ja": "プロモーションパック2019",
+  "kind": "promo"
+ },
+ "JCP19": {
+  "title": "Collection Pack: Duelist of Revolution Version",
+  "date": "2019-05-18",
+  "ja": "コレクションパック -革命の決闘者編-",
+  "kind": "booster"
+ },
+ "JDP22": {
+  "title": "Duelist Pack: Legend Duelist 5",
+  "date": "2019-06-08",
+  "ja": "デュエリストパック -レジェンドデュエリスト編5-",
+  "kind": "booster"
+ },
+ "JSD36": {
+  "title": "Structure Deck: Revolver Extra Deck Enhancement Pack",
+  "date": "2019-06-22",
+  "ja": "STRUCTURE DECK -リボルバー- エクストラデッキ強化パック",
+  "kind": "booster"
+ },
+ "JX067": {
+  "title": "Structure Deck: Revolver",
+  "date": "2019-06-22",
+  "ja": "ストラクチャーデッキ -リボルバー-",
+  "kind": "deck"
+ },
+ "JX068": {
+  "title": "Tournament Pack 2019 Vol.3",
+  "date": "2019-07-01",
+  "ja": "トーナメントパック 2019 Vol.3",
+  "kind": "tournament"
+ },
+ "JX069": {
+  "title": "Special Pack 20th Anniversary Edition Vol.6",
+  "date": "2019-07-13",
+  "ja": "SPECIAL PACK 20th ANNIVERSARY EDITION Vol.6",
+  "kind": "promo"
+ },
+ "JDBMF": {
+  "title": "Deck-Build Pack: Mystic Fighters",
+  "date": "2019-08-03",
+  "ja": "デッキビルドパック -ミスティック・ファイターズ-",
+  "kind": "booster"
+ },
+ "JEP19": {
+  "title": "Extra Pack 2019",
+  "date": "2019-09-14",
+  "ja": "EXTRA PACK 2019",
+  "kind": "booster"
+ },
+ "JSR09": {
+  "title": "Structure Deck R: Warriors' Strike",
+  "date": "2019-09-28",
+  "ja": "ストラクチャーデッキR -ウォリアーズ・ストライク-",
+  "kind": "deck"
+ },
+ "JX070": {
+  "title": "Tournament Pack 2019 Vol.4",
+  "date": "2019-10-01",
+  "ja": "トーナメントパック 2019 Vol.4",
+  "kind": "tournament"
+ },
+ "JX071": {
+  "title": "Surpassing 10000 Cards Commemoration Special Pack",
+  "date": "2019-10-12",
+  "ja": "10000種突破記念 SPECIAL PACK",
+  "kind": "booster"
+ },
+ "JDP23": {
+  "title": "Duelist Pack: Legend Duelist 6",
+  "date": "2019-11-09",
+  "ja": "デュエリストパック -レジェンドデュエリスト編6-",
+  "kind": "booster"
+ },
+ "JLVP3": {
+  "title": "LINK VRAINS Pack 3",
+  "date": "2019-11-23",
+  "ja": "LINK VRAINS PACK 3",
+  "kind": "booster"
+ },
+ "JSD37": {
+  "title": "Structure Deck: Rebirth of Shaddoll Deck Enhancement Pack",
+  "date": "2019-12-07",
+  "ja": "STRUCTURE DECK -リバース・オブ・シャドール- デッキ強化パック",
+  "kind": "booster"
+ },
+ "JX072": {
+  "title": "Structure Deck: Rebirth of Shaddoll",
+  "date": "2019-12-07",
+  "ja": "ストラクチャーデッキ -リバース・オブ・シャドール-",
+  "kind": "deck"
+ },
+ "JLGB": {
+  "title": "Legendary Gold Box",
+  "date": "2019-12-21",
+  "kind": "box"
+ },
+ "JJF20": {
+  "title": "Jump Festa Limited Pack 2020",
+  "date": "2019-12-21",
+  "ja": "ジャンプフェスタ リミテッドパック 2020",
+  "kind": "promo"
+ },
+ "J20PP": {
+  "title": "Premium Pack 2020",
+  "date": "2019-12-21",
+  "ja": "PREMIUM PACK 2020",
+  "kind": "premium"
+ },
+ "J20TP": {
+  "title": "Tournament Pack 2020 Vol.1",
+  "date": "2020-01-01",
+  "ja": "トーナメントパック 2020 Vol.1",
+  "kind": "tournament"
+ },
+ "JX073": {
+  "title": "20th Secret Rare Final Challenge Pack",
+  "date": "2020-01-11",
+  "ja": "20thシークレットレア FINAL CHALLENGE PACK",
+  "kind": "booster"
  },
  "JRCPG": {
   "title": "Rarity Collection Premium Gold Edition",
-  "date": "2020-02-08"
+  "date": "2020-02-08",
+  "kind": "booster"
+ },
+ "JSR10": {
+  "title": "Structure Deck R: Machiners Command",
+  "date": "2020-02-22",
+  "ja": "ストラクチャーデッキR -マシンナーズ・コマンド-",
+  "kind": "deck"
+ },
+ "JDBSS": {
+  "title": "Deck-Build Pack: Secret Slayers",
+  "date": "2020-03-07",
+  "ja": "デッキビルドパック -シークレット・スレイヤーズ-",
+  "kind": "booster"
+ },
+ "JSD38": {
+  "title": "Structure Deck: Sacred Beasts of Chaos Sacred Beasts Unleashed Pack",
+  "date": "2020-03-20",
+  "ja": "ストラクチャーデッキ -混沌の三幻魔- 三幻魔解放パック",
+  "kind": "booster"
+ },
+ "JX074": {
+  "title": "Structure Deck: Sacred Beasts of Chaos",
+  "date": "2020-03-20",
+  "ja": "ストラクチャーデッキ -混沌の三幻魔-",
+  "kind": "deck"
+ },
+ "JROTD": {
+  "title": "Rise of the Duelist +1 Bonus Pack",
+  "date": "2020-04-18",
+  "ja": "ライズ・オブ・ザ・デュエリスト+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JDP24": {
+  "title": "Duelist Pack: Duelists of Gloom",
+  "date": "2020-05-30",
+  "ja": "デュエリストパック -冥闇のデュエリスト編-",
+  "kind": "booster"
+ },
+ "JX075": {
+  "title": "Tournament Pack 2020 Vol.2",
+  "date": "2020-06-01",
+  "ja": "トーナメントパック 2020 Vol.2",
+  "kind": "tournament"
+ },
+ "JCP20": {
+  "title": "Collection Pack 2020",
+  "date": "2020-06-20",
+  "ja": "コレクションパック 2020",
+  "kind": "booster"
+ },
+ "JX076": {
+  "title": "Tournament Pack 2020 Vol.3",
+  "date": "2020-07-01",
+  "ja": "トーナメントパック 2020 Vol.3",
+  "kind": "tournament"
+ },
+ "JSD39": {
+  "title": "Structure Deck: Masters of the Spiritual Arts Spirit Art Awakening Pack",
+  "date": "2020-07-04",
+  "ja": "ストラクチャーデッキ -精霊術の使い手- 霊術覚醒パック",
+  "kind": "booster"
+ },
+ "JX077": {
+  "title": "Structure Deck: Masters of the Spiritual Arts",
+  "date": "2020-07-04",
+  "ja": "ストラクチャーデッキ -精霊術の使い手-",
+  "kind": "deck"
+ },
+ "JPHRA": {
+  "title": "Phantom Rage +1 Bonus Pack",
+  "date": "2020-08-08",
+  "ja": "ファントム・レイジ+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JSR11": {
+  "title": "Structure Deck R: Dragunity Drive Legend of the Dragon Ravine Pack",
+  "date": "2020-08-29",
+  "ja": "ストラクチャーデッキR -ドラグニティ・ドライブ- 竜渓谷の伝説パック",
+  "kind": "booster"
+ },
+ "JX078": {
+  "title": "Structure Deck R: Dragunity Drive",
+  "date": "2020-08-29",
+  "ja": "ストラクチャーデッキR -ドラグニティ・ドライブ-",
+  "kind": "deck"
+ },
+ "JDBGI": {
+  "title": "Deck-Build Pack: Genesis Impactors",
+  "date": "2020-09-12",
+  "ja": "デッキビルドパック -ジェネシス・インパクターズ-",
+  "kind": "booster"
+ },
+ "JX079": {
+  "title": "Tournament Pack 2020 Vol.4",
+  "date": "2020-10-01",
+  "ja": "トーナメントパック 2020 Vol.4",
+  "kind": "tournament"
+ },
+ "JWPP1": {
+  "title": "World Premiere Pack 2020",
+  "date": "2020-10-03",
+  "ja": "WORLD PREMIERE PACK 2020",
+  "kind": "booster"
+ },
+ "JBLVO": {
+  "title": "Blazing Vortex +1 Bonus Pack",
+  "date": "2020-10-31",
+  "ja": "ブレイジング・ボルテックス+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JSD40": {
+  "title": "Structure Deck: Ice Barrier of the Frozen Prison Melting Destiny Pack",
+  "date": "2020-11-21",
+  "ja": "ストラクチャーデッキ -凍獄の氷結界- 氷解する宿命パック",
+  "kind": "booster"
+ },
+ "JX080": {
+  "title": "Structure Deck: Ice Barrier of the Frozen Prison",
+  "date": "2020-11-21",
+  "ja": "ストラクチャーデッキ -凍獄の氷結界-",
+  "kind": "deck"
+ },
+ "JSLT1": {
+  "title": "Selection 10",
+  "date": "2020-12-05",
+  "ja": "SELECTION 10",
+  "kind": "booster"
+ },
+ "JPGB": {
+  "title": "Prismatic God Box",
+  "date": "2020-12-19",
+  "kind": "box"
+ },
+ "JP21": {
+  "title": "Premium Pack 2021",
+  "date": "2020-12-28",
+  "kind": "premium"
+ },
+ "J21TP": {
+  "title": "Tournament Pack 2021 Vol.1",
+  "date": "2021-01-01",
+  "ja": "トーナメントパック 2021 Vol.1",
+  "kind": "tournament"
+ },
+ "JLIOV": {
+  "title": "Lightning Overdrive +1 Bonus Pack",
+  "date": "2021-01-16",
+  "ja": "ライトニング・オーバードライブ+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JPAC": {
+  "title": "Prismatic Art Collection",
+  "date": "2021-02-06",
+  "kind": "booster"
+ },
+ "JDBAG": {
+  "title": "Deck-Build Pack: Ancient Guardians",
+  "date": "2021-03-06",
+  "ja": "デッキビルドパック -エンシェント・ガーディアンズ-",
+  "kind": "booster"
+ },
+ "JX081": {
+  "title": "Tournament Pack 2021 Vol.2",
+  "date": "2021-04-01",
+  "ja": "トーナメントパック 2021 Vol.2",
+  "kind": "tournament"
+ },
+ "JDAMA": {
+  "title": "Dawn of Majesty +1 Bonus Pack",
+  "date": "2021-04-17",
+  "ja": "ドーン・オブ・マジェスティ+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JNCF1": {
+  "title": "Number Complete File -Piece of Memories-",
+  "date": "2021-04-28",
+  "ja": "No. COMPLETE FILE -PIECE OF MEMORIES-",
+  "kind": "box"
+ },
+ "JSD41": {
+  "title": "Structure Deck: Cyber Style's Successor Secret Technique Inheritance Pack",
+  "date": "2021-05-15",
+  "ja": "ストラクチャーデッキ -サイバー流の後継者- サイバー流・奥義相伝パック",
+  "kind": "booster"
+ },
+ "JX082": {
+  "title": "Structure Deck: Cyber Style's Successor",
+  "date": "2021-05-15",
+  "ja": "ストラクチャーデッキ -サイバー流の後継者-",
+  "kind": "deck"
+ },
+ "JDP25": {
+  "title": "Duelist Pack: Duelists of Whirlwind",
+  "date": "2021-05-22",
+  "ja": "デュエリストパック -疾風のデュエリスト編-",
+  "kind": "booster"
+ },
+ "JAC21": {
+  "title": "Animation Chronicle 2021",
+  "date": "2021-06-12",
+  "kind": "booster"
+ },
+ "JSD42": {
+  "title": "Structure Deck: Overlay Universe Emperor's Door Pack",
+  "date": "2021-06-26",
+  "ja": "ストラクチャーデッキ -オーバーレイ・ユニバース- 皇の扉パック",
+  "kind": "booster"
+ },
+ "JX083": {
+  "title": "Structure Deck: Overlay Universe",
+  "date": "2021-06-26",
+  "ja": "ストラクチャーデッキ -オーバーレイ・ユニバース-",
+  "kind": "deck"
+ },
+ "JX084": {
+  "title": "Tournament Pack 2021 Vol.3",
+  "date": "2021-07-01",
+  "ja": "トーナメントパック 2021 Vol.3",
+  "kind": "tournament"
+ },
+ "JBODE": {
+  "title": "Burst of Destiny +1 Bonus Pack",
+  "date": "2021-07-17",
+  "ja": "バースト・オブ・デスティニー+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JSR12": {
+  "title": "Structure Deck R: Lost Sanctuary Arrival of the Sun God Pack",
+  "date": "2021-08-07",
+  "ja": "ストラクチャーデッキR -ロスト・サンクチュアリ- 太陽神光臨パック",
+  "kind": "booster"
+ },
+ "JX085": {
+  "title": "Structure Deck R: Lost Sanctuary",
+  "date": "2021-08-07",
+  "ja": "ストラクチャーデッキR -ロスト・サンクチュアリ-",
+  "kind": "deck"
+ },
+ "JDBGC": {
+  "title": "Deck-Build Pack: Grand Creators",
+  "date": "2021-08-28",
+  "ja": "デッキビルドパック -グランド・クリエイターズ-",
+  "kind": "booster"
+ },
+ "JWPP2": {
+  "title": "World Premiere Pack 2021",
+  "date": "2021-09-25",
+  "ja": "WORLD PREMIERE PACK 2021",
+  "kind": "booster"
+ },
+ "JX086": {
+  "title": "Tournament Pack 2021 Vol.4",
+  "date": "2021-10-01",
+  "ja": "トーナメントパック 2021 Vol.4",
+  "kind": "tournament"
+ },
+ "JBACH": {
+  "title": "Battle of Chaos +1 Bonus Pack",
+  "date": "2021-10-16",
+  "ja": "バトル・オブ・カオス+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JDP26": {
+  "title": "Duelist Pack: Duelists of the Abyss",
+  "date": "2021-11-20",
+  "ja": "デュエリストパック -深淵のデュエリスト編-",
+  "kind": "booster"
+ },
+ "JX087": {
+  "title": "Structure Deck: Alba Strike",
+  "date": "2021-12-04",
+  "ja": "ストラクチャーデッキ -ALBA STRIKE-",
+  "kind": "deck"
+ },
+ "J22PP": {
+  "title": "Premium Pack 2022",
+  "date": "2021-12-18",
+  "ja": "PREMIUM PACK 2022",
+  "kind": "premium"
  },
  "JSSB": {
   "title": "Secret Shiny Box",
-  "date": "2021-12-25"
+  "date": "2021-12-25",
+  "kind": "box"
+ },
+ "J22TP": {
+  "title": "Tournament Pack 2022 Vol.1",
+  "date": "2022-01-01",
+  "ja": "トーナメントパック 2022 Vol.1",
+  "kind": "tournament"
+ },
+ "JDIFO": {
+  "title": "Dimension Force +1 Bonus Pack",
+  "date": "2022-01-15",
+  "ja": "ディメンション・フォース+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JHAC": {
+  "title": "History Archive Collection",
+  "date": "2022-02-19",
+  "kind": "booster"
+ },
+ "JDBTM": {
+  "title": "Deck-Build Pack: Tactical Masters",
+  "date": "2022-03-19",
+  "ja": "デッキビルドパック -タクティカル・マスターズ-",
+  "kind": "booster"
+ },
+ "JX088": {
+  "title": "Tournament Pack 2022 Vol.2",
+  "date": "2022-04-01",
+  "ja": "トーナメントパック 2022 Vol.2",
+  "kind": "tournament"
+ },
+ "JPOTE": {
+  "title": "Power of the Elements +1 Bonus Pack",
+  "date": "2022-04-23",
+  "ja": "パワー・オブ・ジ・エレメンツ+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JDP27": {
+  "title": "Duelist Pack: Duelists of Pyroxene",
+  "date": "2022-05-21",
+  "ja": "デュエリストパック -輝石のデュエリスト編-",
+  "kind": "booster"
+ },
+ "JAC22": {
+  "title": "Animation Chronicle 2022",
+  "date": "2022-06-11",
+  "kind": "booster"
+ },
+ "JSD44": {
+  "title": "Structure Deck: Legend of the Crystals Light of Transcending Bonds Pack",
+  "date": "2022-06-25",
+  "ja": "ストラクチャーデッキ -宝玉の伝説- 超越する絆の光パック",
+  "kind": "booster"
+ },
+ "JX089": {
+  "title": "Structure Deck: Legend of the Crystals",
+  "date": "2022-06-25",
+  "ja": "ストラクチャーデッキ -宝玉の伝説-",
+  "kind": "deck"
+ },
+ "JX090": {
+  "title": "Tournament Pack 2022 Vol.3",
+  "date": "2022-07-01",
+  "ja": "トーナメントパック 2022 Vol.3",
+  "kind": "tournament"
+ },
+ "JDABL": {
+  "title": "Darkwing Blast +1 Bonus Pack",
+  "date": "2022-07-16",
+  "ja": "ダークウィング・ブラスト+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JSR13": {
+  "title": "Structure Deck R: Devil's Gate The Doors of the Abyss Opened Pack",
+  "date": "2022-08-06",
+  "ja": "ストラクチャーデッキR -デビルズ・ゲート- 開かれし深淵の扉パック",
+  "kind": "booster"
+ },
+ "JX091": {
+  "title": "Structure Deck R: Devil's Gate",
+  "date": "2022-08-06",
+  "ja": "ストラクチャーデッキR -デビルズ・ゲート-",
+  "kind": "deck"
+ },
+ "JDBAD": {
+  "title": "Deck-Build Pack: Amazing Defenders",
+  "date": "2022-08-20",
+  "ja": "デッキビルドパック -アメイジング・ディフェンダーズ-",
+  "kind": "booster"
+ },
+ "JWPP3": {
+  "title": "World Premiere Pack 2022",
+  "date": "2022-09-10",
+  "ja": "WORLD PREMIERE PACK 2022",
+  "kind": "booster"
+ },
+ "JX092": {
+  "title": "Tournament Pack 2022 Vol.4",
+  "date": "2022-10-01",
+  "ja": "トーナメントパック 2022 Vol.4",
+  "kind": "tournament"
+ },
+ "JPHHY": {
+  "title": "Photon Hypernova +1 Bonus Pack",
+  "date": "2022-10-15",
+  "ja": "フォトン・ハイパーノヴァ+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JSLF1": {
+  "title": "Selection 5",
+  "date": "2022-11-05",
+  "ja": "SELECTION 5",
+  "kind": "booster"
+ },
+ "JSD45": {
+  "title": "Structure Deck: Forest of the Traptrix Banquet Invitation Pack",
+  "date": "2022-12-03",
+  "ja": "ストラクチャーデッキ -蟲惑魔の森- 狂宴への誘いパック",
+  "kind": "booster"
+ },
+ "JX093": {
+  "title": "Structure Deck: Forest of the Traptrix",
+  "date": "2022-12-03",
+  "ja": "ストラクチャーデッキ -蟲惑魔の森-",
+  "kind": "deck"
+ },
+ "J23PR": {
+  "title": "Promotion Pack 2023",
+  "date": "2022-12-17",
+  "ja": "プロモーションパック2023",
+  "kind": "promo"
+ },
+ "J23PP": {
+  "title": "Premium Pack 2023",
+  "date": "2022-12-17",
+  "ja": "PREMIUM PACK 2023",
+  "kind": "premium"
+ },
+ "JSUB1": {
+  "title": "Secret Utility Box",
+  "date": "2022-12-24",
+  "ja": "SECRET UTILITY BOX",
+  "kind": "box"
+ },
+ "JX094": {
+  "title": "Tournament Pack 2023 Vol.1",
+  "date": "2023-01-01",
+  "ja": "トーナメントパック 2023 Vol.1",
+  "kind": "tournament"
+ },
+ "JCYAC": {
+  "title": "Cyberstorm Access +1 Bonus Pack",
+  "date": "2023-01-14",
+  "ja": "サイバーストーム・アクセス+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JRC04": {
+  "title": "Rarity Collection Quarter Century Edition",
+  "date": "2023-02-18",
+  "ja": "RARITY COLLECTION -QUARTER CENTURY EDITION-",
+  "kind": "booster"
+ },
+ "JDBWS": {
+  "title": "Deck-Build Pack: Wild Survivors",
+  "date": "2023-03-18",
+  "ja": "デッキビルドパック -ワイルド・サバイバーズ-",
+  "kind": "booster"
+ },
+ "JX096": {
+  "title": "Tournament Pack 2023 Vol.2",
+  "date": "2023-04-01",
+  "ja": "トーナメントパック 2023 Vol.2",
+  "kind": "tournament"
+ },
+ "JDUNE": {
+  "title": "Duelist Nexus +1 Bonus Pack",
+  "date": "2023-04-22",
+  "ja": "デュエリスト・ネクサス+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JDP28": {
+  "title": "Duelist Pack: Duelists of Explosion",
+  "date": "2023-05-27",
+  "ja": "デュエリストパック -爆炎のデュエリスト編-",
+  "kind": "booster"
+ },
+ "JAC23": {
+  "title": "Animation Chronicle 2023",
+  "date": "2023-06-10",
+  "kind": "booster"
+ },
+ "JSD46": {
+  "title": "Structure Deck: Pulse of the King Rumbling of Heaven and Earth Pack",
+  "date": "2023-06-24",
+  "ja": "ストラクチャーデッキ -王者の鼓動- 天地鳴動パック",
+  "kind": "booster"
+ },
+ "JX097": {
+  "title": "Structure Deck: Pulse of the King",
+  "date": "2023-06-24",
+  "ja": "ストラクチャーデッキ -王者の鼓動-",
+  "kind": "deck"
+ },
+ "JX099": {
+  "title": "Tournament Pack 2023 Vol.3",
+  "date": "2023-07-01",
+  "ja": "トーナメントパック 2023 Vol.3",
+  "kind": "tournament"
+ },
+ "JAGOV": {
+  "title": "Age of Overlord +1 Bonus Pack",
+  "date": "2023-07-22",
+  "ja": "エイジ・オブ・オーバーロード+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JTK05": {
+  "title": "Token Pack Vol.5",
+  "date": "2023-07-22",
+  "ja": "トークンパック Vol.5",
+  "kind": "booster"
+ },
+ "JDBVS": {
+  "title": "Deck-Build Pack: Valiant Smashers",
+  "date": "2023-08-26",
+  "ja": "デッキビルドパック -ヴァリアント・スマッシャーズ-",
+  "kind": "booster"
+ },
+ "JSR14": {
+  "title": "Structure Deck R: Onslaught of the Fire Kings Second Coming of the Eternal Flames' Ruler Pack",
+  "date": "2023-09-09",
+  "ja": "ストラクチャーデッキR -炎王の急襲- 永炎の覇者再臨パック",
+  "kind": "booster"
+ },
+ "JX100": {
+  "title": "Structure Deck R: Onslaught of the Fire Kings",
+  "date": "2023-09-09",
+  "ja": "ストラクチャーデッキR -炎王の急襲-",
+  "kind": "deck"
+ },
+ "JWPP4": {
+  "title": "World Premiere Pack 2023",
+  "date": "2023-09-23",
+  "ja": "WORLD PREMIERE PACK 2023",
+  "kind": "booster"
+ },
+ "JX102": {
+  "title": "Tournament Pack 2023 Vol.4",
+  "date": "2023-10-01",
+  "ja": "トーナメントパック 2023 Vol.4",
+  "kind": "tournament"
+ },
+ "JPHNI": {
+  "title": "Phantom Nightmare +1 Bonus Pack",
+  "date": "2023-10-28",
+  "ja": "ファントム・ナイトメア+1ボーナスパック",
+  "kind": "promo"
+ },
+ "J24PR": {
+  "title": "Promotion Pack 2024",
+  "date": "2023-12-16",
+  "ja": "プロモーションパック2024",
+  "kind": "promo"
+ },
+ "J24PP": {
+  "title": "Premium Pack 2024",
+  "date": "2023-12-16",
+  "ja": "PREMIUM PACK 2024",
+  "kind": "premium"
+ },
+ "JQCDB": {
+  "title": "Quarter Century Duelist Box",
+  "date": "2023-12-23",
+  "ja": "QUARTER CENTURY DUELIST BOX",
+  "kind": "box"
+ },
+ "JX103": {
+  "title": "Tournament Pack 2024 Vol.1",
+  "date": "2024-01-01",
+  "ja": "トーナメントパック 2024 Vol.1",
+  "kind": "tournament"
+ },
+ "JLEDE": {
+  "title": "Legacy of Destruction +1 Bonus Pack",
+  "date": "2024-01-27",
+  "ja": "レガシー・オブ・デストラクション+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JTDPR": {
+  "title": "The Legend of Duelist Promotion Pack",
+  "date": "2024-02-03",
+  "ja": "The Legend of Duelist PROMOTION PACK",
+  "kind": "promo"
+ },
+ "JTDPP": {
+  "title": "Premium Pack: The Legend of Duelist Quarter Century Edition",
+  "date": "2024-02-03",
+  "ja": "PREMIUM PACK -決闘者伝説 QUARTER CENTURY EDITION-",
+  "kind": "premium"
+ },
+ "JTDS2": {
+  "title": "Structure Deck: Forest of the Traptrix - The Legend of Duelist Quarter Century Edition",
+  "date": "2024-02-03",
+  "ja": "ストラクチャーデッキ 蟲惑魔の森 -決闘者伝説 QUARTER CENTURY EDITION-",
+  "kind": "deck"
+ },
+ "JTDS1": {
+  "title": "Structure Deck: Masters of the Spiritual Arts - The Legend of Duelist Quarter Century Edition",
+  "date": "2024-02-03",
+  "ja": "ストラクチャーデッキ 精霊術の使い手 -決闘者伝説 QUARTER CENTURY EDITION-",
+  "kind": "deck"
+ },
+ "JQCU": {
+  "title": "Quarter Century Chronicle side:Unity",
+  "date": "2024-02-23",
+  "kind": "booster"
+ },
+ "JQCP": {
+  "title": "Quarter Century Chronicle side:Pride",
+  "date": "2024-03-23",
+  "kind": "booster"
+ },
+ "JX104": {
+  "title": "Tournament Pack 2024 Vol.2",
+  "date": "2024-04-01",
+  "ja": "トーナメントパック 2024 Vol.2",
+  "kind": "tournament"
+ },
+ "JINFO": {
+  "title": "Infinite Forbidden +1 Bonus Pack",
+  "date": "2024-04-27",
+  "ja": "インフィニット・フォビドゥン+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JDP29": {
+  "title": "Duelist Pack: Duelists of Brilliance",
+  "date": "2024-05-25",
+  "ja": "デュエリストパック -輝光のデュエリスト編-",
+  "kind": "booster"
+ },
+ "JTT01": {
+  "title": "Tactical-Try Deck: Decisive Strike Cyber Dragon",
+  "date": "2024-06-08",
+  "ja": "TACTICAL-TRY DECK 終撃竜サイバー・ドラゴン",
+  "kind": "deck"
+ },
+ "JX105": {
+  "title": "Tactical-Try Deck: Eldlich the Conqueror",
+  "date": "2024-06-08",
+  "ja": "TACTICAL-TRY DECK 征服王エルドリッチ",
+  "kind": "deck"
+ },
+ "JX106": {
+  "title": "Tactical-Try Deck: Evil★Twin the Kaito Pair",
+  "date": "2024-06-08",
+  "ja": "TACTICAL-TRY DECK 怪盗コンビEvil★Twin",
+  "kind": "deck"
+ },
+ "JAC24": {
+  "title": "Animation Chronicle 2024",
+  "date": "2024-06-22",
+  "kind": "booster"
+ },
+ "JX107": {
+  "title": "Tournament Pack 2024 Vol.3",
+  "date": "2024-07-01",
+  "ja": "トーナメントパック 2024 Vol.3",
+  "kind": "tournament"
+ },
+ "JROTA": {
+  "title": "Rage of the Abyss +1 Bonus Pack",
+  "date": "2024-07-27",
+  "ja": "レイジ・オブ・ジ・アビス+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JDBCB": {
+  "title": "Deck-Build Pack: Crossover Breakers",
+  "date": "2024-08-24",
+  "ja": "デッキビルドパック -クロスオーバー・ブレイカーズ-",
+  "kind": "booster"
+ },
+ "JSD47": {
+  "title": "Structure Deck: Advent of the Eyes of Blue Legendary Majesty Inheritance Pack",
+  "date": "2024-09-07",
+  "ja": "ストラクチャーデッキ -青き眼の光臨- 伝説の威光継承パック",
+  "kind": "booster"
+ },
+ "JX108": {
+  "title": "Structure Deck: Advent of the Eyes of Blue",
+  "date": "2024-09-07",
+  "ja": "ストラクチャーデッキ -青き眼の光臨-",
+  "kind": "deck"
+ },
+ "JX109": {
+  "title": "Complete File: Story of White",
+  "date": "2024-09-14",
+  "ja": "COMPLETE FILE -白の物語-",
+  "kind": "box"
+ },
+ "JWPP5": {
+  "title": "World Premiere Pack 2024",
+  "date": "2024-09-28",
+  "ja": "WORLD PREMIERE PACK 2024",
+  "kind": "booster"
+ },
+ "JX110": {
+  "title": "Tournament Pack 2024 Vol.4",
+  "date": "2024-10-01",
+  "ja": "トーナメントパック 2024 Vol.4",
+  "kind": "tournament"
+ },
+ "JSUDA": {
+  "title": "Supreme Darkness +1 Bonus Pack",
+  "date": "2024-10-26",
+  "ja": "スプリーム・ダークネス+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JQCLP": {
+  "title": "Quarter Century Limited Pack",
+  "date": "2024-11-16",
+  "ja": "QUARTER CENTURY LIMITED PACK",
+  "kind": "booster"
+ },
+ "JTW02": {
+  "title": "Terminal World 2",
+  "date": "2024-11-23",
+  "ja": "TERMINAL WORLD 2",
+  "kind": "booster"
+ },
+ "JQCTB": {
+  "title": "Quarter Century Trinity Box",
+  "date": "2024-12-21",
+  "ja": "QUARTER CENTURY TRINITY BOX",
+  "kind": "box"
+ },
+ "J25PR": {
+  "title": "Promotion Pack 2025",
+  "date": "2024-12-21",
+  "ja": "プロモーションパック2025",
+  "kind": "promo"
+ },
+ "J25PP": {
+  "title": "Premium Pack 2025",
+  "date": "2024-12-21",
+  "ja": "PREMIUM PACK 2025",
+  "kind": "premium"
+ },
+ "JX111": {
+  "title": "Tournament Pack 2024 Vol.5",
+  "date": "2025-01-01",
+  "ja": "トーナメントパック 2024 Vol.5",
+  "kind": "tournament"
+ },
+ "JALIN": {
+  "title": "Alliance Insight +1 Bonus Pack",
+  "date": "2025-01-25",
+  "ja": "アライアンス・インサイト+1ボーナスパック",
+  "kind": "promo"
+ },
+ "JQCAC": {
+  "title": "Quarter Century Art Collection",
+  "date": "2025-02-22",
+  "ja": "QUARTER CENTURY ART COLLECTION",
+  "kind": "booster"
+ },
+ "JDBJH": {
+  "title": "Deck-Build Pack: Justice Hunters",
+  "date": "2025-03-22",
+  "ja": "デッキビルドパック -ジャスティス・ハンターズ-",
+  "kind": "booster"
+ },
+ "J25TP": {
+  "title": "Tournament Pack 2025 Vol.1",
+  "date": "2025-04-01",
+  "ja": "トーナメントパック 2025 Vol.1",
+  "kind": "tournament"
+ },
+ "J25WP": {
+  "title": "Winner's Pack 2025 Vol.1",
+  "date": "2025-04-01",
+  "ja": "ウィナーズパック 2025 Vol.1",
+  "kind": "tournament"
+ },
+ "JULSP": {
+  "title": "Ultimate Special Pack",
+  "date": "2025-04-26",
+  "ja": "ULTIMATE SPECIAL PACK",
+  "kind": "booster"
+ },
+ "JTT02": {
+  "title": "Tactical-Try Deck: Exosister",
+  "date": "2025-05-24",
+  "ja": "TACTICAL-TRY DECK 退魔天使エクソシスター",
+  "kind": "deck"
+ },
+ "JX112": {
+  "title": "Tactical-Try Deck: Rescue-ACE",
+  "date": "2025-05-24",
+  "ja": "TACTICAL-TRY DECK 超骸装部隊R-ACE",
+  "kind": "deck"
+ },
+ "JTTP1": {
+  "title": "Tactical-Try Pack: Dark Magic / HERO / Mikanko",
+  "date": "2025-06-28",
+  "ja": "TACTICAL-TRY PACK -黒魔導・HERO・御巫-",
+  "kind": "booster"
+ },
+ "JX113": {
+  "title": "Tournament Pack 2025 Vol.2",
+  "date": "2025-07-01",
+  "ja": "トーナメントパック 2025 Vol.2",
+  "kind": "tournament"
+ },
+ "JX114": {
+  "title": "Winner's Pack 2025 Vol.2",
+  "date": "2025-07-01",
+  "ja": "ウィナーズパック 2025 Vol.2",
+  "kind": "tournament"
+ },
+ "JDBPR": {
+  "title": "Deck-Build Pack: Phantom Revengers",
+  "date": "2025-08-23",
+  "ja": "デッキビルドパック -ファントム・リベンジャーズ-",
+  "kind": "booster"
+ },
+ "JSD48": {
+  "title": "Structure Deck: Power of Fellows Light of Gathering Stars Pack",
+  "date": "2025-09-06",
+  "ja": "ストラクチャーデッキ -パワー・オブ・フェローズ- 集いし星の光パック",
+  "kind": "booster"
+ },
+ "JX115": {
+  "title": "Structure Deck: Power of Fellows",
+  "date": "2025-09-06",
+  "ja": "ストラクチャーデッキ -パワー・オブ・フェローズ-",
+  "kind": "deck"
+ },
+ "JLPG1": {
+  "title": "Limited Pack GX: Slifer Red",
+  "date": "2025-09-13",
+  "ja": "LIMITED PACK GX -オシリスレッド-",
+  "kind": "booster"
+ },
+ "JWPP6": {
+  "title": "World Premiere Pack 2025",
+  "date": "2025-09-27",
+  "ja": "WORLD PREMIERE PACK 2025",
+  "kind": "booster"
+ },
+ "JX116": {
+  "title": "Tournament Pack 2025 Vol.3",
+  "date": "2025-10-01",
+  "ja": "トーナメントパック 2025 Vol.3",
+  "kind": "tournament"
+ },
+ "JX117": {
+  "title": "Winner's Pack 2025 Vol.3",
+  "date": "2025-10-01",
+  "ja": "ウィナーズパック 2025 Vol.3",
+  "kind": "tournament"
+ },
+ "JTW03": {
+  "title": "Terminal World 3",
+  "date": "2025-11-22",
+  "ja": "TERMINAL WORLD 3",
+  "kind": "booster"
+ },
+ "JLPST": {
+  "title": "Limited Pack: Stamp Edition",
+  "date": "2025-12-13",
+  "ja": "LIMITED PACK -STAMP EDITION-",
+  "kind": "booster"
+ },
+ "JSTSP": {
+  "title": "Special Pack: Stamp Edition",
+  "date": "2025-12-13",
+  "ja": "SPECIAL PACK -STAMP EDITION-",
+  "kind": "promo"
+ },
+ "J25DB": {
+  "title": "Duelist Box: Prismatic Summon",
+  "date": "2025-12-20",
+  "ja": "DUELIST BOX -PRISMATIC SUMMON-",
+  "kind": "box"
+ },
+ "J26PP": {
+  "title": "Premium Pack 2026",
+  "date": "2025-12-20",
+  "ja": "PREMIUM PACK 2026",
+  "kind": "premium"
+ },
+ "JX118": {
+  "title": "Tournament Pack 2025 Vol.4",
+  "date": "2026-01-01",
+  "ja": "トーナメントパック 2025 Vol.4",
+  "kind": "tournament"
+ },
+ "JX119": {
+  "title": "Winner's Pack 2025 Vol.4",
+  "date": "2026-01-01",
+  "ja": "ウィナーズパック 2025 Vol.4",
+  "kind": "tournament"
+ },
+ "JLOCH": {
+  "title": "Limit Over Collection: The Heroes",
+  "date": "2026-02-28",
+  "ja": "LIMIT OVER COLLECTION -THE HEROES-",
+  "kind": "booster"
+ },
+ "JLOSP": {
+  "title": "Limit Over Special Pack Vol.1",
+  "date": "2026-02-28",
+  "ja": "LIMIT OVER SPECIAL PACK Vol.1",
+  "kind": "booster"
+ },
+ "JLOCR": {
+  "title": "Limit Over Collection: The Rivals",
+  "date": "2026-03-20",
+  "ja": "LIMIT OVER COLLECTION -THE RIVALS-",
+  "kind": "booster"
+ },
+ "JX120": {
+  "title": "Limit Over Special Pack Vol.2",
+  "date": "2026-03-20",
+  "ja": "LIMIT OVER SPECIAL PACK Vol.2",
+  "kind": "booster"
+ },
+ "J26TP": {
+  "title": "Tournament Pack 2026 Vol.1",
+  "date": "2026-04-01",
+  "ja": "トーナメントパック 2026 Vol.1",
+  "kind": "tournament"
+ },
+ "J26WP": {
+  "title": "Winner's Pack 2026 Vol.1",
+  "date": "2026-04-01",
+  "ja": "ウィナーズパック 2026 Vol.1",
+  "kind": "tournament"
+ },
+ "JRV01": {
+  "title": "Revolution Booster: Toon / Witchcrafter / Unchained",
+  "date": "2026-05-30",
+  "ja": "REVOLUTION BOOSTER -トゥーン・ウィッチクラフト・破械-",
+  "kind": "booster"
+ },
+ "JWPP7": {
+  "title": "World Premiere Pack 2026",
+  "date": "2026-06-27",
+  "ja": "WORLD PREMIERE PACK 2026",
+  "kind": "booster"
+ },
+ "JX121": {
+  "title": "Tournament Pack 2026 Vol.2",
+  "date": "2026-07-01",
+  "ja": "トーナメントパック 2026 Vol.2",
+  "kind": "tournament"
+ },
+ "JX122": {
+  "title": "Winner's Pack 2026 Vol.2",
+  "date": "2026-07-01",
+  "ja": "ウィナーズパック 2026 Vol.2",
+  "kind": "tournament"
+ },
+ "JLPG2": {
+  "title": "Limited Pack GX: Ra Yellow",
+  "date": "2026-07-25",
+  "ja": "LIMITED PACK GX -ラーイエロー-",
+  "kind": "booster"
+ },
+ "JUT01": {
+  "title": "Utility Selection",
+  "date": "2026-08-08",
+  "ja": "UTILITY SELECTION",
+  "kind": "booster"
+ },
+ "JDBGV": {
+  "title": "Deck-Build Pack: Glorious Victors",
+  "date": "2026-09-05",
+  "ja": "デッキビルドパック -グロリアス・ヴィクターズ-",
+  "kind": "booster"
+ },
+ "JYAC1": {
+  "title": "Original Artwork Collection",
+  "date": "2026-09-26",
+  "ja": "ORIGINAL ARTWORK COLLECTION",
+  "kind": "booster"
+ },
+ "JX123": {
+  "title": "Tournament Pack 2026 Vol.3",
+  "date": "2026-10-01",
+  "ja": "トーナメントパック 2026 Vol.3",
+  "kind": "tournament"
+ },
+ "JX124": {
+  "title": "Winner's Pack 2026 Vol.3",
+  "date": "2026-10-01",
+  "ja": "ウィナーズパック 2026 Vol.3",
+  "kind": "tournament"
  }
 }

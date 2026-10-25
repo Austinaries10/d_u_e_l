@@ -110,7 +110,7 @@ function starterListings(array $gm): array
 // Japanese-only packs in the shop's "Japan only" tab: all on sale unless the GM switches one off; premium packs cost more
 function ocgDefaultPrice(string $code): int
 {
-    return preg_match('/^JP\d/', $code) ? 300 : (preg_match('/^J(20LC|HAC|LGB|MB1|PAC|PGB|QC|RCPG|SSB|AC)/', $code) ? 200 : 100);
+    return ['premium' => 300, 'box' => 200][ocgSets()[$code]['kind'] ?? ''] ?? 100;
 }
 function ocgListings(array $gm): array
 {
@@ -166,7 +166,7 @@ function ocgSets(): array
     if ($sets === null) {
         $sets = [];
         foreach (json_decode((string)@file_get_contents(__DIR__ . '/../data/ocg-sets.json'), true) ?: [] as $code => $x) {
-            if (is_array($x)) $sets[$code] = ['code' => $code, 'name' => $x['title'], 'date' => $x['date'], 'ocg' => true];
+            if (is_array($x)) $sets[$code] = ['code' => $code, 'name' => $x['title'], 'date' => $x['date'], 'ocg' => true, 'kind' => $x['kind'] ?? 'booster'] + (isset($x['ja']) ? ['ja' => $x['ja']] : []);
         }
     }
     return $sets;
@@ -316,6 +316,16 @@ if ($action === 'img') {
             $width = fn($b) => $b !== null && ($i = @getimagesizefromstring($b)) ? $i[0] : 0;
             if ($alt !== null && $width($alt) > $width($body)) {
                 $body = $alt;
+            }
+            // a Japanese pack with no picture anywhere: its rarest card's art (once its card list has been read)
+            $setFile = cacheDir('data') . "/set-$id.json";
+            if ($width($body) === 0 && !is_file($setFile) && !empty(allSets()[$id]['ocg'])) {
+                @file_put_contents($setFile, json_encode(['set' => allSets()[$id], 'cards' => ocgCards(allSets()[$id])]), LOCK_EX);
+            }
+            if ($width($body) === 0 && ($cards = json_decode((string)@file_get_contents($setFile), true)['cards'] ?? null)) {
+                $rank = fn($c) => array_search($c['rarities'][0] ?? 'Common', ['Common', 'Rare', 'Super Rare', 'Ultra Rare', 'Secret Rare', 'Ultimate Rare', 'Ghost Rare'], true) ?: 0;
+                usort($cards, fn($a, $b) => $rank($b) <=> $rank($a));
+                $body = fetchUrl(IMG . "cards/{$cards[0]['id']}.jpg");
             }
             // originals can be huge: shrink to 600px wide when GD is there
             if ($width($body) > 600 && function_exists('imagecreatefromstring') && ($im = @imagecreatefromstring($body))) {

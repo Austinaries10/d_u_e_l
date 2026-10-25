@@ -1068,7 +1068,7 @@ if (LANG) document.documentElement.lang = LANG === "zh" ? "zh-CN" : "ja";
 // exact texts, and templates with {0}, {1}… for the parts that change (those parts are looked up too, e.g. names)
 const I18N = { exact: new Map(), pats: [], cache: new Map() };
 // pack and starter deck names, by set code (i18n/packs.json); a pack without one keeps its English name
-const PACK_TR = new Map(), packName = pk => (!pk.event && PACK_TR.get(pk.code)) || pk.name;
+const PACK_TR = new Map(), packName = pk => (!pk.event && PACK_TR.get(pk.code)) || (LANG === "ja" && pk.ja) || pk.name;
 if (LANG) {
   try {
     const dict = await (await fetch(`i18n/${LANG}.json?v=__BUILD__`)).json();
@@ -3464,7 +3464,7 @@ const setCache = new Map();
 let shopTab = null;
 const SHOP_LINES = ["Welcome to the Kame Game shop! What are you looking for today?", "Ah, a fine duelist! I have just the packs for you.", "Back again? Let's see what luck the cards bring you!", "Every pack holds a story. Which one will you open?"];
 const packImg = pk => pk.event ? (pk.event.set ? `api/ygo.php?action=img&set=${pk.event.set}` : pk.event.image ? imgUrl({ id: pk.event.image }) : "") : `api/ygo.php?action=img&set=${pk.code}`;
-let deckList = [], ocgList = [];
+let deckList = [], ocgList = [], ocgKind = "";
 async function renderShop() {
   topUp();
   $("#shopCoins").textContent = wallet.coins; $("#shopFree").textContent = wallet.free;
@@ -3490,7 +3490,13 @@ async function renderShop() {
   } else if (shopTab === "ocg") {
     // packs that only came out in Japan (the cards that also came out in English)
     box.append(el("p", { className: "note center", style: "grid-column:1/-1", textContent: "Packs that only came out in Japan, with their Japanese rarities." }));
-    for (const pk of ocgList.filter(p => !q || p.name.toLowerCase().includes(q) || packName(p).includes(q) || p.code.toLowerCase() === q)) {
+    // filter by type: there are hundreds of them
+    const kinds = [["", "All"], ["booster", "Booster packs"], ["premium", "Premium packs"], ["deck", "Decks"], ["tournament", "Tournament packs"], ["box", "Boxes"], ["promo", "Promo packs"]].filter(([k]) => !k || ocgList.some(p => p.kind === k));
+    box.append(el("div", { className: "tabs row center", style: "grid-column:1/-1;flex-wrap:wrap" }, ...kinds.map(([k, label]) => {
+      const b = el("button", { type: "button", className: "btn small", textContent: T(label) }); b.setAttribute("aria-pressed", String(ocgKind === k));
+      b.onclick = () => { ocgKind = k; renderShop(); }; return b;
+    })));
+    for (const pk of ocgList.filter(p => (!ocgKind || p.kind === ocgKind) && (!q || p.name.toLowerCase().includes(q) || packName(p).toLowerCase().includes(q) || p.code.toLowerCase() === q))) {
       const tile = el("button", { type: "button", className: "pack" });
       tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: `${pk.price} coins` }), el("b", { textContent: packName(pk) }), el("small", { textContent: `🇯🇵 ${(pk.date || "").slice(0, 4)}` }));
       tile.onclick = () => openPackModal(pk); box.append(tile);
