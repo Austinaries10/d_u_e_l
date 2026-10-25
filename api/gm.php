@@ -18,6 +18,8 @@ const DATA = __DIR__ . '/../server/data';
 const GM_FILE = DATA . '/gm.json';
 const STATUS = ['Forbidden' => 0, 'Limited' => 1, 'Semi-Limited' => 2];
 const USERS = __DIR__ . '/../server/data/users';
+const EMAILS = USERS . '/_emails.json'; // email (lower case) -> player name, shared with api/account.php
+const LOGS = __DIR__ . '/../server/data/logs';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -198,6 +200,18 @@ if ($action === 'players') {
     exit;
 }
 
+// Change the email index (one email per player): $fn gets the map and returns it changed
+function editEmails(callable $fn): void
+{
+    $h = fopen(EMAILS, 'c+');
+    flock($h, LOCK_EX);
+    $map = $fn(json_decode((string)stream_get_contents($h), true) ?: []);
+    ftruncate($h, 0);
+    rewind($h);
+    fwrite($h, json_encode($map));
+    flock($h, LOCK_UN);
+    fclose($h);
+}
 // Lock a player's file, let $fn change it, write it back
 function editPlayer(string $name, callable $fn): array
 {
@@ -221,7 +235,7 @@ if ($action === 'player') {
     requireGm($in);
     $u = editPlayer((string)($in['name'] ?? ''), fn($u) => $u);
     echo json_encode(['name' => $u['name'], 'created' => $u['created'] ?? 0, 'seen' => $u['seen'] ?? 0, 'banned' => !empty($u['banned']), 'rev' => $u['rev'] ?? 0, 'state' => $u['state'] ?? null,
-        'email' => $u['email'] ?? '', 'verified' => !empty($u['verified'])]);
+        'email' => $u['email'] ?? '', 'verified' => !empty($u['verified']), 'sessions' => count($u['tokens'] ?? [])]);
     exit;
 }
 
@@ -239,6 +253,23 @@ if ($action === 'updatePlayer') {
                 $u['tokens'] = [];
             }
         }
+        // the email bound to the account: change it ('' removes it), and whether it counts as confirmed
+        if (array_key_exists('email', $in)) {
+            $email = strtolower(trim((string)$in['email']));
+            $email === '' || (filter_var($email, FILTER_VALIDATE_EMAIL) && strlen($email) <= 120) || fail(400, 'Enter a valid email address.');
+            $old = strtolower((string)($u['email'] ?? ''));
+            if ($email !== $old) {
+                editEmails(function (array $map) use ($email, $old, $u) {
+                    if ($email !== '' && isset($map[$email]) && strtolower($map[$email]) !== strtolower($u['name'])) fail(409, "That email is already used by {$map[$email]}.");
+                    if ($old !== '' && strtolower($map[$old] ?? '') === strtolower($u['name'])) unset($map[$old]);
+                    if ($email !== '') $map[$email] = $u['name'];
+                    return $map;
+                });
+                $u['email'] = $email; $u['verified'] = false; unset($u['vcode'], $u['rcode']);
+            }
+        }
+        if (isset($in['verified'])) $u['verified'] = (bool)$in['verified'] && !empty($u['email']);
+        if (!empty($in['logout'])) $u['tokens'] = [];
         if (($in['newPassword'] ?? '') !== '') {
             strlen((string)$in['newPassword']) >= 6 || fail(400, 'Use a password of at least 6 characters.');
             $u['hash'] = password_hash((string)$in['newPassword'], PASSWORD_DEFAULT);
@@ -246,7 +277,31 @@ if ($action === 'updatePlayer') {
         }
         return $u;
     });
-    echo json_encode(['ok' => true, 'rev' => $u['rev'] ?? 0]);
+    echo json_encode(['ok' => true, 'rev' => $u['rev'] ?? 0, 'email' => $u['email'] ?? '', 'verified' => !empty($u['verified'])]);
+    exit;
+}
+
+// Rename a player: their file, the email index and the diagnostic log follow; they are logged out (logins carry the name)
+if ($action === 'renamePlayer') {
+    requireGm($in);
+    $from = (string)($in['name'] ?? ''); $to = trim((string)($in['newName'] ?? ''));
+    preg_match('/^[A-Za-z0-9_]{3,20}$/', $to) || fail(400, 'Use 3–20 letters, numbers or _ for the name.');
+    $src = USERS . '/' . strtolower($from) . '.json'; $dst = USERS . '/' . strtolower($to) . '.json';
+    is_file($src) || fail(404, 'No player with that name.');
+    if (strtolower($from) !== strtolower($to) && is_file($dst)) fail(409, 'Another duelist already has that name.');
+    $u = editPlayer($from, function (array $u) use ($to) {
+        $u['name'] = $to; $u['tokens'] = [];
+        if (is_array($u['state']['profile'] ?? null)) $u['state']['profile']['name'] = $to;
+        $u['rev'] = (int)($u['rev'] ?? 0) + 1;
+        return $u;
+    });
+    if ($src !== $dst) {
+        rename($src, $dst) || fail(500, 'Could not rename the account file.');
+        $lf = LOGS . '/' . strtolower($from) . '.log';
+        if (is_file($lf)) @rename($lf, LOGS . '/' . strtolower($to) . '.log');
+    }
+    if (!empty($u['email'])) editEmails(function (array $map) use ($u) { $map[strtolower($u['email'])] = $u['name']; return $map; });
+    echo json_encode(['ok' => true, 'name' => $to]);
     exit;
 }
 

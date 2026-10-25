@@ -25,6 +25,8 @@ self.addEventListener("fetch", e => {
     e.respondWith(caches.open(CACHE).then(async c => (await c.match(r)) || fetch(r).then(res => { if (res.ok) c.put(r, res.clone()); return res; })));
   } else if (r.mode === "navigate") {
     // always the newest page; the saved one only when there's no connection
-    e.respondWith(fetch(r).then(res => { if (res.ok) caches.open(CACHE).then(c => c.put("./", res.clone())); return res; }).catch(() => caches.match("./")));
+    // (each page is kept under its own address, so the game and the GM page don't overwrite each other)
+    const key = u.pathname.endsWith("gm.html") ? "gm.html" : "./";
+    e.respondWith(fetch(r).then(res => { if (res.ok) caches.open(CACHE).then(c => c.put(key, res.clone())); return res; }).catch(() => caches.match(key)));
   }
 });

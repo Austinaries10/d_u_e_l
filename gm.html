@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>AR Duel GM</title>
+<link rel="manifest" href="gm-manifest.json">
+<meta name="theme-color" content="#0d1117">
+<link rel="apple-touch-icon" href="icons/gm-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Duel GM">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap">
 <style>
@@ -415,9 +420,26 @@ async function openPlayer(name) {
       wl.append(el("div", { className: "item" }, el("b", { textContent: id }), inp));
     }
     card.append(wl, el("div", { className: "row" }, el("button", { type: "button", className: "btn small danger", textContent: "Reset all character progress", onclick: async () => { if (await ask("Reset progress?", `All of ${u.name}'s character wins are cleared, so the characters arrive again from the start.`, "Reset", true)) { st.charWins = {}; st.seenChars = []; st.noAce = {}; render(); } } })));
-    // account
+    // account: name, bound email and its confirmation, logins
     const pw = el("input", { type: "text", placeholder: "New password (6+ characters)", autocomplete: "off" });
-    card.append(el("h2", { textContent: "Account" }), el("div", { className: "row" }, el("label", { className: "field", style: "flex:1 1 200px" }, "Reset password", pw),
+    const nameIn = el("input", { value: u.name, maxlength: 20, autocomplete: "off" }), mailIn = el("input", { type: "email", value: u.email || "", placeholder: "No email bound", autocomplete: "off" });
+    const conf = el("input", { type: "checkbox", checked: !!u.verified, disabled: !u.email });
+    const acct = async (extra, done) => { const msg = box.querySelector(".pmsg"); msg.textContent = "Saving…"; try { const j = await call("updatePlayer", { name: u.name, ...extra }); Object.assign(u, { email: j.email, verified: j.verified }); msg.textContent = done; render(); } catch (e) { msg.textContent = errText(e); } };
+    card.append(el("h2", { textContent: "Account" }),
+      el("p", { className: "note", textContent: `Logged in on ${u.sessions || 0} device${u.sessions === 1 ? "" : "s"}.` }),
+      el("div", { className: "row" }, el("label", { className: "field", style: "flex:1 1 200px" }, "Duelist name", nameIn),
+        el("button", { type: "button", className: "btn", textContent: "Rename", onclick: async () => {
+          const to = nameIn.value.trim(); if (!to || to === u.name) return;
+          if (!await ask(`Rename ${u.name} to ${to}?`, "They are logged out and log in again with the new name. Their progress stays.", "Rename")) return;
+          try { await call("renamePlayer", { name: u.name, newName: to }); u.name = to; render(); box.querySelector(".pmsg").textContent = `Renamed to ${to}.`; } catch (e) { box.querySelector(".pmsg").textContent = errText(e); }
+        } })),
+      el("div", { className: "row" }, el("label", { className: "field", style: "flex:1 1 220px" }, "Email bound to the account", mailIn),
+        el("button", { type: "button", className: "btn", textContent: "Save email", onclick: () => acct({ email: mailIn.value.trim() }, mailIn.value.trim() ? "Email changed (not confirmed until they click the link, or you tick Confirmed)." : "Email removed.") }),
+        el("button", { type: "button", className: "btn small danger", textContent: "Unbind email", disabled: !u.email, onclick: async () => { if (await ask("Unbind the email?", `${u.email} is removed from ${u.name}. They can't reset a forgotten password until they add one again.`, "Unbind", true)) acct({ email: "" }, "Email removed."); } })),
+      el("div", { className: "row" }, el("label", { className: "check" }, conf, " Email confirmed"),
+        el("button", { type: "button", className: "btn small", textContent: "Save", disabled: !u.email, onclick: () => acct({ verified: conf.checked }, conf.checked ? "Marked as confirmed." : "Marked as not confirmed.") }),
+        el("button", { type: "button", className: "btn small", textContent: "Log out everywhere", onclick: async () => { if (await ask("Log out everywhere?", `${u.name} is logged out on every device and has to log in again.`, "Log out")) { await acct({ logout: true }, "Logged out on every device."); u.sessions = 0; render(); } } })),
+      el("div", { className: "row" }, el("label", { className: "field", style: "flex:1 1 200px" }, "Reset password", pw),
       el("button", { type: "button", className: "btn", textContent: "Set password", onclick: async () => { if (pw.value.length < 6) return; await save({ newPassword: pw.value }); pw.value = ""; } })),
       el("div", { className: "row" }, el("button", { type: "button", className: "btn small " + (u.banned ? "" : "danger"), textContent: u.banned ? "Lift suspension" : "Suspend account", onclick: async () => {
         if (!u.banned && !await ask(`Suspend ${u.name}?`, "They are logged out and can't log in until you lift it.", "Suspend", true)) return;
@@ -439,6 +461,26 @@ $("#save").addEventListener("click", async () => {
     renderBan(); renderPacks(); renderStarters(); renderAds(); renderEvents();
   } catch (e) { $("#saveStatus").className = "err"; $("#saveStatus").textContent = errText(e); }
 });
+
+// ---------- Installable (PWA) ----------
+// The GM page installs as an app of its own ("Duel GM"), next to the game
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => {});
+let gmInstall = null;
+const gmStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+const gmIsIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+{
+  const b = document.createElement("button"); b.type = "button"; b.className = "btn small"; b.id = "gmInstall"; b.textContent = "📲 Install GM app"; b.hidden = true;
+  b.style.cssText = "position:fixed;right:12px;bottom:12px;z-index:50";
+  document.body.append(b);
+  const showB = () => { b.hidden = gmStandalone() || !(gmInstall || gmIsIOS); };
+  addEventListener("beforeinstallprompt", e => { e.preventDefault(); gmInstall = e; showB(); });
+  addEventListener("appinstalled", () => { gmInstall = null; showB(); });
+  b.addEventListener("click", async () => {
+    if (gmInstall) { gmInstall.prompt(); await gmInstall.userChoice.catch(() => {}); gmInstall = null; showB(); return; }
+    alert("In Safari, tap Share, then \u201cAdd to Home Screen\u201d.");
+  });
+  showB();
+}
 </script>
 </body>
 </html>
