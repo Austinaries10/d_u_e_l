@@ -48,6 +48,12 @@
   .packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
   .packs label { display: flex; gap: 8px; align-items: center; font-size: 13px; padding: 6px 8px; border-radius: 10px; background: rgba(255,255,255,.04); }
   .packs input { width: auto; }
+  .pthumb { width: 58px; aspect-ratio: 3 / 4; object-fit: contain; border-radius: 6px; background: #151b26; flex: 0 0 auto; }
+  .phead { display: flex; gap: 12px; align-items: center; } .phead > div { flex: 1; min-width: 0; display: grid; gap: 4px; }
+  .browser { border: 1px solid var(--line); border-radius: 14px; padding: 10px; display: grid; gap: 10px; background: rgba(0,0,0,.2); }
+  .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 60vh; overflow-y: auto; }
+  .ptile { display: grid; gap: 4px; padding: 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; font-size: 11px; text-align: center; cursor: pointer; }
+  .ptile img { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; border-radius: 6px; background: #151b26; } .ptile.added { opacity: .45; } .ptile small { color: var(--muted); }
   .pill { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 8px; }
   .pill.on { background: rgba(123,216,143,.2); color: var(--good); } .pill.soon { background: rgba(255,181,71,.2); color: var(--accent); } .pill.off { background: rgba(255,255,255,.1); color: var(--muted); }
   .results { display: grid; gap: 4px; max-height: 260px; overflow-y: auto; }
@@ -94,7 +100,8 @@
     <section class="card" data-panel="packs" hidden style="margin-top:16px">
       <h2>Packs in the Shop</h2>
       <p>Only the packs listed here are sold. Give each a price in coins and, if you like, a start and end time (leave them empty to sell it all the time). Daily free packs can be used on these. Limited events have their own tab.</p>
-      <div class="row"><label class="field" style="flex:1 1 240px">Add a pack<input id="shopAdd" list="setNames" placeholder="Type a set name" autocomplete="off"></label><button class="btn primary" id="shopAddBtn" type="button">Add</button></div>
+      <div class="row"><label class="field" style="flex:1 1 240px">Add a pack<input id="shopAdd" list="setNames" placeholder="Type a set name" autocomplete="off"></label><button class="btn primary" id="shopAddBtn" type="button">Add</button><button class="btn" id="shopBrowse" type="button">🖼 Browse packs</button></div>
+      <div class="browser" id="packBrowser" hidden><div class="row"><input id="browseFind" placeholder="Filter by name or code (e.g. blue eyes, LOB)" autocomplete="off" style="flex:1 1 220px"><button class="btn small" id="browseClose" type="button">Close</button></div><div class="pgrid" id="browseGrid"></div><button class="btn small" id="browseMore" type="button" hidden>Show more</button></div>
       <p id="shopCount"></p>
       <div class="list" id="shopList" style="gap:12px"></div>
       <h2 style="margin-top:24px">Starter decks in the Shop</h2>
@@ -239,13 +246,34 @@ function renderPacks() {
     start.onchange = () => { l.start = fromLocal(start.value); changed(); renderPacks(); }; end.onchange = () => { l.end = fromLocal(end.value); changed(); renderPacks(); };
     const on = el("input", { type: "checkbox", checked: l.enabled }); on.onchange = () => { l.enabled = on.checked; changed(); renderPacks(); };
     box.append(el("div", { className: "card" },
-      el("div", { className: "row", style: "justify-content:space-between" }, el("b", { textContent: `${set?.name || l.code} (${l.code})` }), el("span", { className: "pill " + status[0], textContent: status[1] })),
+      el("div", { className: "phead" }, packThumb(l.code), el("div", {}, el("b", { textContent: `${set?.name || l.code} (${l.code})${zhName(l.code)}` }), el("span", {}, el("span", { className: "pill " + status[0], textContent: status[1] }), set?.date ? ` · ${set.date.slice(0, 4)}` : ""))),
       el("div", { className: "form" }, el("label", { className: "field" }, "Price (coins)", price), el("label", { className: "field" }, "Starts (optional)", start), el("label", { className: "field" }, "Ends (optional)", end)),
       el("div", { className: "row" }, el("label", { className: "check" }, on, "On sale"),
         el("button", { type: "button", className: "btn small", textContent: "End now", onclick: () => { l.end = new Date().toISOString(); if (l.start && Date.parse(l.start) >= Date.parse(l.end)) l.start = ""; changed(); renderPacks(); } }),
         el("button", { type: "button", className: "btn small danger", textContent: "Remove", onclick: () => { cfg.shop.splice(k, 1); changed(); renderPacks(); } }))));
   });
 }
+// pack pictures: the GM sees each pack's real artwork, here and when choosing one to add
+let PACK_ZH = {}; fetch("i18n/packs.json").then(r => r.json()).then(j => { for (const [c, t] of Object.entries(j)) if (Array.isArray(t)) PACK_ZH[c] = t[0]; if (cfg) { renderPacks(); renderStarters(); } }).catch(() => {});
+const zhName = code => PACK_ZH[code] ? ` · ${PACK_ZH[code]}` : "";
+const packImgUrl = code => `api/ygo.php?action=img&set=${encodeURIComponent(code)}`;
+const packThumb = code => el("img", { className: "pthumb", src: packImgUrl(code), alt: "", loading: "lazy" });
+let browseShown = 60;
+function renderBrowser() {
+  const q = $("#browseFind").value.trim().toLowerCase(), grid = $("#browseGrid"); grid.innerHTML = "";
+  const list = sets.filter(x => !q || x.name.toLowerCase().includes(q) || x.code.toLowerCase() === q || (PACK_ZH[x.code] || "").includes(q)).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  for (const x of list.slice(0, browseShown)) {
+    const added = (cfg.shop || []).some(l => l.code === x.code), t = el("button", { type: "button", className: "ptile" + (added ? " added" : ""), title: added ? "Already in the Shop" : "Add to the Shop" });
+    t.append(el("img", { src: packImgUrl(x.code), alt: "", loading: "lazy" }), el("b", { textContent: x.name + zhName(x.code) }), el("small", { textContent: `${x.code} · ${(x.date || "").slice(0, 4)}${added ? " · added" : ""}` }));
+    t.onclick = () => { if (added) return; cfg.shop ??= []; cfg.shop.unshift({ code: x.code, price: 100, start: "", end: "", enabled: true }); changed(); renderPacks(); renderBrowser(); };
+    grid.append(t);
+  }
+  $("#browseMore").hidden = list.length <= browseShown;
+}
+$("#shopBrowse").addEventListener("click", () => { $("#packBrowser").hidden = false; browseShown = 60; renderBrowser(); });
+$("#browseClose").addEventListener("click", () => { $("#packBrowser").hidden = true; });
+$("#browseFind").addEventListener("input", () => { browseShown = 60; renderBrowser(); });
+$("#browseMore").addEventListener("click", () => { browseShown += 60; renderBrowser(); });
 $("#shopAddBtn").addEventListener("click", () => {
   const m = $("#shopAdd").value.match(/\(([A-Z0-9-]+)\)\s*$/); if (!m) return;
   cfg.shop ??= []; if (cfg.shop.some(l => l.code === m[1])) return;
@@ -270,7 +298,7 @@ function renderStarters() {
     const on = el("input", { type: "checkbox", checked: l.enabled }); on.onchange = () => { l.enabled = on.checked; changed(); renderStarters(); };
     const price = el("input", { type: "number", min: 0, step: 50, value: l.price, style: "width:110px" }); price.oninput = () => { l.price = Math.max(0, +price.value || 0); changed(); };
     box.append(el("div", { className: "row", style: "justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 0" },
-      el("label", { className: "check", style: "flex:1 1 200px" }, on, `${set?.name || l.code} (${l.code})${set?.date ? " · " + set.date.slice(0, 4) : ""}`),
+      packThumb(l.code), el("label", { className: "check", style: "flex:1 1 200px" }, on, `${set?.name || l.code} (${l.code})${zhName(l.code)}${set?.date ? " · " + set.date.slice(0, 4) : ""}`),
       el("label", { className: "field", style: "flex:0 0 auto" }, "Price", price)));
   }
 }
@@ -325,7 +353,7 @@ function eventCard(ev, k) {
     const cur = sets.find(s => s.code === ev.set), inp = el("input", { value: cur ? `${cur.name} (${cur.code})` : ev.set, placeholder: "Type a set name", autocomplete: "off" });
     inp.setAttribute("list", "setNames");
     inp.onchange = () => { const m = inp.value.match(/\(([A-Z0-9-]+)\)\s*$/); if (m) { ev.set = m[1]; changed(); } renderEvents(); };
-    card.append(field("Set", inp, true));
+    card.append(el("div", { className: "phead" }, packThumb(ev.set), el("div", {}, field("Set", inp, true))));
   } else {
     const results = el("div", { className: "results" }), find = el("input", { placeholder: "Search a card to add", autocomplete: "off" });
     const go = () => findCards(find.value.trim(), results, c => [el("button", { type: "button", className: "btn small", textContent: "Add", onclick: () => {

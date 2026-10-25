@@ -134,7 +134,8 @@
   .packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .pack { border: 1px solid var(--line); border-radius: 14px; padding: 8px; background: rgba(255,255,255,.04); display: grid; gap: 6px; align-content: start; min-width: 0; }
   .pack img { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; border-radius: 8px; background: #1c2230; }
-  .pack b { font-size: 13px; line-height: 1.25; } .pack small { font-size: 11px; color: var(--muted); }
+  .pack b { font-size: 13px; line-height: 1.25; }
+  .pack.duelist img { aspect-ratio: 1; object-fit: cover; object-position: center 20%; border-radius: 50%; width: 78%; margin: 6px auto 0; border: 3px solid #ffd27a; background: #22294a; } .pack.duelist.soon img { filter: grayscale(1) brightness(.6); } .pack small { font-size: 11px; color: var(--muted); }
   .rar { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 6px; padding: 1px 5px; margin-left: 4px; vertical-align: 1px; background: rgba(255,255,255,.12); color: var(--muted); }
   .rar.r1 { background: #3a4d6b; color: #cfe0ff; } .rar.r2 { background: #2f6d8a; color: #d6f4ff; } .rar.r3 { background: #8a6a1f; color: #fff1c9; }
   .rar.r4, .rar.r5, .rar.r6, .rar.r7, .rar.r8 { background: linear-gradient(90deg, #ff6ad5, #c774e8, #ad8cff, #8795e8, #94d0ff); color: #1a1030; }
@@ -975,7 +976,7 @@
   <header class="gatebar"><button class="round" id="shopDone" type="button" aria-label="Back">‹</button><h1>Shop</h1><div class="cur small"><span class="coin" aria-hidden="true"></span><b id="shopCoins">0</b></div><div class="cur small"><span class="ticket" aria-hidden="true"></span><b id="shopFree">0</b></div></header>
   <div class="host"><img data-face="Solomon_Muto" alt=""><div class="bubble" id="shopLine">Welcome to the Kame Game shop! What are you looking for today?</div></div>
   <div class="adslot" id="shopAd"></div>
-  <div class="tabs row center" id="shopTabs"><button class="btn small" type="button" data-tab="events" aria-pressed="true">Limited</button><button class="btn small" type="button" data-tab="packs" aria-pressed="false">Booster packs</button><button class="btn small" type="button" data-tab="decks" aria-pressed="false">Starter decks</button></div>
+  <div class="tabs row center" id="shopTabs"><button class="btn small" type="button" data-tab="events" aria-pressed="true">Limited</button><button class="btn small" type="button" data-tab="packs" aria-pressed="false">Booster packs</button><button class="btn small" type="button" data-tab="decks" aria-pressed="false">Starter decks</button><button class="btn small" type="button" data-tab="duelists" aria-pressed="false">Duelist decks</button></div>
   <input id="packFind" class="find" placeholder="Find a pack" autocomplete="off" aria-label="Find a pack">
   <div class="packs" id="packs"></div>
   <p class="note center">A pack has 9 cards (all-foil sets have 5), each at its real rarity in the set. About 1 in 6 packs has an Ultra Rare, 1 in 12 a Secret Rare. Free packs reset at midnight.</p>
@@ -1066,6 +1067,8 @@ if (LANG) document.documentElement.lang = LANG === "zh" ? "zh-CN" : "ja";
 // The interface is written in English. In Chinese or Japanese, every text shown is looked up in i18n/<lang>.json:
 // exact texts, and templates with {0}, {1}… for the parts that change (those parts are looked up too, e.g. names)
 const I18N = { exact: new Map(), pats: [], cache: new Map() };
+// pack and starter deck names, by set code (i18n/packs.json); a pack without one keeps its English name
+const PACK_TR = new Map(), packName = pk => (!pk.event && PACK_TR.get(pk.code)) || pk.name;
 if (LANG) {
   try {
     const dict = await (await fetch(`i18n/${LANG}.json?v=__BUILD__`)).json();
@@ -1078,6 +1081,7 @@ if (LANG) {
     }
     I18N.pats.sort((a, b) => b.weight - a.weight); // the most specific templates first
   } catch {}
+  try { const pk = await (await fetch("i18n/packs.json?v=__BUILD__")).json(); for (const [code, tr] of Object.entries(pk)) if (Array.isArray(tr)) PACK_TR.set(code, tr[LANG === "zh" ? 0 : 1]); } catch {}
 }
 function T(text, depth = 0) {
   if (!LANG || !text || depth > 3) return text;
@@ -3029,6 +3033,8 @@ async function recipes() {
 const ownedByName = () => { const m = new Map(); for (const e of Object.values(coll)) m.set(e.card.name, (m.get(e.card.name) || 0) + e.n); return m; };
 const tally = list => { const m = new Map(); for (const n of list) m.set(n, (m.get(n) || 0) + 1); return [...m].map(([n, k]) => [k, n]); };
 // The four decks of a character, as [[copies, name], ...] for the Main and Extra Deck
+const FULL_DECK_CHARS = new Set(["yami", "kaiba"]), SHORT_NAME = { yami: "Yugi", kaiba: "Kaiba" };
+const shortName = ch => SHORT_NAME[ch.id] || ch.name.split(" ")[0];
 async function charRecipes(ch) {
   const all = await recipes(), d = CHAR_DECKS[ch.id], story = { main: tally(Array.isArray(d) ? d : d.main), extra: tally(Array.isArray(d) ? [] : d.extra) };
   // starter: one of each of their cards (ace first), then simple basics, 40 in all
@@ -3037,7 +3043,9 @@ async function charRecipes(ch) {
   for (const [, n] of story.main) { if (main.length >= 14) break; if (!["Monster Reborn", "Pot of Greed", "Raigeki", "Dark Hole", "Change of Heart", "Graceful Charity"].includes(n)) add(1, n); }
   let total = main.length;
   for (const n of BASIC_POOL) { if (total >= 40) break; if (used.has(n)) continue; const k = Math.min(2, 40 - total); add(k, n); total += k; }
-  const starter = { name: `${ch.name.split(" ")[0]}'s Starter`, main, extra: story.extra.slice(0, 3).map(([, n]) => [1, n]) };
+  let starter = { name: `${ch.name.split(" ")[0]}'s Starter`, main, extra: story.extra.slice(0, 3).map(([, n]) => [1, n]) };
+  // Yugi and Kaiba always duel with their Duelist Kingdom decks, from the very first duel
+  if (FULL_DECK_CHARS.has(ch.id)) starter = { name: `${shortName(ch)}'s Duelist Kingdom Deck`, ...story };
   return { starter, story: { name: `${ch.name.split(" ")[0]}'s Story Deck`, ...story }, advanced: all[ch.id]?.advanced, pro: all[ch.id]?.pro };
 }
 const recCards = new Map(); // card name -> card, for pictures of cards you don't own yet
@@ -3477,38 +3485,63 @@ async function renderShop() {
       tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: soon ? "SOON" : left <= 0 ? "SOLD OUT" : `${fmtLeft(Date.parse(ev.end) - nowMs())} left` }), el("b", { textContent: ev.name }));
       tile.onclick = () => openPackModal(pk); box.append(tile);
     }
+  } else if (shopTab === "duelists") {
+    // the decks the rivals duel with: on sale once you have beaten them
+    const wins = charWins();
+    box.append(el("p", { className: "note center", style: "grid-column:1/-1", textContent: "Beat a duelist at the gates and their deck goes on sale here: every card, ready to duel." }));
+    for (const id of FULL_DECK_CHARS) {
+      const ch = CHARS[id]; if (!ch) continue;
+      const open = (wins[id] || 0) >= 1, tile = el("button", { type: "button", className: "pack duelist" + (open ? "" : " soon") });
+      const nm = `${shortName(ch)}'s Deck`;
+      tile.append(el("img", { src: face(ch.face), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: open ? `${DUELIST_DECK_PRICE} coins` : "🔒" }), el("b", { textContent: nm }), el("small", { textContent: open ? ch.name : `Beat ${ch.name} to unlock` }));
+      tile.onclick = () => open ? buyDuelistDeck(ch) : gameAlert(`Beat ${ch.name} at the gates once to unlock their deck in the shop.`, "Locked");
+      box.append(tile);
+    }
   } else if (shopTab === "decks") {
     // real starter decks, sold whole: every card in the deck, ready to duel with
-    for (const pk of deckList.filter(p => !q || p.name.toLowerCase().includes(q))) {
+    for (const pk of deckList.filter(p => !q || p.name.toLowerCase().includes(q) || packName(p).includes(q))) {
       const tile = el("button", { type: "button", className: "pack" });
-      tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: `${pk.price} coins` }), el("b", { textContent: pk.name }));
+      tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: `${pk.price} coins` }), el("b", { textContent: packName(pk) }));
       tile.onclick = () => buyStarter(pk); box.append(tile);
     }
   } else {
     if (!packList.length) box.append(el("p", { className: "note center", textContent: "No packs on sale right now. Check back soon!" }));
-    for (const pk of packList.filter(p => !q || p.name.toLowerCase().includes(q) || p.code.toLowerCase() === q)) {
+    for (const pk of packList.filter(p => !q || p.name.toLowerCase().includes(q) || packName(p).includes(q) || p.code.toLowerCase() === q)) {
       const soon = pk.start && Date.parse(pk.start) > nowMs();
       const tile = el("button", { type: "button", className: "pack" + (soon ? " soon" : "") });
-      tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: soon ? `in ${fmtLeft(Date.parse(pk.start) - nowMs())}` : pk.end ? `${fmtLeft(Date.parse(pk.end) - nowMs())} left` : `${pk.price} coins` }), el("b", { textContent: pk.name }));
+      tile.append(el("img", { src: packImg(pk), alt: "", loading: "lazy" }), el("span", { className: "ribbon", textContent: soon ? `in ${fmtLeft(Date.parse(pk.start) - nowMs())}` : pk.end ? `${fmtLeft(Date.parse(pk.end) - nowMs())} left` : `${pk.price} coins` }), el("b", { textContent: packName(pk) }));
       tile.onclick = () => openPackModal(pk); box.append(tile);
     }
   }
 }
 for (const b of $("#shopTabs").children) b.addEventListener("click", () => { shopTab = b.dataset.tab; renderShop(); });
 $("#packFind").addEventListener("input", renderShop);
+const DUELIST_DECK_PRICE = 1500;
+async function buyDuelistDeck(ch) {
+  const all = await charRecipes(ch), r = all.story, names = [...r.main, ...r.extra].flatMap(([k, n]) => Array(k).fill(n)), nm = `${shortName(ch)}'s Deck`;
+  if (wallet.coins < DUELIST_DECK_PRICE) return gameAlert(`${nm} costs ${DUELIST_DECK_PRICE} coins. Win duels, finish daily quests and collect login rewards to earn more.`, "Not enough coins");
+  if (!await gameConfirm(nm, `Buy the deck ${ch.name} duels with (${names.length} cards) for ${DUELIST_DECK_PRICE} coins? Every card is added to your collection and saved as a new deck.`, `Buy · ${DUELIST_DECK_PRICE}`)) return;
+  try { await loadRecCards(names); } catch (e) { return gameAlert(errText(e), "Couldn't buy the deck"); }
+  const cards = names.map(n => recCards.get(n)).filter(Boolean);
+  wallet.coins -= DUELIST_DECK_PRICE;
+  for (const c of cards) own({ ...c, rarities: [] }, "Common");
+  const saved = decks.length < MAX_DECKS; if (saved) decks.push({ name: nm, ids: legalize(cards.map(c => c.id)) });
+  saveColl(); saveDecks(); saveWallet(); renderShop(); renderHome();
+  gameAlert(`${cards.length} cards added to your collection.${saved ? ` The deck "${nm}" is in Decks, ready to duel.` : ` You already have ${MAX_DECKS} decks, so it wasn't saved as a deck: make room in Decks and build it from your cards.`}`, "Deck bought!");
+}
 async function buyStarter(pk) {
   if (wallet.coins < pk.price) return gameAlert(`A starter deck costs ${pk.price} coins. Win duels, finish daily quests and collect login rewards to earn more.`, "Not enough coins");
-  if (!await gameConfirm(pk.name, `Buy the whole deck (${pk.count || "40+"} cards) for ${pk.price} coins? It's added to your cards and saved as a new deck, ready to duel with.`, `Buy · ${pk.price} coins`)) return;
+  if (!await gameConfirm(packName(pk), `Buy the whole deck (${pk.count || "40+"} cards) for ${pk.price} coins? It's added to your cards and saved as a new deck, ready to duel with.`, `Buy · ${pk.price} coins`)) return;
   let set, cards; try { ({ set, cards } = await api({ action: "set", code: pk.code })); } catch (e) { return gameAlert(errText(e), "Couldn't buy the deck"); }
   wallet.coins -= pk.price;
   for (const c of cards) own(c, c.rarities[0]);
-  const saved = decks.length < MAX_DECKS; if (saved) decks.push({ name: set.name, ids: legalize(cards.map(c => c.id)) });
+  const saved = decks.length < MAX_DECKS; if (saved) decks.push({ name: packName(pk), ids: legalize(cards.map(c => c.id)) });
   saveColl(); saveDecks(); saveWallet(); renderShop(); renderHome();
-  gameAlert(`${cards.length} cards added to your collection.${saved ? ` The deck "${set.name}" is in Decks, ready to duel.` : ` You already have ${MAX_DECKS} decks, so it wasn't saved as a deck: build one in Decks.`}`, "Deck bought!");
+  gameAlert(`${cards.length} cards added to your collection.${saved ? ` The deck "${packName(pk)}" is in Decks, ready to duel.` : ` You already have ${MAX_DECKS} decks, so it wasn't saved as a deck: build one in Decks.`}`, "Deck bought!");
 }
 function openPackModal(pk) {
   const ev = pk.event, m = $("#packModal"); m.hidden = false;
-  $("#packImg").src = packImg(pk); $("#packName").textContent = pk.name;
+  $("#packImg").src = packImg(pk); $("#packName").textContent = packName(pk);
   const buy = $("#packBuy"); buy.innerHTML = "";
   const go = pay => { m.hidden = true; openPack(pk, pay); };
   if (ev) {
@@ -3654,7 +3687,7 @@ $("#flipAll").addEventListener("click", () => { if (!rev) return; rev.auto = tru
 // 4. all turned over: the pack's name, how many are new, and what to do next (tap a card to read it)
 function finishOpening() {
   $("#flipAll").hidden = true; $("#openBody").hidden = false;
-  $("#openTitle").textContent = rev.pk.name;
+  $("#openTitle").textContent = packName(rev.pk);
   $("#openSum").textContent = `${rev.shown.length} cards · ${rev.shown.filter(p => p.isNew).length} new`;
 }
 $("#openColl").addEventListener("click", () => { $("#opening").hidden = true; $("#openDecks").click(); });
@@ -3818,7 +3851,7 @@ const CHAR_DECKS = {
   mai: ["Harpie's Pet Dragon", "Harpie Lady", "Harpie Lady", "Harpie Lady", "Cyber Harpie Lady", "Cyber Harpie Lady", "Harpie Lady 1", "Harpie Lady 2", "Harpie Lady 3", "Harpie Girl", "Harpie Girl", "Amazoness Swords Woman", "Amazoness Swords Woman", "Amazoness Paladin", "Amazoness Paladin", "Birdface", "Birdface", "Mystical Elf", "Hysteric Fairy", "Hysteric Fairy", "Harpie's Feather Duster", "Pot of Greed", "Raigeki", "Hinotama", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Waboku", "Dian Keto the Cure Master"],
   keith: ["Barrel Dragon", "Barrel Dragon", "Slot Machine", "Slot Machine", "Launcher Spider", "Launcher Spider", "Robotic Knight", "Robotic Knight", "Mechanicalchaser", "Mechanicalchaser", "Blast Juggler", "Cannon Soldier", "Cannon Soldier", "Machine King", "Patrician of Darkness", "Giga-Tech Wolf", "Giga-Tech Wolf", "Mechanical Hound", "Pendulum Machine", "Pendulum Machine", "Pot of Greed", "Raigeki", "Fissure", "Fissure", "Hinotama", "Heavy Storm", "Magic Cylinder", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack"],
   bakura: ["Dark Necrofear", "The Earl of Demise", "The Earl of Demise", "Headless Knight", "Headless Knight", "Dark Jeroid", "Newdoria", "Newdoria", "The Portrait's Secret", "The Portrait's Secret", "The Gross Ghost of Fled Dreams", "The Gross Ghost of Fled Dreams", "Man-Eater Bug", "Bone Mouse", "Bone Mouse", "Summoned Skull", "Summoned Skull", "Ryu-Kishin Powered", "Ryu-Kishin Powered", "Dark Elf", "Pot of Greed", "Monster Reborn", "Dark Hole", "Hinotama", "Change of Heart", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Waboku"],
-  kaiba: ["Blue-Eyes White Dragon", "Blue-Eyes White Dragon", "Blue-Eyes White Dragon", "Lord of D.", "Kaiser Sea Horse", "Kaiser Sea Horse", "La Jinn the Mystical Genie of the Lamp", "La Jinn the Mystical Genie of the Lamp", "Vorse Raider", "Vorse Raider", "Battle Ox", "Battle Ox", "Saggi the Dark Clown", "Hitotsu-Me Giant", "Hitotsu-Me Giant", "X-Head Cannon", "Y-Dragon Head", "Z-Metal Tank", "Blade Knight", "Blade Knight", "Pot of Greed", "Monster Reborn", "Raigeki", "Dark Hole", "Heavy Storm", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Crush Card Virus"],
+  kaiba: {"main": ["Blue-Eyes White Dragon", "Blue-Eyes White Dragon", "Blue-Eyes White Dragon", "Judge Man", "Gyakutenno Megami", "Swordstalker", "Rude Kaiser", "La Jinn the Mystical Genie of the Lamp", "Battle Ox", "Aqua Madoor", "Mystic Clown", "Ryu-Kishin Powered", "Ryu-Kishin", "Grappler", "Hitotsu-Me Giant", "Mystic Horseman", "Rogue Doll", "Lord of D.", "Wall of Illusion", "The Wicked Worm Beast", "Saggi the Dark Clown", "Ancient Lamp", "Trap Master", "Pale Beast", "Hane-Hane", "Stop Defense", "Polymerization", "Ookazi", "De-Spell", "The Flute of Summoning Dragon", "Megamorph", "Monster Reborn", "Dark Energy", "Mesmeric Control", "Remove Trap", "Crush Card Virus", "Shadow Spell", "Negate Attack", "Gift of The Mystical Elf", "Reinforcements"], "extra": ["Rabid Horseman"]},
   pegasus: ["Toon Summoned Skull", "Toon Summoned Skull", "Toon Mermaid", "Toon Mermaid", "Toon Alligator", "Toon Alligator", "Manga Ryu-Ran", "Toon Gemini Elf", "Toon Gemini Elf", "Toon Masked Sorcerer", "Toon Goblin Attack Force", "Toon Goblin Attack Force", "Dragon Piper", "Dark Rabbit", "Dark Rabbit", "Illusionist Faceless Mage", "Illusionist Faceless Mage", "Dark Rabbit", "Toon Alligator", "Gemini Elf", "Pot of Greed", "Monster Reborn", "Raigeki", "Change of Heart", "Heavy Storm", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Waboku"],
   marik: ["Lava Golem", "Drillago", "Drillago", "Revival Jam", "Revival Jam", "Makyura the Destructor", "Makyura the Destructor", "Gil Garth", "Gil Garth", "Vampire Lord", "Vampire Lord", "Stealth Bird", "Stealth Bird", "Mystic Tomato", "Mystic Tomato", "Summoned Skull", "Summoned Skull", "Jinzo", "Dark Ruler Ha Des", "Gearfried the Iron Knight", "Pot of Greed", "Monster Reborn", "Raigeki", "Dark Hole", "Heavy Storm", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Torrential Tribute"],
   syrus: ["Steamroid", "Steamroid", "Gyroid", "Gyroid", "Drillroid", "Drillroid", "Submarineroid", "Submarineroid", "Jetroid", "Cycroid", "Cycroid", "Patroid", "Patroid", "Truckroid", "Expressroid", "Expressroid", "Rescueroid", "Ambulanceroid", "Ambulanceroid", "Decoyroid", "Pot of Greed", "Hinotama", "Hinotama", "Fissure", "Monster Reborn", "Sakuretsu Armor", "Negate Attack", "Waboku", "Waboku", "Magic Cylinder"],
@@ -3835,7 +3868,7 @@ const CHAR_DECKS = {
   espa: {"main": ["Jinzo", "Jinzo", "Jinzo #7", "Jinzo #7", "Psychic Commander", "Psychic Commander", "Psychic Snail", "Psychic Snail", "Mind Protector", "Mind Protector", "Telekinetic Shocker", "Telekinetic Shocker", "Psychic Jumper", "Krebons", "Krebons", "Serene Psychic Witch", "Serene Psychic Witch", "Doctor Cranium", "Psychic Tuning", "Brain Control", "Pot of Greed", "Monster Reborn", "Emergency Teleport", "Emergency Teleport", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Psychic Overload", "Waboku"], "extra": ["Magical Android", "Psychic Lifetrancer", "Thought Ruler Archfiend"]},
   bonz: {"main": ["Pumpking the King of Ghosts", "Pumpking the King of Ghosts", "Dragon Zombie", "Dragon Zombie", "Armored Zombie", "Armored Zombie", "Clown Zombie", "Clown Zombie", "Ryu Kokki", "Ryu Kokki", "Vampire Lord", "Vampire Lord", "Pyramid Turtle", "Pyramid Turtle", "Spirit Reaper", "Spirit Reaper", "Mezuki", "Mezuki", "Zombie Master", "Zombie Master", "Pot of Greed", "Monster Reborn", "Book of Life", "Book of Life", "Call of the Haunted", "Call of the Haunted", "Mirror Force", "Sakuretsu Armor", "Negate Attack", "Magic Cylinder"], "extra": []},
   lumis: {"main": ["Masked Beast Des Gardius", "Masked Beast Des Gardius", "Gil Garth", "Gil Garth", "Masked Chopper", "Masked Chopper", "Mask of Darkness", "Mask of Darkness", "Dark Ruler Ha Des", "Archfiend Soldier", "Archfiend Soldier", "Vorse Raider", "Vorse Raider", "Summoned Skull", "Summoned Skull", "Night Assailant", "Night Assailant", "Mystic Tomato", "Mystic Tomato", "Ryu-Kishin Powered", "Pot of Greed", "Monster Reborn", "Mask of Restrict", "Curse of the Masked Beast", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Mask of Weakness", "Mask of Weakness"], "extra": []},
-  yami: {"main": ["Dark Magician", "Dark Magician", "Dark Magician", "Dark Magician Girl", "Dark Magician Girl", "Skilled Dark Magician", "Magician's Rod", "Magician's Rod", "Magicians' Souls", "Kuriboh", "Kuriboh", "Big Shield Gardna", "Celtic Guardian", "Celtic Guardian", "Gazelle the King of Mythical Beasts", "Beta The Magnet Warrior", "Gamma the Magnet Warrior", "Alpha The Magnet Warrior", "Valkyrion the Magna Warrior", "Buster Blader", "Pot of Greed", "Monster Reborn", "Dark Magic Attack", "Thousand Knives", "Swords of Revealing Light", "Mirror Force", "Magic Cylinder", "Dark Magic Curtain", "Sakuretsu Armor", "Negate Attack"], "extra": ["Dark Paladin", "The Dark Magicians"]},
+  yami: {"main": ["Exodia the Forbidden One", "Right Leg of the Forbidden One", "Left Leg of the Forbidden One", "Right Arm of the Forbidden One", "Left Arm of the Forbidden One", "Dark Magician", "Gaia The Fierce Knight", "Summoned Skull", "Curse of Dragon", "Catapult Turtle", "Battle Steer", "Winged Dragon, Guardian of the Fortress #1", "Celtic Guardian", "Feral Imp", "Beaver Warrior", "Koumori Dragon", "Griffore", "Mystical Elf", "Giant Soldier of Stone", "Mammoth Graveyard", "Ancient Elf", "Silver Fang", "Kuriboh", "Polymerization", "Makiu, the Magical Mist", "Dark Hole", "Swords of Revealing Light", "Brain Control", "Multiply", "Monster Recovery", "Spell Shattering Arrow", "Burning Land", "Mystical Moon", "Horn of the Unicorn", "Mirror Force", "Shift", "Castle Walls", "Magical Hats", "Spellbinding Circle", "Waboku"], "extra": ["Gaia the Dragon Champion"]},
   jesse: {"main": ["Rainbow Dragon", "Crystal Beast Sapphire Pegasus", "Crystal Beast Sapphire Pegasus", "Crystal Beast Sapphire Pegasus", "Crystal Beast Ruby Carbuncle", "Crystal Beast Ruby Carbuncle", "Crystal Beast Amethyst Cat", "Crystal Beast Amethyst Cat", "Crystal Beast Amber Mammoth", "Crystal Beast Amber Mammoth", "Crystal Beast Emerald Tortoise", "Crystal Beast Emerald Tortoise", "Crystal Beast Topaz Tiger", "Crystal Beast Topaz Tiger", "Crystal Beast Cobalt Eagle", "Crystal Beast Cobalt Eagle", "Rainbow Dragon", "Ancient City - Rainbow Ruins", "Crystal Beacon", "Crystal Beacon", "Crystal Blessing", "Crystal Promise", "Rare Value", "Pot of Greed", "Monster Reborn", "Crystal Abundance", "Crystal Raigeki", "Mirror Force", "Sakuretsu Armor", "Negate Attack"], "extra": []},
   hassleberry: {"main": ["Ultimate Tyranno", "Ultimate Tyranno", "Gilasaurus", "Gilasaurus", "Gilasaurus", "Sabersaurus", "Sabersaurus", "Black Tyranno", "Babycerasaurus", "Babycerasaurus", "Petiteranodon", "Petiteranodon", "Dark Driceratops", "Dark Driceratops", "Hydrogeddon", "Super Conductor Tyranno", "Jurassic World", "Jurassic World", "Big Evolution Pill", "Big Evolution Pill", "Fossil Dig", "Fossil Dig", "Pot of Greed", "Monster Reborn", "Volcanic Rocket", "Mirror Force", "Sakuretsu Armor", "Negate Attack", "Magic Cylinder", "Waboku"], "extra": []},
   atticus: {"main": ["Red-Eyes Darkness Metal Dragon", "Red-Eyes Darkness Dragon", "Red-Eyes Black Dragon", "Red-Eyes Black Dragon", "Red-Eyes Black Dragon", "Black Dragon's Chick", "Black Dragon's Chick", "Red-Eyes Wyvern", "Red-Eyes Wyvern", "Red-Eyes Retro Dragon", "Red-Eyes Retro Dragon", "Gearfried the Red-Eyes Iron Knight", "Red-Eyes Black Flare Dragon", "Masked Dragon", "Masked Dragon", "Red-Eyes Archfiend of Lightning", "Luster Dragon", "Inferno Fire Blast", "Red-Eyes Fusion", "Return of the Red-Eyes", "Pot of Greed", "Monster Reborn", "Red-Eyes Spirit", "Red-Eyes Spirit", "Mirror Force", "Magic Cylinder", "Sakuretsu Armor", "Negate Attack", "Red-Eyes Burn", "Waboku"], "extra": ["Red-Eyes Flare Metal Dragon", "Black Skull Dragon", "Meteor Black Dragon", "Red-Eyes Slash Dragon"]},
